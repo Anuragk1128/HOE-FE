@@ -182,11 +182,11 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
 
           <div className="flex items-center space-x-2">
             <p className="text-3xl font-bold text-gray-900">
-              ${product.price.toFixed(2)}
+              ₹{product.price.toLocaleString('en-IN')}
             </p>
             {product.compareAtPrice && product.compareAtPrice > product.price && (
               <p className="text-lg text-gray-500 line-through">
-                ${product.compareAtPrice.toFixed(2)}
+                ₹{product.compareAtPrice.toLocaleString('en-IN')}
               </p>
             )}
           </div>
@@ -200,18 +200,22 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">Brand</h4>
-                <p className="mt-1 text-gray-900">
-                  {product.brand?.name || product.brandId || 'N/A'}
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-gray-500">Category</h4>
-                <p className="mt-1 text-gray-900">
-                  {product.category?.name || product.categoryId || 'N/A'}
-                </p>
-              </div>
+              {product.brand?.name && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Brand</h4>
+                  <p className="mt-1 text-gray-900">
+                    {product.brand.name}
+                  </p>
+                </div>
+              )}
+              {product.category?.name && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Category</h4>
+                  <p className="mt-1 text-gray-900">
+                    {product.category.name}
+                  </p>
+                </div>
+              )}
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Availability</h4>
                 <p className="mt-1 text-gray-900">
@@ -261,10 +265,6 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
               Out of Stock
             </Button>
           )}
-          <div className="flex items-center mb-4">
-            <span className="text-gray-600 mr-2">Category:</span>
-            <span>{product.categoryId}</span>
-          </div>
           <div className="flex items-center mb-4">
             <span className="text-gray-600 mr-2">In Stock:</span>
             <span>{product.stock}</span>

@@ -30,6 +30,10 @@ export default function AdminProductsPage() {
   const [stock, setStock] = useState<number>(0)
   const [status, setStatus] = useState<string>("active")
   const [tags, setTags] = useState<string>("")
+  // Dynamic attributes: array of rows { key, type, value }
+  const [attributesRows, setAttributesRows] = useState<Array<{ key: string; type: 'text' | 'list'; value: string }>>([
+    { key: "", type: "text", value: "" },
+  ])
 
   const selectedBrand = useMemo(() => brands.find((b) => b.slug === brandSlug) || null, [brands, brandSlug])
   const selectedCategory = useMemo(() => categories.find((c) => c.slug === categorySlug) || null, [categories, categorySlug])
@@ -206,7 +210,21 @@ export default function AdminProductsPage() {
                       images: image ? [image] : [],
                       price: Number(price) || 0,
                       compareAtPrice: Number(compareAtPrice) || 0,
-                      attributes: {},
+                      attributes: attributesRows.reduce<Record<string, unknown>>((acc, row) => {
+                        const key = row.key.trim()
+                        if (!key) return acc
+                        if (row.type === 'list') {
+                          const list = row.value
+                            .split(',')
+                            .map((t) => t.trim())
+                            .filter(Boolean)
+                          if (list.length) acc[key] = list
+                        } else {
+                          const v = row.value.trim()
+                          if (v) acc[key] = v
+                        }
+                        return acc
+                      }, {}),
                       stock: Number(stock) || 0,
                       status,
                       tags: tags
@@ -223,6 +241,7 @@ export default function AdminProductsPage() {
                     setStock(0)
                     setStatus("active")
                     setTags("")
+                    setAttributesRows([{ key: "", type: "text", value: "" }])
                     const items = await fetchAdminProducts({ brand: brandSlug, category: categorySlug, subcategory: subcategorySlug })
                     setProducts(items)
                     setSuccess("Product created successfully")
@@ -268,6 +287,68 @@ export default function AdminProductsPage() {
                     <option value="draft">draft</option>
                     <option value="archived">archived</option>
                   </select>
+                </div>
+                {/* Attributes Section (Dynamic) */}
+                <div className="md:col-span-2 mt-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Attributes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {attributesRows.map((row, idx) => (
+                          <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+                            <div className="md:col-span-4">
+                              <Label htmlFor={`attr-key-${idx}`}>Key</Label>
+                              <Input id={`attr-key-${idx}`} value={row.key} onChange={(e) => {
+                                const v = e.target.value; setAttributesRows((prev) => prev.map((r, i) => i === idx ? { ...r, key: v } : r))
+                              }} placeholder="e.g. size, color, material" />
+                            </div>
+                            <div className="md:col-span-3">
+                              <Label htmlFor={`attr-type-${idx}`}>Type</Label>
+                              <select
+                                id={`attr-type-${idx}`}
+                                className="w-full border rounded px-3 py-2 text-sm"
+                                value={row.type}
+                                onChange={(e) => {
+                                  const v = (e.target.value as 'text'|'list');
+                                  setAttributesRows((prev) => prev.map((r, i) => i === idx ? { ...r, type: v } : r))
+                                }}
+                              >
+                                <option value="text">text</option>
+                                <option value="list">list</option>
+                              </select>
+                            </div>
+                            <div className="md:col-span-4">
+                              <Label htmlFor={`attr-value-${idx}`}>{row.type === 'list' ? 'Value (comma separated)' : 'Value'}</Label>
+                              <Input id={`attr-value-${idx}`} value={row.value} onChange={(e) => {
+                                const v = e.target.value; setAttributesRows((prev) => prev.map((r, i) => i === idx ? { ...r, value: v } : r))
+                              }} placeholder={row.type === 'list' ? 'S, M, L, XL' : 'e.g. 100% Cotton'} />
+                            </div>
+                            <div className="md:col-span-1 flex items-end">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setAttributesRows((prev) => prev.filter((_, i) => i !== idx))}
+                                disabled={attributesRows.length === 1}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                        <div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setAttributesRows((prev) => [...prev, { key: "", type: "text", value: "" }])}
+                          >
+                            Add attribute
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
                 <div className="md:col-span-2">
                   <Label htmlFor="tags">Tags (comma separated)</Label>

@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, use } from 'react'
 import { Product } from '@/data/products'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/contexts/cart-context'
+import { useAuth } from '@/components/auth/auth-provider'
+import { AuthModal } from '@/components/auth/auth-modal'
 import { toast } from 'sonner'
 import Image from 'next/image'
 
@@ -19,19 +21,22 @@ interface ProductDetails extends Product {
   }
 }
 
-export default function ProductDetailsPage({ params }: { params: { productId: string } }) {
+export default function ProductDetailsPage({ params }: { params: Promise<{ productId: string }> }) {
+  const resolvedParams = use(params)
   const [product, setProduct] = useState<ProductDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const router = useRouter()
   const { addToCart } = useCart()
+  const { user } = useAuth()
 
   useEffect(() => {
     async function fetchProduct() {
       try {
         const [productRes, brandsRes, categoriesRes] = await Promise.all([
-          fetch(`https://hoe-be.onrender.com/api/products/${params.productId}`),
+          fetch(`https://hoe-be.onrender.com/api/products/${resolvedParams.productId}`),
           fetch('https://hoe-be.onrender.com/api/brands'),
           fetch('https://hoe-be.onrender.com/api/categories')
         ])
@@ -71,13 +76,18 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
       }
     }
 
-    if (params?.productId) {
+    if (resolvedParams?.productId) {
       fetchProduct()
     }
-  }, [params?.productId])
+  }, [resolvedParams?.productId])
 
   const handleAddToCart = () => {
     if (!product) return
+    
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
     
     addToCart({
       name: product.title,
@@ -91,6 +101,11 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
   }
 
   const handleBuyNow = () => {
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
+    
     handleAddToCart()
     router.push('/cart')
   }
@@ -249,7 +264,7 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
                 onClick={handleAddToCart}
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
               >
-                Add to Cart
+                {user ? 'Add to Cart' : ' Add to Cart'}
               </Button>
               
               <Button 
@@ -257,7 +272,7 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
                 variant="outline"
                 className="flex-1"
               >
-                Buy Now
+                {user ? 'Buy Now' : 'Login to Buy Now'}
               </Button>
             </div>
           ) : (
@@ -271,6 +286,8 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
           </div>
         </div>
       </div>
+      
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </div>
   )
 }

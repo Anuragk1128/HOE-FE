@@ -1,4 +1,5 @@
 "use client"
+import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 import { AnimateOnScroll } from "@/components/gsap/animate-on-scroll"
@@ -6,7 +7,8 @@ import { AnimateOnScroll } from "@/components/gsap/animate-on-scroll"
 export function HeroSection() {
   return (
     <section className="bg-slate-800 text-white">
-      <div className="mx-auto max-w-6xl px-4 py-16 md:py-20">
+      <div className="mx-auto max-w-6xl p-2">
+        <Image src="/hero-bg.png" alt="Hero Image" width={1800} height={600} />
         <AnimateOnScroll y={32}>
           <h1 className="text-pretty text-3xl md:text-4xl font-semibold">Discover top brands. One place.</h1>
           <p className="mt-3 max-w-lg text-slate-100/90 leading-relaxed">

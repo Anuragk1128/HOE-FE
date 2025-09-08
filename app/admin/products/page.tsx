@@ -207,7 +207,12 @@ export default function AdminProductsPage() {
                       title,
                       slug,
                       description,
-                      images: image ? [image] : [],
+                      images: image
+                        ? image
+                            .split(",")
+                            .map((u) => u.trim())
+                            .filter(Boolean)
+                        : [],
                       price: Number(price) || 0,
                       compareAtPrice: Number(compareAtPrice) || 0,
                       attributes: attributesRows.reduce<Record<string, unknown>>((acc, row) => {
@@ -265,8 +270,8 @@ export default function AdminProductsPage() {
                   <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
                 </div>
                 <div className="md:col-span-2">
-                  <Label htmlFor="image">Image URL</Label>
-                  <Input id="image" value={image} onChange={(e) => setImage(e.target.value)} />
+                  <Label htmlFor="image">Image URLs (comma separated)</Label>
+                  <Input id="image" value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://.../img1.jpg, https://.../img2.jpg" />
                 </div>
                 <div>
                   <Label htmlFor="price">Price</Label>

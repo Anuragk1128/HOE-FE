@@ -165,7 +165,16 @@ export default function AdminProductsPage() {
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {filtered.map((p) => (
                     <li key={p._id} className="border rounded p-3 flex gap-3">
-                      <img src={p.images?.[0] || "/placeholder.svg"} alt="" className="w-20 h-20 object-cover border rounded" />
+                      <img
+                        src={p.images?.[0] || "/placeholder.svg"}
+                        alt=""
+                        className="w-20 h-20 object-cover border rounded"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = "/placeholder.svg";
+                        }}
+                      />
                       <div className="min-w-0">
                         <div className="font-medium truncate">{p.title}</div>
                         <div className="text-xs text-slate-600 truncate">{p.slug}</div>

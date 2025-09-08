@@ -1,11 +1,25 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react"
+import { API_BASE_URL } from "@/lib/api"
 
 export type User = {
+  id: string
   name: string
   email: string
   phone?: string
+  token?: string
+}
+
+type LoginResponse = {
+  token: string
+  user: Omit<User, 'token'>
+}
+
+type ErrorResponse = {
+  message: string
+  statusCode?: number
+  error?: string
 }
 
 type AuthContextType = {
@@ -18,47 +32,85 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const STORAGE_KEY = "hoe_auth_user_v1"
 
-const DEMO = {
-  email: "demo@hoe.test",
-  password: "Demo@123",
-  name: "Demo User",
-}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    try {
-      const raw = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null
-      if (raw) setUser(JSON.parse(raw))
-    } catch {}
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    if (user) localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-    else localStorage.removeItem(STORAGE_KEY)
-  }, [user])
 
   const login = async (email: string, password: string) => {
-    // Demo credentials
-    if (email === DEMO.email && password === DEMO.password) {
-      setUser({ name: DEMO.name, email: DEMO.email })
-      return { ok: true as const }
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json() as LoginResponse | ErrorResponse;
+
+      if (!response.ok) {
+        const errorData = data as ErrorResponse;
+        return { 
+          ok: false as const, 
+          error: errorData.message || 'Login failed. Please check your credentials and try again.' 
+        };
+      }
+
+      const { token, user } = data as LoginResponse;
+      const userData = { ...user, token };
+      setUser(userData);
+      
+      return { ok: true as const };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { 
+        ok: false as const, 
+        error: 'An error occurred during login. Please try again later.' 
+      };
     }
-    // Very basic fake validation for demo
-    return { ok: false as const, error: "Invalid credentials" }
   }
 
   const register = async (name: string, email: string, password: string) => {
-    if (!name || !email || !password) return { ok: false as const, error: "All fields are required" }
-    // Accept any inputs for demo and sign user in
-    setUser({ name, email })
-    return { ok: true as const }
+    if (!name || !email || !password) {
+      return { ok: false as const, error: "All fields are required" };
+    }
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await response.json() as LoginResponse | ErrorResponse;
+
+      if (!response.ok) {
+        const errorData = data as ErrorResponse;
+        return { 
+          ok: false as const, 
+          error: errorData.message || 'Registration failed. Please try again.' 
+        };
+      }
+
+      const { token, user } = data as LoginResponse;
+      const userData = { ...user, token };
+      setUser(userData);
+      
+      return { ok: true as const };
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { 
+        ok: false as const, 
+        error: 'An error occurred during registration. Please try again later.' 
+      };
+    }
   }
 
   const logout = () => setUser(null)

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Product } from '@/data/products'
 import Link from 'next/link'
+import { formatINR } from '@/lib/utils'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -39,12 +40,12 @@ export default function ProductsPage() {
               <img src={product.images[0]} alt={product.title} className="w-full h-64 object-cover" />
               <div className="p-4">
                 <h2 className="text-lg font-semibold">{product.title}</h2>
-                <p className="text-gray-600 mt-2">${product.price}</p>
+                <p className="text-gray-600 mt-2">{formatINR(product.price)}</p>
               </div>
             </div>
           </Link>
         ))}
-      </div>
+      </div>  
     </div>
   )
 }

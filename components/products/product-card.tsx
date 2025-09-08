@@ -25,14 +25,17 @@ export function ProductCard({ product }: { product: Product }) {
   useEffect(() => {
     const fetchBrandAndCategory = async () => {
       try {
-        // Fetch brand
-        const brandRes = await fetch(`https://hoe-be.onrender.com/api/brands/${product.brandId}`);
-        const brandData = await brandRes.json();
-        if (brandData.success) setBrand(brandData.data);
+        const [brandRes, categoryRes] = await Promise.all([
+          fetch(`https://hoe-be.onrender.com/api/brands/${product.brandId}`),
+          fetch(`https://hoe-be.onrender.com/api/categories/${product.categoryId}`)
+        ]);
 
-        // Fetch category
-        const categoryRes = await fetch(`https://hoe-be.onrender.com/api/categories/${product.categoryId}`);
-        const categoryData = await categoryRes.json();
+        const [brandData, categoryData] = await Promise.all([
+          brandRes.json(),
+          categoryRes.json()
+        ]);
+
+        if (brandData.success) setBrand(brandData.data);
         if (categoryData.success) setCategory(categoryData.data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -47,55 +50,71 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <div className="h-full group">
       <Link href={`/products/${product._id}`} className="block h-full">
-        <Card className="h-full flex flex-col overflow-hidden transition-all duration-200 hover:shadow-md hover:ring-2 hover:ring-blue-500">
-          <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
-            <CardTitle className="text-pretty text-base sm:text-lg font-medium leading-snug line-clamp-2 h-12 flex items-center">
-              {product.title}
+        <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 hover:ring-1 hover:ring-blue-200 border-0 shadow-sm bg-white">
+          {/* Header Section - Title and Meta Info */}
+          <CardHeader className="p-3 md:p-4 pb-2 space-y-2">
+            <CardTitle className="text-sm md:text-base font-semibold leading-tight text-slate-900">
+              <span className="line-clamp-2 min-h-[2.5rem] md:min-h-[3rem] flex items-start">
+                {product.title}
+              </span>
             </CardTitle>
-            <div className="min-h-[20px] text-xs sm:text-sm text-slate-500 mt-1">
-              {loading ? (
-                <div className="h-4 bg-gray-100 rounded w-3/4 animate-pulse"></div>
-              ) : (
-                <span className="line-clamp-1">
-                  {[brand?.name, category?.name].filter(Boolean).join(' • ') || ' '}
-                </span>
-              )}
+            
+            {/* Brand and Category Info */}
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <div className="flex-1 min-w-0">
+                {loading ? (
+                  <div className="h-3 bg-slate-100 rounded w-3/4 animate-pulse"></div>
+                ) : (
+                  <span className="truncate block">
+                    {[brand?.name, category?.name].filter(Boolean).join(' • ') || 'Product'}
+                  </span>
+                )}
+              </div>
             </div>
           </CardHeader>
-          <CardContent className="p-4 sm:p-5 pt-0 pb-3 flex-grow">
-            <div className="relative w-full aspect-square bg-gray-50 rounded-md overflow-hidden mb-3 sm:mb-4">
+
+          {/* Content Section - Full Width Image Only */}
+          <CardContent className="p-0 flex-grow flex flex-col">
+            {/* Full Width Product Image */}
+            <div className="relative w-full aspect-square bg-slate-50 overflow-hidden flex-shrink-0">
               <img
                 src={product.images?.[0] || "/placeholder.svg"}
                 alt={product.title}
-                className="w-full h-full object-contain p-2 sm:p-4 transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
+                  // Prevent infinite loop if placeholder also 404s
+                  target.onerror = null;
                   target.src = "/placeholder.svg";
                 }}
               />
             </div>
-            <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 sm:line-clamp-3 min-h-[2.5rem] sm:min-h-[3.75rem]">
-              {product.description || 'No description available.'}
-            </p>
           </CardContent>
-          <CardFooter className="p-4 sm:p-5 pt-0 mt-auto">
-            <div className="w-full flex items-center justify-between">
-              <div className="font-bold text-base sm:text-lg text-slate-900">
-                {formatINR(product.price || 0)}
+
+          {/* Footer Section - Price and Action */}
+          <CardFooter className="p-3 md:p-4 pt-3 mt-auto border-t border-slate-100">
+            <div className="w-full flex items-center justify-between gap-3">
+              {/* Price */}
+              <div className="flex-shrink-0">
+                <span className="font-bold text-base md:text-lg text-slate-900 tracking-tight">
+                  {formatINR(product.price || 0)}
+                </span>
               </div>
+
+              {/* Add to Cart Button */}
               <Button 
-                asChild
                 size="sm" 
-                className="bg-slate-800 hover:bg-slate-700 text-xs sm:text-sm px-3 sm:px-4 h-8 sm:h-9 z-10"
+                className="bg-slate-900 hover:bg-slate-800 active:bg-slate-700 text-white text-xs md:text-sm px-3 md:px-4 h-8 md:h-9 font-medium transition-colors duration-200 flex-shrink-0"
                 aria-label={`Add ${product.title} to cart`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   // Add to cart logic here
+                  console.log('Adding to cart:', product._id);
                 }}
               >
-                <span>Add to cart</span>
+                Add to cart
               </Button>
             </div>
           </CardFooter>

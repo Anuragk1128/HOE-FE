@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "./auth-provider"
+import { Loader2 } from "lucide-react"
 
 export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const { login, register } = useAuth()
@@ -15,8 +16,8 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
   const [error, setError] = useState<string | null>(null)
 
   // Login state
-  const [loginEmail, setLoginEmail] = useState("demo@hoe.test")
-  const [loginPassword, setLoginPassword] = useState("Demo@123")
+  const [loginEmail, setLoginEmail] = useState("")
+  const [loginPassword, setLoginPassword] = useState("")
 
   // Register state
   const [name, setName] = useState("")
@@ -27,20 +28,38 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
     e.preventDefault()
     setLoading(true)
     setError(null)
-    const res = await login(loginEmail, loginPassword)
-    setLoading(false)
-    if (res.ok) onOpenChange(false)
-    else setError(res.error)
+    try {
+      const res = await login(loginEmail, loginPassword)
+      if (res.ok) {
+        onOpenChange(false)
+      } else {
+        setError(res.error || 'Login failed. Please try again.')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      setError('An unexpected error occurred. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    const res = await register(name, email, password)
-    setLoading(false)
-    if (res.ok) onOpenChange(false)
-    else setError(res.error)
+    try {
+      const res = await register(name, email, password)
+      if (res.ok) {
+        onOpenChange(false)
+      } else {
+        setError(res.error || 'Registration failed. Please try again.')
+      }
+    } catch (error) {
+      console.error('Registration error:', error)
+      setError('An unexpected error occurred. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -49,7 +68,7 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
         <DialogHeader>
           <DialogTitle>{tab === "login" ? "Login" : "Create account"}</DialogTitle>
           <DialogDescription>
-            {tab === "login" ? "Use demo credentials to explore: demo@hoe.test / Demo@123" : "Sign up to save your details."}
+            {tab === "login" ? "Sign in to your account" : "Create a new account to get started"}
           </DialogDescription>
         </DialogHeader>
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full">
@@ -70,7 +89,14 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
               </div>
               {error && <p className="text-sm text-red-600">{error}</p>}
               <Button type="submit" className="w-full bg-amber-400 text-slate-900 hover:bg-amber-300" disabled={loading}>
-                {loading ? "Signing in..." : "Sign in"}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign in"
+                )}
               </Button>
             </form>
           </TabsContent>
@@ -91,7 +117,14 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
               </div>
               {error && <p className="text-sm text-red-600">{error}</p>}
               <Button type="submit" className="w-full bg-amber-400 text-slate-900 hover:bg-amber-300" disabled={loading}>
-                {loading ? "Creating account..." : "Create account"}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  "Create account"
+                )}
               </Button>
             </form>
           </TabsContent>

@@ -278,6 +278,53 @@ export async function createProduct(payload: CreateProductInput): Promise<AdminP
   return (data as any).data ?? (data as AdminProduct);
 }
 
+export type UpdateProductPayload = {
+  title?: string;
+  slug?: string;
+  description?: string;
+  images?: string[];
+  price?: number;
+  compareAtPrice?: number;
+  attributes?: Record<string, unknown>;
+  stock?: number;
+  status?: string;
+  tags?: string[];
+};
+
+export async function updateProduct(params: {
+  brandId: string;
+  categoryId: string;
+  subcategoryId: string;
+  productId: string;
+  payload: UpdateProductPayload;
+}): Promise<AdminProduct> {
+  const token = getAdminToken();
+  if (!token) throw new Error("Not authenticated");
+  const { brandId, categoryId, subcategoryId, productId, payload } = params;
+  const res = await fetch(
+    `${API_BASE_URL}/admin/brands/${encodeURIComponent(brandId)}/categories/${encodeURIComponent(categoryId)}/subcategories/${encodeURIComponent(subcategoryId)}/products/${encodeURIComponent(productId)}`,
+    {
+      method: "PATCH",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!res.ok) {
+    let message = "Failed to update product";
+    try {
+      const err = (await res.json()) as { message?: string; error?: string };
+      message = err.message || err.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+  const data = (await res.json()) as { data?: AdminProduct } | AdminProduct;
+  return (data as any).data ?? (data as AdminProduct);
+}
+
 export async function adminLogin(email: string, password: string): Promise<AdminLoginResponse> {
   const res = await fetch(`${API_BASE_URL}/auth/admin/login`, {
     method: "POST",

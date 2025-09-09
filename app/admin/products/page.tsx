@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { fetchBrands, type Brand, fetchCategoriesByBrandSlug, type Category, fetchSubcategoriesByBrandAndCategorySlug, type Subcategory, fetchAdminProducts, type AdminProduct, createProduct } from "@/lib/api"
+import { fetchBrands, type Brand, fetchCategoriesByBrandSlug, type Category, fetchSubcategoriesByBrandAndCategorySlug, type Subcategory, fetchAdminProducts, type AdminProduct, createProduct, updateProduct } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 
 export default function AdminProductsPage() {
@@ -20,7 +20,9 @@ export default function AdminProductsPage() {
   const [error, setError] = useState<string | null>(null)
   const [q, setQ] = useState("")
   const [creating, setCreating] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const formRef = useRef<HTMLFormElement | null>(null)
   const [title, setTitle] = useState("")
   const [slug, setSlug] = useState("")
   const [description, setDescription] = useState("")
@@ -182,6 +184,47 @@ export default function AdminProductsPage() {
                         <div className="text-xs text-slate-600 mt-1 truncate">
                           {p.brandId.name} • {p.categoryId.name} • {p.subcategoryId.name}
                         </div>
+                        <div className="mt-2 flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              // populate form with product data
+                              setEditingProduct(p)
+                              // ensure filters reflect the product being edited
+                              setBrandSlug(p.brandId.slug)
+                              setCategorySlug(p.categoryId.slug)
+                              setSubcategorySlug(p.subcategoryId.slug)
+                              setTitle(p.title || "")
+                              setSlug(p.slug || "")
+                              setDescription(p.description || "")
+                              setImage((p.images || []).join(", "))
+                              setPrice(p.price || 0)
+                              setCompareAtPrice(p.compareAtPrice || 0)
+                              setStock(p.stock || 0)
+                              setStatus(p.status || "active")
+                              setTags((p.tags || []).join(", "))
+                              const attrs = (p.attributes || {}) as Record<string, unknown>
+                              const rows: Array<{ key: string; type: 'text' | 'list'; value: string }> = []
+                              Object.entries(attrs).forEach(([k, v]) => {
+                                if (Array.isArray(v)) {
+                                  rows.push({ key: k, type: 'list', value: (v as string[]).join(", ") })
+                                } else if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+                                  rows.push({ key: k, type: 'text', value: String(v) })
+                                }
+                              })
+                              setAttributesRows(rows.length ? rows : [{ key: "", type: "text", value: "" }])
+                              setSuccess(null)
+                              setError(null)
+                              // scroll to form for better UX
+                              setTimeout(() => {
+                                formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                              }, 0)
+                            }}
+                          >
+                            Edit
+                          </Button>
+                        </div>
                       </div>
                     </li>
                   ))}
@@ -192,27 +235,29 @@ export default function AdminProductsPage() {
 
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle>Create Product</CardTitle>
+              <CardTitle>{editingProduct ? `Edit Product` : `Create Product`}</CardTitle>
+              {editingProduct && (
+                <div className="text-sm text-slate-600">Editing: <span className="font-medium">{editingProduct.title}</span></div>
+              )}
             </CardHeader>
             <CardContent>
               <form
+                ref={formRef}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
                 onSubmit={async (e) => {
                   e.preventDefault()
                   setError(null)
                   setSuccess(null)
-                  if (!selectedBrand || !selectedCategory || !subcategorySlug) {
+                  // only enforce selection when creating new
+                  if (!editingProduct && (!selectedBrand || !selectedCategory || !subcategorySlug)) {
                     setError("Select brand, category and subcategory first")
                     return
                   }
                   try {
                     setCreating(true)
                     const sub = subcategories.find((s) => s.slug === subcategorySlug)
-                    if (!sub) throw new Error("Subcategory not found")
-                    await createProduct({
-                      brandId: selectedBrand._id,
-                      categoryId: selectedCategory._id,
-                      subcategoryId: sub._id,
+                    if (!editingProduct && !sub) throw new Error("Subcategory not found")
+                    const payloadCommon = {
                       title,
                       slug,
                       description,
@@ -245,7 +290,24 @@ export default function AdminProductsPage() {
                         .split(",")
                         .map((t) => t.trim())
                         .filter(Boolean),
-                    })
+                    }
+
+                    if (editingProduct) {
+                      await updateProduct({
+                        brandId: editingProduct.brandId._id,
+                        categoryId: editingProduct.categoryId._id,
+                        subcategoryId: editingProduct.subcategoryId._id,
+                        productId: editingProduct._id,
+                        payload: payloadCommon,
+                      })
+                    } else {
+                      await createProduct({
+                        brandId: selectedBrand._id,
+                        categoryId: selectedCategory._id,
+                        subcategoryId: sub!._id,
+                        ...payloadCommon,
+                      })
+                    }
                     setTitle("")
                     setSlug("")
                     setDescription("")
@@ -256,11 +318,16 @@ export default function AdminProductsPage() {
                     setStatus("active")
                     setTags("")
                     setAttributesRows([{ key: "", type: "text", value: "" }])
-                    const items = await fetchAdminProducts({ brand: brandSlug, category: categorySlug, subcategory: subcategorySlug })
+                    setEditingProduct(null)
+                    // refresh list using either current filters or the edited product's slugs
+                    const refreshBrand = editingProduct ? editingProduct.brandId.slug : brandSlug
+                    const refreshCategory = editingProduct ? editingProduct.categoryId.slug : categorySlug
+                    const refreshSubcat = editingProduct ? editingProduct.subcategoryId.slug : subcategorySlug
+                    const items = await fetchAdminProducts({ brand: refreshBrand, category: refreshCategory, subcategory: refreshSubcat })
                     setProducts(items)
-                    setSuccess("Product created successfully")
+                    setSuccess(editingProduct ? "Product updated successfully" : "Product created successfully")
                   } catch (err: any) {
-                    setError(err?.message || "Failed to create product")
+                    setError(err?.message || (editingProduct ? "Failed to update product" : "Failed to create product"))
                   } finally {
                     setCreating(false)
                   }
@@ -371,9 +438,34 @@ export default function AdminProductsPage() {
                 {error && <div className="md:col-span-2 text-sm text-red-600">{error}</div>}
                 {success && <div className="md:col-span-2 text-sm text-green-600">{success}</div>}
                 <div className="md:col-span-2">
-                  <Button type="submit" disabled={creating}>
-                    {creating ? "Creating..." : "Create product"}
-                  </Button>
+                  <div className="flex items-center gap-3">
+                    <Button type="submit" disabled={creating}>
+                      {creating ? (editingProduct ? "Updating..." : "Creating...") : (editingProduct ? "Update product" : "Create product")}
+                    </Button>
+                    {editingProduct && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => {
+                          setEditingProduct(null)
+                          setTitle("")
+                          setSlug("")
+                          setDescription("")
+                          setImage("")
+                          setPrice(0)
+                          setCompareAtPrice(0)
+                          setStock(0)
+                          setStatus("active")
+                          setTags("")
+                          setAttributesRows([{ key: "", type: "text", value: "" }])
+                          setError(null)
+                          setSuccess(null)
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </form>
             </CardContent>

@@ -278,6 +278,42 @@ export async function createProduct(payload: CreateProductInput): Promise<AdminP
   return (data as any).data ?? (data as AdminProduct);
 }
 
+// Storefront: fetch products by brand/category/subcategory slugs via nested endpoint
+export type SlugProduct = {
+  _id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  images: string[];
+  price: number;
+  compareAtPrice?: number;
+  stock: number;
+  status: string;
+  tags?: string[];
+  attributes?: Record<string, unknown>;
+  brandId: string | { _id: string; name: string; slug: string };
+  categoryId: { _id: string; name: string; slug: string };
+  subcategoryId: { _id: string; name: string; slug: string };
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function fetchProductsBySlugs(params: {
+  brandSlug: string;
+  categorySlug: string;
+  subcategorySlug: string;
+}): Promise<SlugProduct[]> {
+  const { brandSlug, categorySlug, subcategorySlug } = params;
+  const url = `${API_BASE_URL}/brands/${encodeURIComponent(brandSlug)}/categories/${encodeURIComponent(categorySlug)}/subcategories/${encodeURIComponent(subcategorySlug)}/products`;
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) throw new Error('Failed to fetch products by slugs');
+  const data = (await res.json()) as { data?: SlugProduct[] } | SlugProduct[];
+  return Array.isArray(data) ? (data as SlugProduct[]) : (data.data ?? []);
+}
+
 export type UpdateProductPayload = {
   title?: string;
   slug?: string;

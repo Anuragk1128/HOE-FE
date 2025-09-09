@@ -140,6 +140,29 @@ export function SiteHeader({
                         Brands
                       </Link>
                     </SheetClose>
+                    <div className="pt-2 border-t mt-2">
+                      <div className="text-xs uppercase text-slate-500 mb-2">Collections</div>
+                      <SheetClose asChild>
+                        <Link href="/collections/sports-wear" className="block py-2">
+                          Sports Wear
+                        </Link>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <Link href="/collections/gymwear" className="block py-2">
+                          Gymwear
+                        </Link>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <Link href="/collections/necklaces" className="block py-2">
+                          Necklaces
+                        </Link>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <Link href="/collections/earrings" className="block py-2">
+                          Earrings
+                        </Link>
+                      </SheetClose>
+                    </div>
                     {user && (
                       <SheetClose asChild>
                         <Link href="/orders" className="block py-2">
@@ -185,6 +208,10 @@ export function SiteHeader({
               <Link href="/brands" className="hover:underline">Brands</Link>
               <Link href="/products" className="hover:underline">Products</Link>
               <Link href="/wishlist" className="hover:underline">Wishlist</Link>
+              <Link href="/collections/sports-wear" className="hover:underline">Sports Wear</Link>
+              <Link href="/collections/gymwear" className="hover:underline">Gymwear</Link>
+              <Link href="/collections/necklaces" className="hover:underline">Necklaces</Link>
+              <Link href="/collections/earrings" className="hover:underline">Earrings</Link>
               {user && <Link href="/orders" className="hover:underline">My Orders</Link>}
             </nav>
 

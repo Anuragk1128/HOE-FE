@@ -131,6 +131,11 @@ export function SiteHeader({
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
+                      <Link href="/wishlist" className="block py-2">
+                        Wishlist
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
                       <Link href="/brands" className="block py-2">
                         Brands
                       </Link>
@@ -179,6 +184,7 @@ export function SiteHeader({
               <Link href="/categories" className="hover:underline">Categories</Link>
               <Link href="/brands" className="hover:underline">Brands</Link>
               <Link href="/products" className="hover:underline">Products</Link>
+              <Link href="/wishlist" className="hover:underline">Wishlist</Link>
               {user && <Link href="/orders" className="hover:underline">My Orders</Link>}
             </nav>
 

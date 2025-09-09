@@ -6,6 +6,7 @@ import './globals.css'
 import { AppChrome } from '@/components/app-chrome'
 import { AuthProvider } from '@/components/auth/auth-provider'
 import { CartProvider } from '@/contexts/cart-context'
+import { WishlistProvider } from '@/contexts/wishlist-context'
 
 export const metadata: Metadata = {
   title: 'v0 App',
@@ -23,7 +24,9 @@ export default function RootLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <AuthProvider>
           <CartProvider>
-            <AppChrome>{children}</AppChrome>
+            <WishlistProvider>
+              <AppChrome>{children}</AppChrome>
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
         <Analytics />

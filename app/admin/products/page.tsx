@@ -302,8 +302,8 @@ export default function AdminProductsPage() {
                       })
                     } else {
                       await createProduct({
-                        brandId: selectedBrand._id,
-                        categoryId: selectedCategory._id,
+                        brandId: selectedBrand!._id,
+                        categoryId: selectedCategory!._id,
                         subcategoryId: sub!._id,
                         ...payloadCommon,
                       })

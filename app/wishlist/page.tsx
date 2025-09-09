@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useWishlist } from '@/contexts/wishlist-context';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -14,11 +13,7 @@ export default function WishlistPage() {
   console.log('Wishlist Page - loading state:', loading);
   console.log('Wishlist Page - error state:', error);
   
-  // Check if user is authenticated
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    console.log('Auth token in localStorage:', token ? 'Exists' : 'Not found');
-  }, []);
+  // Token logging removed; auth handled via context
 
   if (error) {
     return (

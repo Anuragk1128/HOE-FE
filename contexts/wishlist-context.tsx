@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useAuth } from '@/components/auth/auth-provider';
 import { toast } from 'sonner';
 
 interface Product {
@@ -37,15 +38,12 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  const { user } = useAuth();
 
   const fetchWishlist = async () => {
     try {
       setLoading(true);
-      console.log('Fetching wishlist data...');
-      const token = localStorage.getItem('token');
-      console.log('Token from localStorage:', token ? 'Token exists' : 'No token found');
-      
-      if (!token) {
+      if (!user?.token) {
         console.log('No auth token found, clearing wishlist');
         setWishlist([]);
         return;
@@ -53,7 +51,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
       const response = await fetch('https://hoe-be.onrender.com/api/wishlist', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${user.token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -78,8 +76,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const addToWishlist = async (productId: string) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      if (!user?.token) {
         toast.error('Please login to add items to wishlist');
         return;
       }
@@ -87,7 +84,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       const response = await fetch('https://hoe-be.onrender.com/api/wishlist', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${user.token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ productId }),
@@ -107,8 +104,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const removeFromWishlist = async (wishlistItemId: string) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      if (!user?.token) {
         toast.error('Please login to modify wishlist');
         return;
       }
@@ -116,7 +112,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       const response = await fetch(`https://hoe-be.onrender.com/api/wishlist/${wishlistItemId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${user.token}`,
         },
       });
 
@@ -138,7 +134,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchWishlist();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.token]);
 
   return (
     <WishlistContext.Provider

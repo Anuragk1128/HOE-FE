@@ -131,11 +131,7 @@ export function SiteHeader({
                         Categories
                       </Link>
                     </SheetClose>
-                    <SheetClose asChild>
-                      <Link href="/wishlist" className="block py-2">
-                        Wishlist
-                      </Link>
-                    </SheetClose>
+                    
                     <SheetClose asChild>
                       <Link href="/brands" className="block py-2">
                         Brands
@@ -209,7 +205,7 @@ export function SiteHeader({
               <Link href="/categories" className="hover:underline">Categories</Link>
               <Link href="/brands" className="hover:underline">Brands</Link>
               <Link href="/products" className="hover:underline">Products</Link>
-              <Link href="/wishlist" className="hover:underline">Wishlist</Link>
+
               <Link href="/collections/sports-wear" className="hover:underline">Sports Wear</Link>
               <Link href="/collections/gymwear" className="hover:underline">Gymwear</Link>
               <Link href="/collections/necklaces" className="hover:underline">Necklaces</Link>

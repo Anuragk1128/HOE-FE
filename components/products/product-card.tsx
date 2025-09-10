@@ -1,5 +1,4 @@
 "use client"
-
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -58,7 +57,7 @@ export function ProductCard({ product }: { product: Product }) {
                 {product.title}
               </span>
             </CardTitle>
-            
+
             {/* Brand and Category Info */}
             <div className="flex items-center justify-between text-xs text-slate-500">
               <div className="flex-1 min-w-0">
@@ -103,8 +102,8 @@ export function ProductCard({ product }: { product: Product }) {
               </div>
 
               {/* Add to Cart Button */}
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 className="bg-slate-900 hover:bg-slate-800 active:bg-slate-700 text-white text-xs md:text-sm px-3 md:px-4 h-8 md:h-9 font-medium transition-colors duration-200 flex-shrink-0"
                 aria-label={`Add ${product.title} to cart`}
                 onClick={(e) => {

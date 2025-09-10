@@ -1,11 +1,11 @@
 'use client';
 import { Mail, Gift, Bell, Shield } from 'lucide-react';
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 
 const Newsletter = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState<string>('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Handle newsletter signup
     console.log('Newsletter signup:', email);
@@ -26,14 +26,14 @@ const Newsletter = () => {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               placeholder="Enter your email"
-              className="flex-1 px-6 py-4 rounded-l-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
+              className="flex-1 px-6 py-4 rounded-l-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
               required
             />
             <button
               type="submit"
-              className="bg-yellow-500 hover:bg-yellow-400 text-gray-900 font-semibold px-8 py-4 rounded-r-full transition-colors duration-200"
+              className="bg-amber-500 text-white px-6 py-3 rounded-r-lg hover:bg-amber-600 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
             >
               Subscribe
             </button>

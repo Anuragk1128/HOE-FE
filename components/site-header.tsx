@@ -1,5 +1,5 @@
 "use client"
-
+import { Heart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useMemo, useState } from "react"
@@ -22,11 +22,15 @@ export function SiteHeader({
 
 
   return (
-    <header className="w-full border-b border-slate-200/40">
-      {/* Top ribbon: search and auth */}
-      <div className="bg-slate-800 text-white">
+    <header className="w-full relative">
+      {/* Top ribbon: logo, search and auth - Sticky */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-800 text-white shadow-md">
         <div className="mx-auto max-w-6xl px-4">
-          <div className="flex items-center justify-between py-2">
+          <div className="flex items-center justify-between py-1">
+            {/* Logo - Visible on all screen sizes */}
+            <Link href="/" aria-label="Home" className="flex items-center mr-4">
+              <Image src="/logo.png" alt="Logo" width={60} height={24} priority />
+            </Link>
             {/* Desktop search */}
             <form
               className="hidden md:flex items-center gap-2 flex-1 max-w-2xl"
@@ -43,8 +47,8 @@ export function SiteHeader({
                 placeholder="Search products..."
                 className="h-8 bg-white/10 border-white/20 text-white placeholder:text-white/70"
               />
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 size="sm"
                 className="bg-amber-400 text-slate-900 hover:bg-amber-300 h-8"
               >
@@ -56,29 +60,29 @@ export function SiteHeader({
             <div className="hidden md:flex items-center gap-2">
               {user ? (
                 <>
-                  <Button variant="ghost" size="sm" asChild className="text-white hover:bg-white/10 h-8">
+                  <Button variant="ghost" size="sm" asChild className="text-white hover:bg-white/10 h-7 text-sm">
                     <Link href="/account" className="flex items-center">
-                      <UserIcon className="w-4 h-4 mr-1" />
+                      <UserIcon className="w-3.5 h-3.5 mr-1" />
                       <span>My Account</span>
                     </Link>
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => logout()}
-                    className="text-white hover:bg-white/10 h-8"
+                    className="text-white hover:bg-white/10 h-7 text-sm"
                   >
                     <span>Sign Out</span>
                   </Button>
                 </>
               ) : (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setAuthOpen(true)}
-                  className="text-white hover:bg-white/10 h-8"
+                  className="text-white hover:bg-white/10 h-7 text-sm"
                 >
-                  <LogIn className="w-4 h-4 mr-1" />
+                  <LogIn className="w-3.5 h-3.5 mr-1" />
                   <span>Sign In</span>
                 </Button>
               )}
@@ -87,15 +91,12 @@ export function SiteHeader({
         </div>
       </div>
 
-      {/* Main bar: logo, categories */}
-      <div className="bg-white">
+      {/* Main bar: categories - Non-sticky */}
+      <div className="bg-white border-b border-slate-200/40 pt-12">
         <div className="mx-auto max-w-6xl px-4">
-          <div className="flex items-center justify-between py-3">
-            {/* Left group: logo + mobile trigger */}
+          <div className="flex items-center justify-between py-2">
+            {/* Left group: mobile trigger */}
             <div className="flex items-center gap-3 md:gap-5">
-              <Link href="/" aria-label="Home" className="flex items-center">
-                <Image src="/logo.png" alt="Logo" width={80} height={32} priority />
-              </Link>
 
               {/* Mobile menu trigger */}
               <Sheet>
@@ -170,6 +171,7 @@ export function SiteHeader({
                         </Link>
                       </SheetClose>
                     )}
+
                     <div className="pt-4 border-t mt-4">
                       <div className="text-xs uppercase text-slate-500 mb-2">Account</div>
                       {user ? (
@@ -178,8 +180,8 @@ export function SiteHeader({
                             <Link href="/profile" className="block py-1">Profile</Link>
                           </SheetClose>
                           <SheetClose asChild>
-                            <button 
-                              onClick={() => logout()} 
+                            <button
+                              onClick={() => logout()}
                               className="text-left w-full py-1 hover:underline"
                             >
                               Sign Out
@@ -188,7 +190,7 @@ export function SiteHeader({
                         </div>
                       ) : (
                         <SheetClose asChild>
-                          <button 
+                          <button
                             onClick={() => setAuthOpen(true)}
                             className="text-left w-full py-1 hover:underline"
                           >
@@ -207,7 +209,7 @@ export function SiteHeader({
               <Link href="/categories" className="hover:underline">Categories</Link>
               <Link href="/brands" className="hover:underline">Brands</Link>
               <Link href="/products" className="hover:underline">Products</Link>
-              <Link href="/wishlist" className="hover:underline">Wishlist</Link>
+
               <Link href="/collections/sports-wear" className="hover:underline">Sports Wear</Link>
               <Link href="/collections/gymwear" className="hover:underline">Gymwear</Link>
               <Link href="/collections/necklaces" className="hover:underline">Necklaces</Link>
@@ -215,8 +217,11 @@ export function SiteHeader({
               {user && <Link href="/orders" className="hover:underline">My Orders</Link>}
             </nav>
 
-            {/* Right group: cart */}
-            <div className="flex items-center">
+            {/* Right group: cart and wishlist */}
+            <div className="flex items-center gap-4">
+              <Link href="/wishlist" className="text-slate-700 hover:text-slate-900 transition-colors">
+                <Heart className="h-5 w-5" />
+              </Link>
               <CartIcon />
             </div>
           </div>
@@ -237,8 +242,8 @@ export function SiteHeader({
               placeholder="Search products..."
               className="h-10 flex-1"
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="bg-amber-400 text-slate-900 hover:bg-amber-300 h-10"
             >
               <Search className="h-4 w-4" />

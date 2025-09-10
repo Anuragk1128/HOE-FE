@@ -6,6 +6,7 @@ import { BrandStory } from "@/components/sections/brand-story"
 import { Testimonials } from "@/components/sections/testimonials"
 import { Features } from "@/components/sections/features"
 import Newsletter from "@/components/newsletter"
+import Cards from "@/components/card"
 
 export default function Page() {
   return (
@@ -26,6 +27,7 @@ export default function Page() {
       
       {/* Deals Section */}
       <DealsSection />
+      <Cards/>
       
       {/* Product Categories */}
       <section className="py-16 px-4 bg-gray-50">

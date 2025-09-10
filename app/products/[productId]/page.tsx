@@ -9,6 +9,7 @@ import { useAuth } from '@/components/auth/auth-provider'
 import { AuthModal } from '@/components/auth/auth-modal'
 import { toast } from 'sonner'
 import Image from 'next/image'
+import { API_BASE_URL } from '@/lib/api'
 
 interface ProductDetails extends Product {
   brand?: {
@@ -81,32 +82,48 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
     }
   }, [resolvedParams?.productId])
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return
-    
-    if (!user) {
+    if (!user?.token) {
       setShowAuthModal(true)
       return
     }
-    
-    addToCart({
-      name: product.title,
-      price: product.price,
-      image: product.images[0],
-      quantity,
-      productId: product._id
-    })
-    
-    toast.success('Added to cart')
+    try {
+      const res = await fetch(`${API_BASE_URL}/cart/${product._id}`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ quantity }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        const message = data?.message || data?.error || 'Failed to add to cart'
+        toast.error(message)
+        return
+      }
+      // Sync local cart for immediate UX
+      addToCart({
+        name: product.title,
+        price: product.price,
+        image: product.images[0],
+        quantity,
+        productId: product._id,
+      })
+      toast.success('Added to cart')
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to add to cart')
+    }
   }
 
-  const handleBuyNow = () => {
-    if (!user) {
+  const handleBuyNow = async () => {
+    if (!user?.token) {
       setShowAuthModal(true)
       return
     }
-    
-    handleAddToCart()
+    await handleAddToCart()
     router.push('/cart')
   }
 

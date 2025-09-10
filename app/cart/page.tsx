@@ -6,19 +6,55 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { formatINR } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useAuth } from '@/components/auth/auth-provider'
+import { API_BASE_URL } from '@/lib/api'
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, cartTotal, itemCount, clearCart } = useCart()
   const router = useRouter()
   const [isClient, setIsClient] = useState(false)
+  const { user } = useAuth()
+  const [serverCart, setServerCart] = useState<Array<{ _id: string; quantity: number; product: { _id: string; title: string; slug: string; images: string[]; price: number } }>>([])
+  const [loadingServerCart, setLoadingServerCart] = useState(false)
   const shippingFee = cart.length > 0 ? 0 : 0 // Free shipping for now
-  const tax = cartTotal * 0.1 // 10% tax
-  const orderTotal = cartTotal + shippingFee + tax
+  const computedSubtotal = serverCart.length
+    ? serverCart.reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0)
+    : cartTotal
+  const tax = computedSubtotal * 0.1 // 10% tax
+  const orderTotal = computedSubtotal + shippingFee + tax
 
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  useEffect(() => {
+    const fetchServerCart = async () => {
+      if (!user?.token) {
+        setServerCart([])
+        return
+      }
+      try {
+        setLoadingServerCart(true)
+        const res = await fetch(`${API_BASE_URL}/cart`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${user.token}`,
+          },
+        })
+        if (!res.ok) {
+          setServerCart([])
+          return
+        }
+        const data = await res.json()
+        const list = Array.isArray(data) ? data : []
+        setServerCart(list)
+      } finally {
+        setLoadingServerCart(false)
+      }
+    }
+    fetchServerCart()
+  }, [user?.token])
 
   if (!isClient) {
     return (
@@ -52,7 +88,9 @@ export default function CartPage() {
     )
   }
 
-  if (cart.length === 0) {
+  const effectiveItemCount = serverCart.length || itemCount
+
+  if (!loadingServerCart && serverCart.length === 0 && cart.length === 0) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
         <div className="max-w-md mx-auto">
@@ -84,18 +122,18 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Cart ({itemCount} {itemCount === 1 ? 'item' : 'items'})</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Cart ({effectiveItemCount} {effectiveItemCount === 1 ? 'item' : 'items'})</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-6">
-          {cart.map((item) => (
-            <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center p-4 border rounded-lg">
+          {(serverCart.length ? serverCart : cart).map((item: any) => (
+            <div key={item.id || item._id || item.product?._id} className="flex flex-col sm:flex-row items-start sm:items-center p-4 border rounded-lg">
               <div className="relative w-full sm:w-24 h-24 bg-gray-100 rounded overflow-hidden">
-                {item.image && (
+                {(item.image || item.product?.images?.[0]) && (
                   <Image
-                    src={item.image}
-                    alt={item.name}
+                    src={item.image || item.product.images[0]}
+                    alt={item.name || item.product?.title || 'Product image'}
                     fill
                     className="object-cover"
                   />
@@ -105,49 +143,41 @@ export default function CartPage() {
               <div className="mt-4 sm:mt-0 sm:ml-6 flex-1 w-full">
                 <div className="flex justify-between">
                   <h3 className="text-lg font-medium text-gray-900">
-                    <Link href={`/products/${item.productId}`} className="hover:underline">
-                      {item.name}
+                    <Link href={`/products/${item.productId || item.product?._id}`} className="hover:underline">
+                      {item.name || item.product?.title}
                     </Link>
                   </h3>
-                  <p className="ml-4 font-medium text-gray-900">{formatINR(item.price)}</p>
+                  <p className="ml-4 font-medium text-gray-900">{formatINR(item.price ?? item.product?.price ?? 0)}</p>
                 </div>
                 
                 <div className="mt-2 flex items-center justify-between">
                   <div className="flex items-center border rounded-md">
-                    <button
-                      onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                      className="px-3 py-1 text-gray-600 hover:bg-gray-100"
-                    >
-                      -
-                    </button>
+                    <span className="px-3 py-1 text-gray-700">Qty</span>
                     <span className="w-8 text-center">{item.quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                      className="px-3 py-1 text-gray-600 hover:bg-gray-100"
-                    >
-                      +
-                    </button>
                   </div>
-                  
-                  <button
-                    onClick={() => removeFromCart(item.productId)}
-                    className="text-sm font-medium text-red-600 hover:text-red-500"
-                  >
-                    Remove
-                  </button>
+                  {!serverCart.length && (
+                    <button
+                      onClick={() => removeFromCart(item.productId)}
+                      className="text-sm font-medium text-red-600 hover:text-red-500"
+                    >
+                      Remove
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           ))}
           
-          <div className="flex justify-end">
-            <button
-              onClick={clearCart}
-              className="text-sm font-medium text-red-600 hover:text-red-500"
-            >
-              Clear cart
-            </button>
-          </div>
+          {!serverCart.length && (
+            <div className="flex justify-end">
+              <button
+                onClick={clearCart}
+                className="text-sm font-medium text-red-600 hover:text-red-500"
+              >
+                Clear cart
+              </button>
+            </div>
+          )}
         </div>
         
         {/* Order Summary */}
@@ -158,7 +188,7 @@ export default function CartPage() {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium">{formatINR(cartTotal)}</span>
+                <span className="font-medium">{formatINR(computedSubtotal)}</span>
               </div>
               
               <div className="flex justify-between">

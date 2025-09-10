@@ -3,16 +3,19 @@
 import { useEffect, useMemo, useState, use } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { fetchProductsBySlugs, type SlugProduct } from "@/lib/api"
+import { fetchProductsBySlugs, type SlugProduct, API_BASE_URL } from "@/lib/api"
 
-type CollectionKey = "sports-wear" | "gymwear" | "necklaces" | "earrings"
+type CollectionKey = "under-999" | "under-2000" | "under-3000" | "gymwear" | "necklaces" | "earrings" |"sportswear"
 
 // Map collection slug -> brand/category/subcategory slugs
 const COLLECTION_MAP: Record<CollectionKey, { brandSlug: string; categorySlug: string; subcategorySlug: string; title: string }> = {
-  "sports-wear": { brandSlug: "sportswear", categorySlug: "women", subcategorySlug: "sports", title: "Sports Wear" },
+  "under-999": { brandSlug: "", categorySlug: "", subcategorySlug: "", title: "Under ₹999" },
+  "under-2000": { brandSlug: "", categorySlug: "", subcategorySlug: "", title: "Under ₹2000" },
+  "under-3000": { brandSlug: "", categorySlug: "", subcategorySlug: "", title: "Under ₹3000" },
   "gymwear": { brandSlug: "sportswear", categorySlug: "men", subcategorySlug: "gym", title: "gym" },
   "necklaces": { brandSlug: "ira", categorySlug: "necklace", subcategorySlug: "round-necklace", title: "Necklaces" },
   "earrings": { brandSlug: "ira", categorySlug: "earrings", subcategorySlug: "drop-earring", title: "Earrings" },
+  "sportswear": {brandSlug: "sportswear", categorySlug:"women",subcategorySlug:"sports", title:"Sports-wear"}
 }
 
 export default function CollectionsPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -34,8 +37,18 @@ export default function CollectionsPage({ params }: { params: Promise<{ slug: st
       setLoading(true)
       setError(null)
       try {
-        const data = await fetchProductsBySlugs(config)
-        setProducts(data)
+        // Special case: Under price → fetch all and filter client-side
+        if (key === "under-999" || key === "under-2000" || key === "under-3000") {
+          const res = await fetch(`${API_BASE_URL}/products`, { headers: { Accept: 'application/json' } })
+          if (!res.ok) throw new Error('Failed to fetch products')
+          const raw = await res.json()
+          const list: SlugProduct[] = Array.isArray(raw) ? raw : (raw?.data ?? [])
+          const threshold = key === 'under-999' ? 999 : key === 'under-2000' ? 2000 : 3000
+          setProducts(list.filter((p) => Number(p?.price ?? 0) < threshold))
+        } else {
+          const data = await fetchProductsBySlugs(config)
+          setProducts(data)
+        }
       } catch (e: any) {
         setError(e?.message || "Failed to load collection")
       } finally {
@@ -45,7 +58,12 @@ export default function CollectionsPage({ params }: { params: Promise<{ slug: st
     run()
   }, [config])
 
-  const title = useMemo(() => config?.title || "Collection", [config])
+  const title = useMemo(() => {
+    if (key === 'under-999') return 'Under ₹999'
+    if (key === 'under-2000') return 'Under ₹2000'
+    if (key === 'under-3000') return 'Under ₹3000'
+    return config?.title || 'Collection'
+  }, [config, key])
 
   if (loading) return <div className="container mx-auto px-4 py-12">Loading…</div>
   if (error) return <div className="container mx-auto px-4 py-12 text-red-600">{error}</div>

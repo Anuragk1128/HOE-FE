@@ -143,7 +143,7 @@ export function SiteHeader({
                     <div className="pt-2 border-t mt-2">
                       <div className="text-xs uppercase text-slate-500 mb-2">Collections</div>
                       <SheetClose asChild>
-                        <Link href="/collections/sports-wear" className="block py-2">
+                        <Link href="/collections/sportswear" className="block py-2">
                           Sports Wear
                         </Link>
                       </SheetClose>
@@ -208,7 +208,7 @@ export function SiteHeader({
               <Link href="/brands" className="hover:underline">Brands</Link>
               <Link href="/products" className="hover:underline">Products</Link>
               <Link href="/wishlist" className="hover:underline">Wishlist</Link>
-              <Link href="/collections/sports-wear" className="hover:underline">Sports Wear</Link>
+              <Link href="/collections/sportswear" className="hover:underline">Sports Wear</Link>
               <Link href="/collections/gymwear" className="hover:underline">Gymwear</Link>
               <Link href="/collections/necklaces" className="hover:underline">Necklaces</Link>
               <Link href="/collections/earrings" className="hover:underline">Earrings</Link>

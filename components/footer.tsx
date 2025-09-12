@@ -47,106 +47,134 @@ export default function Footer() {
     fetchData()
   }, [])
   return (
-    <footer className="bg-slate-900 text-slate-200 mt-8 border-t border-slate-800" aria-labelledby="footer-heading">
+    <footer className="bg-slate-800 text-slate-100 border-t border-slate-700" aria-labelledby="footer-heading">
       <h2 id="footer-heading" className="sr-only">Footer</h2>
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand */}
-          <div>
-            <Link href="/" className="inline-flex items-center gap-2">
-              <Image src="/logo.png" alt="HOE" width={32} height={32} />
-              <span className="text-lg font-semibold tracking-wide">HOE</span>
-            </Link>
-            <p className="mt-3 text-sm text-slate-400">Quality gear and apparel curated from top brands.</p>
-            <div className="mt-4 flex items-center gap-3">
-              <Link aria-label="Follow on Twitter" href="#" className="hover:text-white">
-                <Twitter className="h-5 w-5" />
-              </Link>
-              <Link aria-label="Follow on Instagram" href="#" className="hover:text-white">
-                <Instagram className="h-5 w-5" />
-              </Link>
-              <Link aria-label="Follow on Facebook" href="#" className="hover:text-white">
-                <Facebook className="h-5 w-5" />
-              </Link>
+          <div className="col-span-2">
+            <div className="flex items-center space-x-2 mb-4">
+              <Image src="/logo.png" alt="HOE" width={40} height={40} />
+              <span className="text-2xl font-bold text-white">HOE</span>
+            </div>
+            <p className="text-sm text-slate-300 mb-6">Quality gear and apparel curated from top brands.</p>
+            <div className="flex space-x-4">
+              {[Facebook, Instagram, Twitter].map((Icon, index) => (
+                <Link
+                  key={index}
+                  href="#"
+                  className="text-slate-400 hover:text-white"
+                >
+                  <Icon className="h-5 w-5" />
+                </Link>
+              ))}
             </div>
           </div>
 
-          {/* Shop */}
+          {/* Quick Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white">Shop</h3>
-            <ul className="mt-3 space-y-2 text-sm">
+            <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Shop</h3>
+            <ul className="space-y-3">
               <li>
-                <Link href="/" className="text-slate-300 hover:text-white">Home</Link>
+                <Link href="/" className="text-sm text-slate-300 hover:text-white">Home</Link>
               </li>
               <li>
-                <Link href="/categories" className="text-slate-300 hover:text-white">Categories</Link>
+                <Link href="/categories" className="text-sm text-slate-300 hover:text-white">Categories</Link>
               </li>
               <li>
-                <Link href="/brands" className="text-slate-300 hover:text-white">Brands</Link>
+                <Link href="/brands" className="text-sm text-slate-300 hover:text-white">Brands</Link>
               </li>
             </ul>
           </div>
 
           {/* Categories */}
           <div>
-            <h3 className="text-sm font-semibold text-white">Top Categories</h3>
-            <ul className="mt-3 grid grid-cols-2 gap-2 text-sm">
+            <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Categories</h3>
+            <ul className="space-y-3">
               {loading ? (
-                // Skeleton loader while loading
-                [...Array(6)].map((_, i) => (
-                  <li key={i} className="h-5 bg-slate-800 rounded animate-pulse"></li>
+                [...Array(5)].map((_, i) => (
+                  <li key={i} className="h-4 bg-gray-200 rounded animate-pulse"></li>
                 ))
-              ) : (
-                categories.slice(0, 6).map((category) => (
+              ) : categories.length > 0 ? (
+                categories.slice(0, 5).map((category) => (
                   <li key={category._id}>
-                    <Link 
-                      href={`/categories/${category._id}`} 
-                      className="text-slate-300 hover:text-white"
+                    <Link
+                      href={`/categories/${category._id}`}
+                      className="text-sm text-slate-300 hover:text-white"
                     >
                       {category.name}
                     </Link>
                   </li>
                 ))
+              ) : (
+                <li className="text-sm text-slate-300">No categories found</li>
               )}
             </ul>
           </div>
 
-          {/* Brands / Contact */}
+          {/* Brands */}
           <div>
-            <h3 className="text-sm font-semibold text-white">Top Brands</h3>
-            <ul className="mt-3 grid grid-cols-2 gap-2 text-sm">
+            <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Brands</h3>
+            <ul className="space-y-3">
               {loading ? (
-                // Skeleton loader while loading
-                [...Array(6)].map((_, i) => (
-                  <li key={i} className="h-5 bg-slate-800 rounded animate-pulse"></li>
+                [...Array(5)].map((_, i) => (
+                  <li key={i} className="h-4 bg-gray-200 rounded animate-pulse"></li>
                 ))
-              ) : (
-                brands.slice(0, 6).map((brand) => (
+              ) : brands.length > 0 ? (
+                brands.slice(0, 5).map((brand) => (
                   <li key={brand._id}>
-                    <Link 
-                      href={`/brands/${brand._id}`} 
-                      className="text-slate-300 hover:text-white"
+                    <Link
+                      href={`/brands/${brand._id}`}
+                      className="text-sm text-slate-300 hover:text-white"
                     >
                       {brand.name}
                     </Link>
                   </li>
                 ))
+              ) : (
+                <li className="text-sm text-slate-300">No brands found</li>
               )}
             </ul>
-            <div className="mt-5 space-y-2 text-sm">
-              <div className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4" /> Noida, IN</div>
-              <div className="flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4" /> admin@houseofevolve.in</div>
-              <div className="flex items-start gap-2"><Phone className="mt-0.5 h-4 w-4" /> +91 98765 43210</div>
-            </div>
           </div>
         </div>
 
-        <div className="mt-10 border-t border-slate-800 pt-6 text-xs text-slate-400 flex flex-col md:flex-row items-center justify-between gap-3">
-          <p> {year} HOE. All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <Link href="#" className="hover:text-white">Privacy</Link>
-            <Link href="#" className="hover:text-white">Terms</Link>
-            <Link href="#" className="hover:text-white">Contact</Link>
+        {/* Contact and Copyright */}
+        <div className="mt-12 pt-8 border-t border-slate-700">
+          <div className="md:flex md:items-center md:justify-between">
+            <div className="flex space-x-6">
+              <div className="flex items-center text-sm text-slate-400">
+                <MapPin className="h-5 w-5 text-slate-400 mr-2" />
+                <span>Noida, IN</span>
+              </div>
+              <div className="flex items-center text-sm text-slate-400">
+                <Mail className="h-5 w-5 text-slate-400 mr-2" />
+                <a href="mailto:admin@houseofevolve.in" className="hover:text-white">
+                  admin@houseofevolve.in
+                </a>
+              </div>
+              <div className="flex items-center text-sm text-slate-400">
+                <Phone className="h-5 w-5 text-slate-400 mr-2" />
+                <a href="tel:+919876543210" className="hover:text-white">
+                  +91 98765 43210
+                </a>
+              </div>
+            </div>
+            <div className="mt-4 md:mt-0 flex items-center space-x-6">
+              <p className="text-sm text-slate-400">
+                &copy; {year} HOE. All rights reserved.
+              </p>
+              <div className="flex space-x-4">
+                {['Privacy', 'Terms', 'Contact'].map((item) => (
+                  <Link
+                    key={item}
+                    href="#"
+                    className="text-sm text-slate-300 hover:text-white"
+                  >
+                    {item}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

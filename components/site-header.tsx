@@ -87,7 +87,7 @@ export function SiteHeader({
                   )}
                 </button>
                 {isCategoryOpen && (
-                  <div className="absolute z-10 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <div className="absolute z-[200] mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="py-1">
                       {categories.map((category) => (
                         <button
@@ -137,92 +137,48 @@ export function SiteHeader({
 
               {/* Account & Lists */}
               <Link href="/account">
-                <div className="relative group">
-                  <div className="flex flex-col px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer">
-                    <div className="text-xs text-white/80 group-hover:text-amber-300">
-                      {user ? `Hello, ${user.name?.split(' ')[0] || 'User'}` : 'Hello, Sign in'}
-                    </div>
-                    <div className="flex items-center">
-                      <span className="text-sm font-medium text-white">Account & Lists</span>
-                      <ChevronDown className="h-4 w-4 text-white/80 group-hover:text-amber-300 ml-0.5" />
-                    </div>
+                <div className="flex flex-col items-center text-center px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer group">
+                  <div className="text-xs text-white/80 group-hover:text-amber-300">
+                    {user ? `Hello, ${user.name?.split(' ')[0] || 'User'}` : 'Hello, Sign in'}
                   </div>
-
-                  {/* Dropdown Menu */}
-                  <div className="absolute right-0 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 hidden group-hover:block">
-                    <div className="py-1">
-                      {user ? (
-                        <>
-                          <Link
-                            href="/account"
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            Your Account
-                          </Link>
-                          <Link
-                            href="/orders"
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            Your Orders
-                          </Link>
-                          <Link
-                            href="/wishlist"
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            Your Wishlist
-                          </Link>
-                          <button
-                            onClick={() => logout()}
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            Sign Out
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => setAuthOpen(true)}
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            Sign In
-                          </button>
-
-                        </>
-                      )}
-                    </div>
+                  <div className="flex items-center justify-center">
+                    <span className="text-sm font-medium text-white">Account & Lists</span>
+                    <ChevronDown className="h-4 w-4 text-white/80 group-hover:text-amber-300 ml-0.5" />
                   </div>
                 </div>
               </Link>
 
-              {/* Cart - Moved to rightmost */}
-              <div className="relative group ml-4">
-                <Link
-                  href="/cart"
-                  className="flex items-center px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded"
-                >
-                  <div className="relative">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="w-6 h-6 text-white"
-                    >
-                      <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.704-.486l1.875-5.25a.75.75 0 00-.704-1.014H6.12l-1.165-4.368a1.5 1.5 0 00-1.455-1.132H2.25z" />
-                      <path d="M3 18a2.25 2.25 0 104.5 0 2.25 2.25 0 00-4.5 0zm11.25 2.25a2.25 2.25 0 110-4.5 2.25 2.25 0 010 4.5z" />
-                    </svg>
-                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-xs font-bold text-slate-900">
-                      {0}
-                    </span>
-                  </div>
-                  <span className="ml-2 text-sm font-medium text-white">Cart</span>
-                </Link>
-              </div>
+            </div>
+
+            {/* Cart - Moved to rightmost */}
+            <div className="relative group ml-4">
+              <Link
+                href="/cart"
+                className="flex items-center px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded"
+              >
+                <div className="relative">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-6 h-6 text-white"
+                  >
+                    <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.704-.486l1.875-5.25a.75.75 0 00-.704-1.014H6.12l-1.165-4.368a1.5 1.5 0 00-1.455-1.132H2.25z" />
+                    <path d="M3 18a2.25 2.25 0 104.5 0 2.25 2.25 0 00-4.5 0zm11.25 2.25a2.25 2.25 0 110-4.5 2.25 2.25 0 010 4.5z" />
+                  </svg>
+                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-xs font-bold text-slate-900">
+                    {0}
+                  </span>
+                </div>
+                <span className="ml-2 text-sm font-medium text-white">Cart</span>
+              </Link>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      {/* Main bar: categories - Non-sticky */}
+      {/* Main bar: categories - Non-sticky */ }
       <div className="bg-white border-b border-slate-200/40 pt-14">
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex items-center justify-between py-3">
@@ -237,7 +193,7 @@ export function SiteHeader({
                 >
                   <Menu className="h-5 w-5" />
                 </SheetTrigger>
-                <SheetContent side="left" className="w-80 relative z-[60]">
+                <SheetContent side="left" className="w-80 z-[100]">
                   <SheetClose asChild>
                     <Button
                       variant="ghost"
@@ -245,55 +201,55 @@ export function SiteHeader({
                       className="absolute right-3 top-3"
                       aria-label="Close menu"
                     >
-                      <X className="h-5 w-5" />
+                      
                     </Button>
                   </SheetClose>
-                  <SheetHeader>
+                  <SheetHeader className="text-center">
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
-                  <nav className="mt-4 space-y-3">
+                  <nav className="mt-4 space-y-3 text-center">
                     <SheetClose asChild>
-                      <Link href="/" className="block py-2" aria-label="Home">
+                      <Link href="/" className="block py-2 text-base font-medium" aria-label="Home">
                         Home
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Link href="/categories" className="block py-2">
+                      <Link href="/categories" className="block py-2 text-base font-medium">
                         Categories
                       </Link>
                     </SheetClose>
 
                     <SheetClose asChild>
-                      <Link href="/brands" className="block py-2">
+                      <Link href="/brands" className="block py-2 text-base font-medium">
                         Brands
                       </Link>
                     </SheetClose>
                     <div className="pt-2 border-t mt-2">
-                      <div className="text-xs uppercase text-slate-500 mb-2">Collections</div>
+                      <div className="text-xs uppercase text-slate-600 mb-2 text-center tracking-wide">Collections</div>
                       <SheetClose asChild>
-                        <Link href="/collections/sportswear" className="block py-2">
+                        <Link href="/collections/sportswear" className="block py-2 text-base font-medium">
                           Sports Wear
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Link href="/collections/gymwear" className="block py-2">
+                        <Link href="/collections/gymwear" className="block py-2 text-base font-medium">
                           Gymwear
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Link href="/collections/necklaces" className="block py-2">
+                        <Link href="/collections/necklaces" className="block py-2 text-base font-medium">
                           Necklaces
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Link href="/collections/earrings" className="block py-2">
+                        <Link href="/collections/earrings" className="block py-2 text-base font-medium">
                           Earrings
                         </Link>
                       </SheetClose>
                     </div>
                     {user && (
                       <SheetClose asChild>
-                        <Link href="/orders" className="block py-2">
+                        <Link href="/orders" className="block py-2 text-base font-medium">
                           My Orders
                         </Link>
                       </SheetClose>
@@ -319,7 +275,7 @@ export function SiteHeader({
                         <SheetClose asChild>
                           <button
                             onClick={() => setAuthOpen(true)}
-                            className="text-left w-full py-1 hover:underline"
+                            className="text-center w-full py-1 hover:underline"
                           >
                             Sign In
                           </button>
@@ -354,7 +310,7 @@ export function SiteHeader({
 
           {/* Mobile search */}
           <form
-            className="md:hidden flex items-center gap-2 py-3"
+            className="md:hidden flex items-center gap-2 py-3 relative"
             onSubmit={(e) => {
               e.preventDefault()
               onSearch?.(query)
@@ -362,6 +318,42 @@ export function SiteHeader({
             role="search"
             aria-label="Site search"
           >
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                className="h-10 flex items-center px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-medium rounded-md border border-slate-300"
+              >
+                <span className="truncate max-w-[120px]">{selectedCategory}</span>
+                {isCategoryOpen ? (
+                  <ChevronUp className="ml-1 h-4 w-4 text-slate-600" />
+                ) : (
+                  <ChevronDown className="ml-1 h-4 w-4 text-slate-600" />
+                )}
+              </button>
+              {isCategoryOpen && (
+                <div className="absolute z-[200] mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <div className="py-1">
+                    {categories.map((category) => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategory(category)
+                          setIsCategoryOpen(false)
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${selectedCategory === category
+                          ? 'bg-amber-50 text-amber-900 font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -378,6 +370,6 @@ export function SiteHeader({
         </div>
       </div>
       <AuthModal open={authOpen} onOpenChange={setAuthOpen} />
-    </header>
+    </header >
   )
 }

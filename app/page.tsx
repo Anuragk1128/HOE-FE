@@ -7,6 +7,7 @@ import { Testimonials } from "@/components/sections/testimonials"
 import { Features } from "@/components/sections/features"
 import Newsletter from "@/components/newsletter"
 import Cards from "@/components/card"
+import Collections from "@/components/collections"
 
 export default function Page() {
   return (
@@ -28,14 +29,8 @@ export default function Page() {
       {/* Deals Section */}
       <DealsSection />
       <Cards/>
-      
-      {/* Product Categories */}
-      <section className="py-16 px-4 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Shop by Category</h2>
-          <ProductList />
-        </div>
-      </section>
+      <Collections/>
+ 
       
       {/* Brand Story */}
       <BrandStory />
@@ -43,12 +38,8 @@ export default function Page() {
       {/* Testimonials */}
       <Testimonials />
       
-      {/* Newsletter */}
-      <section className="py-16 px-4 bg-white">
-        <div className="max-w-3xl mx-auto">
-          <Newsletter />
-        </div>
-      </section>
+      {/* Newsletter - full width */}
+      <Newsletter />
     </main>
   )
 }

@@ -1,7 +1,12 @@
+import Link from "next/link"
 export default function Collections(){
     return(
-        <div className="flex flex-cols-1 p-2 ">
-            <div>Categories</div>
+        <div className="flex w-full">
+            <div className="bg-slate-700">
+                <Link href="/collections/bangles">Bangles</Link>
+
+
+            </div>
         </div>
     )
 }

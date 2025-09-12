@@ -5,7 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { fetchProductsBySlugs, type SlugProduct, API_BASE_URL } from "@/lib/api"
 
-type CollectionKey = "under-999" | "under-2000" | "under-3000" | "gymwear" | "necklaces" | "earrings" |"sportswear"
+type CollectionKey = "under-999" | "under-2000" | "under-3000" | "gymwear" | "necklaces" | "earrings" |"sportswear"| "bangles"
 
 // Map collection slug -> brand/category/subcategory slugs
 const COLLECTION_MAP: Record<CollectionKey, { brandSlug: string; categorySlug: string; subcategorySlug: string; title: string }> = {
@@ -15,7 +15,8 @@ const COLLECTION_MAP: Record<CollectionKey, { brandSlug: string; categorySlug: s
   "gymwear": { brandSlug: "sportswear", categorySlug: "men", subcategorySlug: "gym", title: "gym" },
   "necklaces": { brandSlug: "ira", categorySlug: "necklace", subcategorySlug: "round-necklace", title: "Necklaces" },
   "earrings": { brandSlug: "ira", categorySlug: "earrings", subcategorySlug: "drop-earring", title: "Earrings" },
-  "sportswear": {brandSlug: "sportswear", categorySlug:"women",subcategorySlug:"sports", title:"Sports-wear"}
+  "sportswear": {brandSlug: "sportswear", categorySlug:"women",subcategorySlug:"sports", title:"Sports-wear"},
+  "bangles":{brandSlug:"ira",categorySlug:"bangles",subcategorySlug:"round-bangles",title:"Bangles"}
 }
 
 export default function CollectionsPage({ params }: { params: Promise<{ slug: string }> }) {

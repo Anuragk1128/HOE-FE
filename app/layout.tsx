@@ -9,8 +9,8 @@ import { CartProvider } from '@/contexts/cart-context'
 import { WishlistProvider } from '@/contexts/wishlist-context'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'House Of Evolve',
+  description: 'Our brands offer variety of products',
   generator: 'v0.app',
 }
 

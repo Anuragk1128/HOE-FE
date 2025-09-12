@@ -38,12 +38,8 @@ export default function Page() {
       {/* Testimonials */}
       <Testimonials />
       
-      {/* Newsletter */}
-      <section className="py-16 px-4 bg-white">
-        <div className="max-w-3xl mx-auto">
-          <Newsletter />
-        </div>
-      </section>
+      {/* Newsletter - full width */}
+      <Newsletter />
     </main>
   )
 }

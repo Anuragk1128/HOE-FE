@@ -13,22 +13,22 @@ const Newsletter = () => {
   };
 
   return (
-    <section className="py-16 bg-black text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="w-full bg-black text-white py-16">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center text-white mb-12">
           <Mail className="w-16 h-16 mx-auto mb-4" />
           <h2 className="text-4xl font-bold mb-4">Stay Updated</h2>
           <p className="text-xl opacity-90">Get the latest deals and product updates delivered to your inbox</p>
         </div>
 
-        <div className="max-w-md mx-auto mb-12">
+        <div className="w-full max-w-3xl text-white-900  mx-auto mb-12">
           <form onSubmit={handleSubmit} className="flex">
             <input
               type="email"
               value={email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               placeholder="Enter your email"
-              className="flex-1 px-6 py-4 rounded-l-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="flex-1 px-6 py-4 rounded-l-full text-white-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
               required
             />
             <button

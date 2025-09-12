@@ -6,7 +6,7 @@ import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet"
-import { ChevronDown, LogIn, LogOut, Menu, Search, User as UserIcon, X } from "lucide-react"
+import { ChevronDown, ChevronUp, LogIn, LogOut, MapPin, Menu, Search, User as UserIcon, X } from "lucide-react"
 import { AuthModal } from "@/components/auth/auth-modal"
 import { useAuth } from "@/components/auth/auth-provider"
 import { CartIcon } from "@/components/cart-icon"
@@ -18,7 +18,20 @@ export function SiteHeader({
 }) {
   const [query, setQuery] = useState("")
   const [authOpen, setAuthOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState("All")
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false)
   const { user, logout } = useAuth()
+
+  // Example categories - replace with your actual categories
+  const categories = [
+    "All",
+    "Men's Fashion",
+    "Women's Fashion",
+    "Electronics",
+    "Home & Kitchen",
+    "Beauty & Personal Care",
+    "Sports & Outdoors"
+  ]
 
 
   return (
@@ -27,13 +40,25 @@ export function SiteHeader({
       <div className="fixed top-0 left-0 right-0 z-50 bg-slate-800 text-white shadow-md">
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex items-center justify-between py-1">
-            {/* Logo - Visible on all screen sizes */}
-            <Link href="/" aria-label="Home" className="flex items-center mr-4">
+            {/* Logo */}
+            <Link href="/" aria-label="Home" className="flex items-center">
               <Image src="/logo.png" alt="Logo" width={60} height={24} priority />
             </Link>
+
+            {/* Location & Delivery */}
+            <div className="hidden md:flex flex-col ml-4 px-3 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer group">
+              <div className="flex items-center">
+                <MapPin className="h-4 w-4 text-white/80 group-hover:text-amber-300" />
+                <span className="ml-1 text-xs text-white/80 group-hover:text-amber-300">Deliver to</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-sm font-medium text-white">Noida 201301</span>
+                <ChevronDown className="h-4 w-4 text-white/80 group-hover:text-amber-300 ml-0.5" />
+              </div>
+            </div>
             {/* Desktop search */}
             <form
-              className="hidden md:flex items-center gap-2 flex-1 max-w-2xl"
+              className="hidden md:flex items-stretch flex-1 max-w-2xl mx-4 h-9"
               onSubmit={(e) => {
                 e.preventDefault()
                 onSearch?.(query)
@@ -41,67 +66,118 @@ export function SiteHeader({
               role="search"
               aria-label="Site search"
             >
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search products..."
-                className="h-8 bg-white/10 border-white/20 text-white placeholder:text-white/70"
-              />
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                  className="h-full flex items-center px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-medium rounded-l-md border-r border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-800"
+                >
+                  <span className="truncate max-w-[120px]">{selectedCategory}</span>
+                  {isCategoryOpen ? (
+                    <ChevronUp className="ml-1 h-4 w-4 text-slate-600" />
+                  ) : (
+                    <ChevronDown className="ml-1 h-4 w-4 text-slate-600" />
+                  )}
+                </button>
+                {isCategoryOpen && (
+                  <div className="absolute z-10 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div className="py-1">
+                      {categories.map((category) => (
+                        <button
+                          key={category}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCategory(category)
+                            setIsCategoryOpen(false)
+                          }}
+                          className={`block w-full text-left px-4 py-2 text-sm ${selectedCategory === category
+                            ? 'bg-amber-50 text-amber-900 font-medium'
+                            : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                        >
+                          {category}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="relative flex-1">
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search products..."
+                  className="h-full rounded-none border-0 text-gray-900 placeholder-gray-500 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 bg-white"
+                />
+              </div>
               <Button
                 type="submit"
-                size="sm"
-                className="bg-amber-400 text-slate-900 hover:bg-amber-300 h-8"
+                className="h-full rounded-l-none rounded-r-md bg-amber-400 text-slate-900 hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-800"
               >
                 <Search className="h-4 w-4" />
               </Button>
             </form>
 
-            {/* Desktop auth */}
-            <div className="hidden md:flex items-center gap-2">
-              {user ? (
-                <>
-                  <Button variant="ghost" size="sm" asChild className="text-white hover:bg-white/10 h-7 text-sm">
-                    <Link href="/account" className="flex items-center">
-                      <UserIcon className="w-3.5 h-3.5 mr-1" />
-                      <span>My Account</span>
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => logout()}
-                    className="text-white hover:bg-white/10 h-7 text-sm"
+            {/* Right side: Account, Returns & Orders */}
+            <div className="hidden md:flex items-center gap-6">
+              {/* Returns & Orders */}
+              <div className="flex flex-col px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer group">
+                <div className="text-xs text-white/80 group-hover:text-amber-300">Returns</div>
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-white">& Orders</span>
+                </div>
+              </div>
+
+              {/* Account & Lists */}
+              <div className="flex flex-col px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer group">
+                <div className="text-xs text-white/80 group-hover:text-amber-300">
+                  {user ? `Hello, ${user.name?.split(' ')[0] || 'User'}` : 'Hello, Sign in'}
+                </div>
+                <div className="flex items-center">
+                  <span className="text-sm font-medium text-white">Account & Lists</span>
+                  <ChevronDown className="h-4 w-4 text-white/80 group-hover:text-amber-300 ml-0.5" />
+                </div>
+              </div>
+            </div>
+
+            {/* Cart - Moved to rightmost */}
+            <div className="relative group ml-4">
+              <Link
+                href="/cart"
+                className="flex items-center px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded"
+              >
+                <div className="relative">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-6 h-6 text-white"
                   >
-                    <span>Sign Out</span>
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setAuthOpen(true)}
-                  className="text-white hover:bg-white/10 h-7 text-sm"
-                >
-                  <LogIn className="w-3.5 h-3.5 mr-1" />
-                  <span>Sign In</span>
-                </Button>
-              )}
+                    <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.704-.486l1.875-5.25a.75.75 0 00-.704-1.014H6.12l-1.165-4.368a1.5 1.5 0 00-1.455-1.132H2.25z" />
+                    <path d="M3 18a2.25 2.25 0 104.5 0 2.25 2.25 0 00-4.5 0zm11.25 2.25a2.25 2.25 0 110-4.5 2.25 2.25 0 010 4.5z" />
+                  </svg>
+                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-xs font-bold text-slate-900">
+                    {0}
+                  </span>
+                </div>
+                <span className="ml-2 text-sm font-medium text-white">Cart</span>
+              </Link>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main bar: categories - Non-sticky */}
-      <div className="bg-white border-b border-slate-200/40 pt-12">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="flex items-center justify-between py-2">
+      <div className="bg-white border-b border-slate-200/40 pt-14">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="flex items-center justify-between py-3">
             {/* Left group: mobile trigger */}
             <div className="flex items-center gap-3 md:gap-5">
 
               {/* Mobile menu trigger */}
               <Sheet>
                 <SheetTrigger
-                  className="md:hidden z-20 pointer-events-auto inline-flex items-center justify-center rounded-md p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="md:hidden z-20 pointer-events-auto inline-flex items-center justify-center rounded-md p-2.5 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
                   aria-label="Open menu"
                 >
                   <Menu className="h-5 w-5" />
@@ -217,12 +293,11 @@ export function SiteHeader({
               {user && <Link href="/orders" className="hover:underline">My Orders</Link>}
             </nav>
 
-            {/* Right group: cart and wishlist */}
-            <div className="flex items-center gap-4">
+            {/* Wishlist only in lower header */}
+            <div className="flex items-center">
               <Link href="/wishlist" className="text-slate-700 hover:text-slate-900 transition-colors">
                 <Heart className="h-5 w-5" />
               </Link>
-              <CartIcon />
             </div>
           </div>
 

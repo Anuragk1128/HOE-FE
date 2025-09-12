@@ -80,7 +80,7 @@ export function SiteHeader({
                   )}
                 </button>
                 {isCategoryOpen && (
-                  <div className="absolute z-10 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <div className="absolute z-[200] mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="py-1">
                       {categories.map((category) => (
                         <button
@@ -129,15 +129,18 @@ export function SiteHeader({
               </div>
 
               {/* Account & Lists */}
-              <div className="flex flex-col px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer group">
+              <Link href="/account"> 
+              <div className="flex flex-col items-center text-center px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer group">
                 <div className="text-xs text-white/80 group-hover:text-amber-300">
                   {user ? `Hello, ${user.name?.split(' ')[0] || 'User'}` : 'Hello, Sign in'}
                 </div>
-                <div className="flex items-center">
+                <div className="flex items-center justify-center">
                   <span className="text-sm font-medium text-white">Account & Lists</span>
                   <ChevronDown className="h-4 w-4 text-white/80 group-hover:text-amber-300 ml-0.5" />
                 </div>
               </div>
+              </Link>
+              
             </div>
 
             {/* Cart - Moved to rightmost */}
@@ -182,7 +185,7 @@ export function SiteHeader({
                 >
                   <Menu className="h-5 w-5" />
                 </SheetTrigger>
-                <SheetContent side="left" className="w-80 relative z-[60]">
+                <SheetContent side="left" className="w-80 z-[100]">
                   <SheetClose asChild>
                     <Button
                       variant="ghost"
@@ -190,55 +193,55 @@ export function SiteHeader({
                       className="absolute right-3 top-3"
                       aria-label="Close menu"
                     >
-                      <X className="h-5 w-5" />
+                      
                     </Button>
                   </SheetClose>
-                  <SheetHeader>
+                  <SheetHeader className="text-center">
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
-                  <nav className="mt-4 space-y-3">
+                  <nav className="mt-4 space-y-3 text-center">
                     <SheetClose asChild>
-                      <Link href="/" className="block py-2" aria-label="Home">
+                      <Link href="/" className="block py-2 text-base font-medium" aria-label="Home">
                         Home
                       </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Link href="/categories" className="block py-2">
+                      <Link href="/categories" className="block py-2 text-base font-medium">
                         Categories
                       </Link>
                     </SheetClose>
                     
                     <SheetClose asChild>
-                      <Link href="/brands" className="block py-2">
+                      <Link href="/brands" className="block py-2 text-base font-medium">
                         Brands
                       </Link>
                     </SheetClose>
                     <div className="pt-2 border-t mt-2">
-                      <div className="text-xs uppercase text-slate-500 mb-2">Collections</div>
+                      <div className="text-xs uppercase text-slate-600 mb-2 text-center tracking-wide">Collections</div>
                       <SheetClose asChild>
-                        <Link href="/collections/sportswear" className="block py-2">
+                        <Link href="/collections/sportswear" className="block py-2 text-base font-medium">
                           Sports Wear
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Link href="/collections/gymwear" className="block py-2">
+                        <Link href="/collections/gymwear" className="block py-2 text-base font-medium">
                           Gymwear
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Link href="/collections/necklaces" className="block py-2">
+                        <Link href="/collections/necklaces" className="block py-2 text-base font-medium">
                           Necklaces
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Link href="/collections/earrings" className="block py-2">
+                        <Link href="/collections/earrings" className="block py-2 text-base font-medium">
                           Earrings
                         </Link>
                       </SheetClose>
                     </div>
                     {user && (
                       <SheetClose asChild>
-                        <Link href="/orders" className="block py-2">
+                        <Link href="/orders" className="block py-2 text-base font-medium">
                           My Orders
                         </Link>
                       </SheetClose>
@@ -264,7 +267,7 @@ export function SiteHeader({
                         <SheetClose asChild>
                           <button
                             onClick={() => setAuthOpen(true)}
-                            className="text-left w-full py-1 hover:underline"
+                            className="text-center w-full py-1 hover:underline"
                           >
                             Sign In
                           </button>
@@ -282,7 +285,7 @@ export function SiteHeader({
               <Link href="/brands" className="hover:underline">Brands</Link>
               <Link href="/products" className="hover:underline">Products</Link>
 
-              <Link href="/collections/sports-wear" className="hover:underline">Sports Wear</Link>
+              <Link href="/collections/sportswear" className="hover:underline">Sports Wear</Link>
               <Link href="/collections/gymwear" className="hover:underline">Gymwear</Link>
               <Link href="/collections/necklaces" className="hover:underline">Necklaces</Link>
               <Link href="/collections/earrings" className="hover:underline">Earrings</Link>
@@ -299,7 +302,7 @@ export function SiteHeader({
 
           {/* Mobile search */}
           <form
-            className="md:hidden flex items-center gap-2 py-3"
+            className="md:hidden flex items-center gap-2 py-3 relative"
             onSubmit={(e) => {
               e.preventDefault()
               onSearch?.(query)
@@ -307,6 +310,42 @@ export function SiteHeader({
             role="search"
             aria-label="Site search"
           >
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                className="h-10 flex items-center px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-medium rounded-md border border-slate-300"
+              >
+                <span className="truncate max-w-[120px]">{selectedCategory}</span>
+                {isCategoryOpen ? (
+                  <ChevronUp className="ml-1 h-4 w-4 text-slate-600" />
+                ) : (
+                  <ChevronDown className="ml-1 h-4 w-4 text-slate-600" />
+                )}
+              </button>
+              {isCategoryOpen && (
+                <div className="absolute z-[200] mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <div className="py-1">
+                    {categories.map((category) => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategory(category)
+                          setIsCategoryOpen(false)
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${selectedCategory === category
+                          ? 'bg-amber-50 text-amber-900 font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}

@@ -38,11 +38,18 @@ export function SiteHeader({
     <header className="w-full relative">
       {/* Top ribbon: logo, search and auth - Sticky */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-slate-800 text-white shadow-md">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="flex items-center justify-between py-1">
+        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-1 gap-4">
             {/* Logo */}
-            <Link href="/" aria-label="Home" className="flex items-center">
-              <Image src="/logo.png" alt="Logo" width={60} height={24} priority />
+            <Link href="/" aria-label="Home" className="flex-shrink-0">
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={80}
+                height={40}
+                priority
+                className="h-10 w-auto"
+              />
             </Link>
 
             {/* Location & Delivery */}
@@ -121,47 +128,95 @@ export function SiteHeader({
             {/* Right side: Account, Returns & Orders */}
             <div className="hidden md:flex items-center gap-6">
               {/* Returns & Orders */}
-              <div className="flex flex-col px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer group">
+              <Link href="/orders" className="flex flex-col px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded group">
                 <div className="text-xs text-white/80 group-hover:text-amber-300">Returns</div>
                 <div className="flex items-center">
                   <span className="text-sm font-medium text-white">& Orders</span>
                 </div>
-              </div>
+              </Link>
 
               {/* Account & Lists */}
-              <div className="flex flex-col px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer group">
-                <div className="text-xs text-white/80 group-hover:text-amber-300">
-                  {user ? `Hello, ${user.name?.split(' ')[0] || 'User'}` : 'Hello, Sign in'}
-                </div>
-                <div className="flex items-center">
-                  <span className="text-sm font-medium text-white">Account & Lists</span>
-                  <ChevronDown className="h-4 w-4 text-white/80 group-hover:text-amber-300 ml-0.5" />
-                </div>
-              </div>
-            </div>
+              <Link href="/account">
+                <div className="relative group">
+                  <div className="flex flex-col px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer">
+                    <div className="text-xs text-white/80 group-hover:text-amber-300">
+                      {user ? `Hello, ${user.name?.split(' ')[0] || 'User'}` : 'Hello, Sign in'}
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium text-white">Account & Lists</span>
+                      <ChevronDown className="h-4 w-4 text-white/80 group-hover:text-amber-300 ml-0.5" />
+                    </div>
+                  </div>
 
-            {/* Cart - Moved to rightmost */}
-            <div className="relative group ml-4">
-              <Link
-                href="/cart"
-                className="flex items-center px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded"
-              >
-                <div className="relative">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="w-6 h-6 text-white"
-                  >
-                    <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.704-.486l1.875-5.25a.75.75 0 00-.704-1.014H6.12l-1.165-4.368a1.5 1.5 0 00-1.455-1.132H2.25z" />
-                    <path d="M3 18a2.25 2.25 0 104.5 0 2.25 2.25 0 00-4.5 0zm11.25 2.25a2.25 2.25 0 110-4.5 2.25 2.25 0 010 4.5z" />
-                  </svg>
-                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-xs font-bold text-slate-900">
-                    {0}
-                  </span>
+                  {/* Dropdown Menu */}
+                  <div className="absolute right-0 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 hidden group-hover:block">
+                    <div className="py-1">
+                      {user ? (
+                        <>
+                          <Link
+                            href="/account"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Your Account
+                          </Link>
+                          <Link
+                            href="/orders"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Your Orders
+                          </Link>
+                          <Link
+                            href="/wishlist"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Your Wishlist
+                          </Link>
+                          <button
+                            onClick={() => logout()}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Sign Out
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => setAuthOpen(true)}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          >
+                            Sign In
+                          </button>
+
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <span className="ml-2 text-sm font-medium text-white">Cart</span>
               </Link>
+
+              {/* Cart - Moved to rightmost */}
+              <div className="relative group ml-4">
+                <Link
+                  href="/cart"
+                  className="flex items-center px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded"
+                >
+                  <div className="relative">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="w-6 h-6 text-white"
+                    >
+                      <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.704-.486l1.875-5.25a.75.75 0 00-.704-1.014H6.12l-1.165-4.368a1.5 1.5 0 00-1.455-1.132H2.25z" />
+                      <path d="M3 18a2.25 2.25 0 104.5 0 2.25 2.25 0 00-4.5 0zm11.25 2.25a2.25 2.25 0 110-4.5 2.25 2.25 0 010 4.5z" />
+                    </svg>
+                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-xs font-bold text-slate-900">
+                      {0}
+                    </span>
+                  </div>
+                  <span className="ml-2 text-sm font-medium text-white">Cart</span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -207,7 +262,7 @@ export function SiteHeader({
                         Categories
                       </Link>
                     </SheetClose>
-                    
+
                     <SheetClose asChild>
                       <Link href="/brands" className="block py-2">
                         Brands
@@ -282,7 +337,7 @@ export function SiteHeader({
               <Link href="/brands" className="hover:underline">Brands</Link>
               <Link href="/products" className="hover:underline">Products</Link>
 
-              <Link href="/collections/sports-wear" className="hover:underline">Sports Wear</Link>
+              <Link href="/collections/sportswear" className="hover:underline">Sports Wear</Link>
               <Link href="/collections/gymwear" className="hover:underline">Gymwear</Link>
               <Link href="/collections/necklaces" className="hover:underline">Necklaces</Link>
               <Link href="/collections/earrings" className="hover:underline">Earrings</Link>

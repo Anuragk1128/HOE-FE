@@ -37,10 +37,8 @@ export default function CartPage() {
       try {
         setLoadingServerCart(true)
         const res = await fetch(`${API_BASE_URL}/cart`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${user.token}`,
-          },
+          credentials: 'include',
+          headers: { Accept: 'application/json' },
         })
         if (!res.ok) {
           setServerCart([])
@@ -55,6 +53,19 @@ export default function CartPage() {
     }
     fetchServerCart()
   }, [user?.token])
+
+  const removeServerCartItem = async (productId: string) => {
+    if (!user?.token) return
+    try {
+      const res = await fetch(`${API_BASE_URL}/cart/${productId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { Accept: '*/*' },
+      })
+      if (!res.ok) return
+      setServerCart((prev) => prev.filter((i) => i.product?._id !== productId))
+    } catch {}
+  }
 
   if (!isClient) {
     return (
@@ -155,9 +166,16 @@ export default function CartPage() {
                     <span className="px-3 py-1 text-gray-700">Qty</span>
                     <span className="w-8 text-center">{item.quantity}</span>
                   </div>
-                  {!serverCart.length && (
+                  {!serverCart.length ? (
                     <button
                       onClick={() => removeFromCart(item.productId)}
+                      className="text-sm font-medium text-red-600 hover:text-red-500"
+                    >
+                      Remove
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => removeServerCartItem(item.product?._id)}
                       className="text-sm font-medium text-red-600 hover:text-red-500"
                     >
                       Remove

@@ -7,19 +7,62 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { AuthModal } from '@/components/auth/auth-modal'
 import { User, Package, MapPin, Heart, LogOut } from 'lucide-react'
+import { API_BASE_URL } from '@/lib/api'
 
 export default function AccountPage() {
   const { user, logout } = useAuth()
   const router = useRouter()
+  const [authOpen,setAuthOpen]=useState(false);
   const [activeTab, setActiveTab] = useState('profile')
   const [isEditing, setIsEditing] = useState(false)
+  const [loadingProfile, setLoadingProfile] = useState(false)
+  const [serverProfile, setServerProfile] = useState<{
+    _id?: string
+    name?: string
+    email?: string
+    role?: string
+    isActive?: boolean
+    phone?: string
+    address?: string
+    createdAt?: string
+    updatedAt?: string
+  } | null>(null)
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
+    addressBuilding: '',
+    addressStreet: '',
+    addressDistrict: '',
+    addressPincode: '',
+    addressState: '',
   })
+
+  useEffect(() => {
+    const fetchMe = async () => {
+      if (!user?.token) return
+      try {
+        setLoadingProfile(true)
+        const res = await fetch(`${API_BASE_URL}/users/me`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${user.token}`,
+          },
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        if (data?.user) {
+          setServerProfile(data.user)
+        }
+      } finally {
+        setLoadingProfile(false)
+      }
+    }
+    fetchMe()
+  }, [user?.token])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -29,12 +72,43 @@ export default function AccountPage() {
     }))
   }
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would update the user's profile here
-    console.log('Updating profile:', formData)
-    setIsEditing(false)
-    // Show success message
+    if (!user?.token) return
+    const composedAddress = [
+      formData.addressBuilding,
+      formData.addressStreet,
+      formData.addressDistrict,
+      formData.addressState,
+      formData.addressPincode,
+    ]
+      .map((p) => (p || '').trim())
+      .filter(Boolean)
+      .join(', ')
+    const payload: Record<string, any> = {
+      name: formData.name,
+      phone: formData.phone,
+      address: composedAddress,
+    }
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/me`, {
+        method: 'PATCH',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      if (data?.user) {
+        // update server view
+        // @ts-ignore
+        setServerProfile(data.user)
+        setIsEditing(false)
+      }
+    } catch {}
   }
 
   // Simple icon components with proper TypeScript types
@@ -64,13 +138,14 @@ export default function AccountPage() {
         <h2 className="text-2xl font-semibold text-gray-800">Sign in to view your account</h2>
         <p className="mt-2 text-gray-600">Please sign in to access your account details.</p>
         <div className="mt-6 space-x-3">
-          <Button onClick={() => router.push('/signin')}>
+          <Button onClick={() => setAuthOpen(true)}>
             Sign In
           </Button>
-          <Button variant="outline" onClick={() => router.push('/signup')}>
+          <Button variant="outline" onClick={() => setAuthOpen(true)}>
             Create Account
           </Button>
         </div>
+        <AuthModal open={authOpen} onOpenChange={setAuthOpen} />
       </div>
     )
   }
@@ -151,9 +226,14 @@ export default function AccountPage() {
                           onClick={() => {
                             setIsEditing(false)
                             setFormData({
-                              name: user.name || '',
-                              email: user.email || '',
-                              phone: user.phone || '',
+                              name: serverProfile?.name || user.name || '',
+                              email: serverProfile?.email || user.email || '',
+                              phone: serverProfile?.phone || user.phone || '',
+                              addressBuilding: '',
+                              addressStreet: '',
+                              addressDistrict: '',
+                              addressPincode: '',
+                              addressState: '',
                             })
                           }}
                         >
@@ -203,21 +283,106 @@ export default function AccountPage() {
                           className="mt-1"
                         />
                       </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="addressBuilding">Building / House</Label>
+                          <Input
+                            id="addressBuilding"
+                            name="addressBuilding"
+                            value={formData.addressBuilding}
+                            onChange={handleInputChange}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="addressStreet">Street / Road</Label>
+                          <Input
+                            id="addressStreet"
+                            name="addressStreet"
+                            value={formData.addressStreet}
+                            onChange={handleInputChange}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="addressDistrict">District</Label>
+                          <Input
+                            id="addressDistrict"
+                            name="addressDistrict"
+                            value={formData.addressDistrict}
+                            onChange={handleInputChange}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="addressState">State</Label>
+                          <Input
+                            id="addressState"
+                            name="addressState"
+                            value={formData.addressState}
+                            onChange={handleInputChange}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="addressPincode">Pincode</Label>
+                          <Input
+                            id="addressPincode"
+                            name="addressPincode"
+                            value={formData.addressPincode}
+                            onChange={handleInputChange}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
                     </form>
                   ) : (
                     <div className="space-y-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Full Name</p>
-                        <p className="text-gray-900">{user.name || 'Not provided'}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Email</p>
-                        <p className="text-gray-900">{user.email}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Phone Number</p>
-                        <p className="text-gray-900">{user.phone || 'Not provided'}</p>
-                      </div>
+                      {loadingProfile ? (
+                        <div className="text-sm text-gray-600">Loading profile…</div>
+                      ) : (
+                        <>
+                          <div>
+                            <p className="text-sm text-gray-500">Full Name</p>
+                            <p className="text-gray-900">{serverProfile?.name || user.name || 'Not provided (please update your name)'}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">Email</p>
+                            <p className="text-gray-900">{serverProfile?.email || user.email || 'Not provided (please update your email)'}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">Phone Number</p>
+                            <p className="text-gray-900">{serverProfile?.phone || user.phone || 'Not provided (please add your phone)'}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">Address</p>
+                            <p className="text-gray-900">{serverProfile?.address || 'Not provided (please add your address)'}</p>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-gray-500">Role</p>
+                              <p className="text-gray-900">{serverProfile?.role || 'customer'}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Status</p>
+                              <p className="text-gray-900">{serverProfile?.isActive ? 'Active' : 'Inactive'}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Joined</p>
+                              <p className="text-gray-900">{serverProfile?.createdAt ? new Date(serverProfile.createdAt).toLocaleDateString() : '—'}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Updated</p>
+                              <p className="text-gray-900">{serverProfile?.updatedAt ? new Date(serverProfile.updatedAt).toLocaleDateString() : '—'}</p>
+                            </div>
+                          </div>
+                          {!serverProfile?.phone || !serverProfile?.address ? (
+                            <div className="pt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
+                              Some details are missing. Please click "Edit Profile" to update your information.
+                            </div>
+                          ) : null}
+                        </>
+                      )}
                     </div>
                   )}
                 </CardContent>

@@ -6,7 +6,10 @@ export default function Cards(){
         <section className="bg-slate-800">
         <div className="mx-auto max-w-6xl px-4 py-8">
             <Card className="overflow-hidden">
+                <h1 className="item-center font-bold justify-center text-center text-2xl hover:underline "> Our Collections</h1>
+
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-gray-200">
+                    
                     <Link href="/collections/necklaces" className="block group">
                         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-gray-100">
                             <Image

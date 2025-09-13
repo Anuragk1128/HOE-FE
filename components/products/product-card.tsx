@@ -76,18 +76,22 @@ export function ProductCard({ product }: { product: Product }) {
           <CardContent className="p-0 flex-grow flex flex-col">
             {/* Full Width Product Image */}
             <div className="relative w-full aspect-square bg-slate-50 overflow-hidden flex-shrink-0">
-              <img
-                src={product.images?.[0] || "/placeholder.svg"}
-                alt={product.title}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="lazy"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  // Prevent infinite loop if placeholder also 404s
-                  target.onerror = null;
-                  target.src = "/placeholder.svg";
-                }}
-              />
+              {product.images?.[0] ? (
+                <img
+                  src={product.images[0]}
+                  alt={product.title}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-slate-100">
+                  <span className="text-slate-400">No image available</span>
+                </div>
+              )}
             </div>
           </CardContent>
 

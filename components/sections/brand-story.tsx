@@ -37,7 +37,7 @@ export function BrandStory() {
           
           <div className="relative h-96 rounded-lg overflow-hidden shadow-lg">
             <Image
-              src="/brand-story.jpg"
+              src="/hero-bg.png"
               alt="Our brand story"
               fill
               className="object-cover"

@@ -29,7 +29,7 @@ export default function Page() {
       {/* Deals Section */}
       <DealsSection />
       <Cards/>
-      <Collections/>
+      
  
       
       {/* Brand Story */}

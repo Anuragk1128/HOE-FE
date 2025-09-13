@@ -28,6 +28,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<{ ok: true } | { ok: false; error: string }>
   register: (name: string, email: string, password: string) => Promise<{ ok: true } | { ok: false; error: string }>
   logout: () => void
+  setAuthenticatedUser: (user: Omit<User, 'token'>, token: string) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -38,6 +39,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Initialize from localStorage and listen for cross-tab updates
+  useEffect(() => {
+    try {
+      const rawUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+      const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+      if (rawUser && token) {
+        const parsed = JSON.parse(rawUser) as Omit<User, 'token'> & Partial<User>;
+        setUser({
+          id: parsed.id,
+          name: parsed.name,
+          email: parsed.email,
+          phone: (parsed as any).phone,
+          token,
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to restore auth state from storage', e);
+    } finally {
+      setLoading(false);
+    }
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'user' || e.key === 'authToken') {
+        try {
+          const rawUser = localStorage.getItem('user');
+          const token = localStorage.getItem('authToken');
+          if (rawUser && token) {
+            const parsed = JSON.parse(rawUser);
+            setUser({ id: parsed.id, name: parsed.name, email: parsed.email, phone: parsed.phone, token });
+          } else {
+            setUser(null);
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [])
+
+  const setAuthenticatedUser = (u: Omit<User, 'token'>, token: string) => {
+    setUser({ ...u, token });
+    try {
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(u));
+    } catch {}
+  }
 
   const login = async (email: string, password: string) => {
     try {
@@ -61,9 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const { token, user } = data as LoginResponse;
-      const userData = { ...user, token };
-      setUser(userData);
-      
+      setAuthenticatedUser(user, token);
       return { ok: true as const };
     } catch (error) {
       console.error('Login error:', error);
@@ -113,9 +158,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const logout = () => setUser(null)
+  const logout = () => {
+    setUser(null)
+    try {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+    } catch {}
+  }
 
-  const value = useMemo(() => ({ user, loading, login, register, logout }), [user, loading])
+  const value = useMemo(() => ({ user, loading, login, register, logout, setAuthenticatedUser }), [user, loading])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

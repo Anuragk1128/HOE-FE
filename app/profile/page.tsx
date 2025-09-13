@@ -33,7 +33,7 @@ export default function ProfilePage() {
         <section className="md:col-span-1">
           <div className="rounded-lg border bg-white p-6 text-center">
             <div className="mx-auto h-24 w-24 overflow-hidden rounded-full bg-slate-100">
-              <Image src="/placeholder-user.jpg" alt="Profile" width={96} height={96} className="h-full w-full object-cover" />
+              <Image src="/user.avatar" alt="Profile" width={96} height={96} className="h-full w-full object-cover" />
             </div>
             <h1 className="mt-4 text-xl font-semibold">{user.name}</h1>
             <p className="text-slate-600 text-sm">{user.email}</p>
@@ -54,7 +54,7 @@ export default function ProfilePage() {
                 <dd className="text-sm font-medium text-slate-900">{user.email}</dd>
               </div>
             </dl>
-            <p className="mt-6 text-sm text-slate-600">This is a demo profile page. Register to customize your name and email.</p>
+          
           </div>
         </section>
       </div>

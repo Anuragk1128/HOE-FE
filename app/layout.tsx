@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { AppChrome } from '@/components/app-chrome'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { AuthProvider } from '@/components/auth/auth-provider'
 import { CartProvider } from '@/contexts/cart-context'
 import { WishlistProvider } from '@/contexts/wishlist-context'
@@ -22,13 +23,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <AppChrome>{children}</AppChrome>
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
+          <AuthProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <AppChrome>{children}</AppChrome>
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
+        </GoogleOAuthProvider>
         <Analytics />
       </body>
     </html>

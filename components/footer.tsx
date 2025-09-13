@@ -25,7 +25,7 @@ export default function Footer() {
     async function fetchData() {
       try {
         // Fetch categories
-        const categoriesResponse = await fetch('https://hoe-be.onrender.com/api/categories')
+        const categoriesResponse = await fetch('https://hoe-be.onrender.com/api/brands/ira/categories')
         const categoriesData = await categoriesResponse.json()
         if (categoriesData.success) {
           setCategories(categoriesData.data)
@@ -62,7 +62,8 @@ export default function Footer() {
               {[Facebook, Instagram, Twitter].map((Icon, index) => (
                 <Link
                   key={index}
-                  href="#"
+    
+                  href="https://www.instagram.com/house_of_evolve/" target="_blank"
                   className="text-slate-400 hover:text-white"
                 >
                   <Icon className="h-5 w-5" />
@@ -89,53 +90,31 @@ export default function Footer() {
 
           {/* Categories */}
           <div>
-            <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Categories</h3>
-            <ul className="space-y-3">
-              {loading ? (
-                [...Array(5)].map((_, i) => (
-                  <li key={i} className="h-4 bg-gray-200 rounded animate-pulse"></li>
-                ))
-              ) : categories.length > 0 ? (
-                categories.slice(0, 5).map((category) => (
-                  <li key={category._id}>
-                    <Link
-                      href={`/categories/${category._id}`}
-                      className="text-sm text-slate-300 hover:text-white"
-                    >
-                      {category.name}
-                    </Link>
-                  </li>
-                ))
-              ) : (
-                <li className="text-sm text-slate-300">No categories found</li>
-              )}
-            </ul>
-          </div>
+            <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Categories
+              </h3>
+              <ul className="text-sm text-slate-300 hover:text-white space-y-2">
+                <li>
+                <Link href="/collections/bangles" className="text-sm text-slate-300 hover:text-white">Bangles
+                </Link>
+                </li>
+  
+                <li>
+                <Link href="/collections/necklaces" className="text-sm text-slate-300 hover:text-white">Necklaces
+                </Link>
+                </li>
+                <li>
+                <Link href="/collections/sportswear" className="text-sm text-slate-300 hover:text-white">Sportswear
+                </Link>
+                </li>
+                <li>
+                <Link href="/collections/earrings" className="text-sm text-slate-300 hover:text-white">Earrings
+                </Link>
+                </li>
+              </ul>
+            </div>
 
           {/* Brands */}
-          <div>
-            <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Brands</h3>
-            <ul className="space-y-3">
-              {loading ? (
-                [...Array(5)].map((_, i) => (
-                  <li key={i} className="h-4 bg-gray-200 rounded animate-pulse"></li>
-                ))
-              ) : brands.length > 0 ? (
-                brands.slice(0, 5).map((brand) => (
-                  <li key={brand._id}>
-                    <Link
-                      href={`/brands/${brand._id}`}
-                      className="text-sm text-slate-300 hover:text-white"
-                    >
-                      {brand.name}
-                    </Link>
-                  </li>
-                ))
-              ) : (
-                <li className="text-sm text-slate-300">No brands found</li>
-              )}
-            </ul>
-          </div>
+          
         </div>
 
         {/* Contact and Copyright */}
@@ -154,8 +133,8 @@ export default function Footer() {
               </div>
               <div className="flex items-center text-sm text-slate-400">
                 <Phone className="h-5 w-5 text-slate-400 mr-2" />
-                <a href="tel:+919876543210" className="hover:text-white">
-                  +91 98765 43210
+                <a href="tel:+91 88825 40885" className="hover:text-white">
+                +91 88825 40885
                 </a>
               </div>
             </div>
@@ -164,15 +143,22 @@ export default function Footer() {
                 &copy; {year} HOE. All rights reserved.
               </p>
               <div className="flex space-x-4">
-                {['Privacy', 'Terms', 'Contact'].map((item) => (
-                  <Link
-                    key={item}
-                    href="#"
-                    className="text-sm text-slate-300 hover:text-white"
-                  >
-                    {item}
-                  </Link>
-                ))}
+                <Link href="/privacy-policy" className="text-sm text-slate-300 hover:text-white">
+                  Privacy
+                </Link>
+               
+                <Link href="/contact-us" className="text-sm text-slate-300 hover:text-white">
+                  Contact
+                </Link>
+                <Link href="/about" className="text-sm text-slate-300 hover:text-white">
+                  About
+                </Link>
+                <Link href="/shipping-policy" className="text-sm text-slate-300 hover:text-white">
+                  Shipping Policy
+                </Link>
+                <Link href="/cancellation-refunds" className="text-sm text-slate-300 hover:text-white">
+                  Cancellation & Refunds
+                </Link>
               </div>
             </div>
           </div>

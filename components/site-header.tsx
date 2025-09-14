@@ -22,16 +22,34 @@ export function SiteHeader({
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
   const { user, logout } = useAuth()
 
-  // Example categories - replace with your actual categories
+  // Collection-based categories
   const categories = [
     "All",
-    "Men's Fashion",
-    "Women's Fashion",
-    "Electronics",
-    "Home & Kitchen",
-    "Beauty & Personal Care",
-    "Sports & Outdoors"
+    "Under ₹999",
+    "Under ₹2000", 
+    "Under ₹3000",
+    "Gymwear",
+    "Necklaces",
+    "Earrings",
+    "Sportswear",
+    "Bangles"
   ]
+
+  // Collection mapping to URLs
+  const getCategoryUrl = (category: string) => {
+    const categoryMap: { [key: string]: string } = {
+      "All": "/categories",
+      "Under ₹999": "/collections/under-999",
+      "Under ₹2000": "/collections/under-2000",
+      "Under ₹3000": "/collections/under-3000", 
+      "Gymwear": "/collections/gymwear",
+      "Necklaces": "/collections/necklaces",
+      "Earrings": "/collections/earrings",
+      "Sportswear": "/collections/sportswear",
+      "Bangles": "/collections/bangles"
+    }
+    return categoryMap[category] || "/categories"
+  }
 
 
   return (
@@ -91,9 +109,9 @@ export function SiteHeader({
                     <div className="absolute z-[200] mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-1">
                         {categories.map((category) => (
-                          <button
+                          <Link
                             key={category}
-                            type="button"
+                            href={getCategoryUrl(category)}
                             onClick={() => {
                               setSelectedCategory(category)
                               setIsCategoryOpen(false)
@@ -104,7 +122,7 @@ export function SiteHeader({
                               }`}
                           >
                             {category}
-                          </button>
+                          </Link>
                         ))}
                       </div>
                     </div>
@@ -335,9 +353,9 @@ export function SiteHeader({
                 <div className="absolute z-[200] mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                   <div className="py-1">
                     {categories.map((category) => (
-                      <button
+                      <Link
                         key={category}
-                        type="button"
+                        href={getCategoryUrl(category)}
                         onClick={() => {
                           setSelectedCategory(category)
                           setIsCategoryOpen(false)
@@ -348,7 +366,7 @@ export function SiteHeader({
                           }`}
                       >
                         {category}
-                      </button>
+                      </Link>
                     ))}
                   </div>
                 </div>

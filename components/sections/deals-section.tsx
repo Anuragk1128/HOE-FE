@@ -35,7 +35,7 @@ export function DealsSection() {
       <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <h2 className="text-xl md:text-2xl font-semibold text-slate-900 mb-6">Deals</h2>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="h-64 bg-gray-200 rounded-lg animate-pulse"></div>
             ))}
@@ -53,7 +53,7 @@ export function DealsSection() {
         <div className="flex items-end justify-between">
           <h2 className="text-xl md:text-2xl font-semibold text-slate-900">Deals</h2>
         </div>
-        <div className="mt-6 grid gap-4 grid-cols-2 md:grid-cols-4">
+        <div className="mt-6 grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
           {deals.map((p, idx) => (
             <AnimateOnScroll key={p._id} y={24} delay={idx * 0.05}>
               <ProductCard product={{

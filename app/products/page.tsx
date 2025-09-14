@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Product } from '@/data/products'
-import Link from 'next/link'
-import { formatINR } from '@/lib/utils'
+import { ProductCard } from '@/components/products/product-card'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -27,23 +27,29 @@ export default function ProductsPage() {
   }, [])
 
   if (loading) {
-    return <div>Loading...</div>
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl md:text-3xl font-bold mb-8">All Products</h1>
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="h-80 bg-gray-200 rounded-lg animate-pulse"></div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">All Products</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      <div className="flex items-baseline justify-between gap-2 mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold">All Products</h1>
+        <div className="text-sm text-slate-600">
+          {products.length} {products.length === 1 ? 'product' : 'products'} available
+        </div>
+      </div>
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
         {products.map((product) => (
-          <Link href={`/products/${product._id}`} key={product._id}>
-            <div className="border rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <img src={product.images[0]} alt={product.title} className="w-full h-64 object-cover" />
-              <div className="p-4">
-                <h2 className="text-lg font-semibold">{product.title}</h2>
-                <p className="text-gray-600 mt-2">{formatINR(product.price)}</p>
-              </div>
-            </div>
-          </Link>
+          <ProductCard key={product._id} product={product} />
         ))}
       </div>  
     </div>

@@ -7,9 +7,9 @@ export interface Product {
     material?: string;
   };
   _id: string;
-  brandId: string;
-  categoryId: string;
-  subcategoryId: string;
+  brandId: string | { _id: string; name: string; slug: string };
+  categoryId: string | { _id: string; name: string; slug: string };
+  subcategoryId: string | { _id: string; name: string; slug: string };
   title: string;
   slug: string;
   description: string;

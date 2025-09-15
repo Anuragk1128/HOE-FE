@@ -26,7 +26,7 @@ export function SiteHeader({
   const categories = [
     "All",
     "Under ₹999",
-    "Under ₹2000", 
+    "Under ₹2000",
     "Under ₹3000",
     "Gymwear",
     "Necklaces",
@@ -41,7 +41,7 @@ export function SiteHeader({
       "All": "/categories",
       "Under ₹999": "/collections/under-999",
       "Under ₹2000": "/collections/under-2000",
-      "Under ₹3000": "/collections/under-3000", 
+      "Under ₹3000": "/collections/under-3000",
       "Gymwear": "/collections/gymwear",
       "Necklaces": "/collections/necklaces",
       "Earrings": "/collections/earrings",
@@ -56,7 +56,7 @@ export function SiteHeader({
     <>
       <header className="w-full relative">
         {/* Top ribbon: logo, search and auth - Sticky */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-slate-800 text-white shadow-md">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-slate-800 text-white">
           <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-1 gap-4">
               {/* Logo */}
@@ -72,7 +72,7 @@ export function SiteHeader({
               </Link>
 
               {/* Location & Delivery */}
-              <div className="hidden md:flex flex-col ml-4 px-3 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer group">
+              <div className="hidden md:flex flex-col ml-4 px-3 py-1.5 rounded cursor-pointer group">
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 text-white/80 group-hover:text-amber-300" />
                   <span className="ml-1 text-xs text-white/80 group-hover:text-amber-300">Deliver to</span>
@@ -147,7 +147,7 @@ export function SiteHeader({
               {/* Right side: Account, Returns & Orders */}
               <div className="hidden md:flex items-center gap-6">
                 {/* Returns & Orders */}
-                <Link href="/orders" className="flex flex-col px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded group">
+                <Link href="/orders" className="flex flex-col px-4 py-1.5 rounded group">
                   <div className="text-xs text-white/80 group-hover:text-amber-300">Returns</div>
                   <div className="flex items-center">
                     <span className="text-sm font-medium text-white">& Orders</span>
@@ -156,7 +156,7 @@ export function SiteHeader({
 
                 {/* Account & Lists */}
                 <Link href="/account">
-                  <div className="flex flex-col items-center text-center px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded cursor-pointer group">
+                  <div className="flex flex-col items-center text-center px-4 py-1.5 rounded cursor-pointer group">
                     <div className="text-xs text-white/80 group-hover:text-amber-300">
                       {user ? `Hello, ${user.name?.split(' ')[0] || 'User'}` : 'Hello, Sign in'}
                     </div>
@@ -173,7 +173,7 @@ export function SiteHeader({
               <div className="relative group ml-4">
                 <Link
                   href="/cart"
-                  className="flex items-center px-4 py-1.5 hover:outline outline-1 outline-white/30 rounded"
+                  className="flex items-center px-4 py-1.5 rounded"
                 >
                   <div className="relative">
                     <svg
@@ -197,7 +197,7 @@ export function SiteHeader({
         </div>
       </header>
       {/* Main bar: categories - Non-sticky */}
-      <div className="bg-white border-b border-slate-200/40 pt-14">
+      <div className="bg-white pt-14">
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex items-center justify-between py-3">
             {/* Left group: mobile trigger */}

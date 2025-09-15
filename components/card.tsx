@@ -1,15 +1,20 @@
 import { Card } from "./ui/card"
 import Image from "next/image"
 import Link from "next/link"
+import { AnimateOnScroll } from "@/components/gsap/animate-on-scroll"
+
 export default function Cards(){
     return(
         <section className="bg-slate-800">
         <div className="mx-auto max-w-6xl px-4 py-8">
             <Card className="overflow-hidden">
-                <h1 className="item-center font-bold justify-center text-center text-2xl hover:underline "> Our Collections</h1>
+                <AnimateOnScroll y={24}>
+                  <h1 className="item-center font-bold justify-center text-center text-2xl hover:underline "> Our Collections</h1>
+                </AnimateOnScroll>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-gray-200">
                     
+                    <AnimateOnScroll y={24}>
                     <Link href="/collections/necklaces" className="block group">
                         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-gray-100">
                             <Image
@@ -21,6 +26,9 @@ export default function Cards(){
                         </div>
                         <h2 className="px-1 py-2 text-black text-sm font-medium text-center truncate">Jewelleries</h2>
                     </Link>
+                    </AnimateOnScroll>
+
+                    <AnimateOnScroll y={24} delay={0.05}>
                     <Link href="/collections/gymwear" className="block group">
                         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-gray-100">
                             <Image
@@ -32,6 +40,9 @@ export default function Cards(){
                         </div>
                         <h2 className="px-1 py-2 text-black text-sm font-medium text-center truncate">Sportswear</h2>
                     </Link>
+                    </AnimateOnScroll>
+
+                    <AnimateOnScroll y={24} delay={0.1}>
                     <Link href="/collections/under-999" className="block group">
                         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-gray-100">
                             <Image
@@ -43,6 +54,9 @@ export default function Cards(){
                         </div>
                         <h2 className="px-1 py-2 text-black text-sm font-medium text-center truncate">Under ₹999</h2>
                     </Link>
+                    </AnimateOnScroll>
+
+                    <AnimateOnScroll y={24} delay={0.15}>
                     <Link href="/collections/earrings" className="block group">
                         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-gray-100">
                             <Image 
@@ -54,6 +68,7 @@ export default function Cards(){
                         </div>
                         <h2 className="px-1 py-2 text-black text-sm font-medium text-center truncate">Checkout our Earrings</h2>
                     </Link>
+                    </AnimateOnScroll>
                 </div>
             </Card>
 
@@ -61,6 +76,7 @@ export default function Cards(){
             <div className="mt-4">
                 <Card className="overflow-hidden">
                     <div className="grid grid-cols-2 gap-4 p-4 bg-gray-200">
+                        <AnimateOnScroll y={24}>
                         <Link href="/collections/under-2000" className="block group">
                             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-gray-100">
                                 <Image
@@ -72,6 +88,8 @@ export default function Cards(){
                             </div>
                             <h2 className="px-1 py-2 text-black text-sm font-medium text-center truncate">Under ₹2000</h2>
                         </Link>
+                        </AnimateOnScroll>
+                        <AnimateOnScroll y={24} delay={0.08}>
                         <Link href="/collections/under-3000" className="block group">
                             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-gray-100">
                                 <Image
@@ -83,8 +101,10 @@ export default function Cards(){
                             </div>
                             <h2 className="px-1 py-2 text-black text-sm font-medium text-center truncate">Under ₹3000</h2>
                         </Link>
+                        </AnimateOnScroll>
                     </div>
                 </Card>
+
             </div>
         </div>
         </section>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState, useCallback, useEffect } from "react"
+import { AnimateOnScroll } from "@/components/gsap/animate-on-scroll"
 import { fetchStorefrontProducts, type AdminProduct, fetchBrands, type Brand, fetchCategoriesByBrandSlug, fetchSubcategoriesByBrandAndCategorySlug } from "@/lib/api"
 import { ProductCard } from "./product-card"
 import { ProductFilters, type ProductFiltersState } from "@/components/filters/product-filters"
@@ -60,15 +61,21 @@ export function ProductList() {
           We'll expose a custom event emitter through window for simplicity if needed.
       */}
       <div className="grid grid-cols-1 md:grid-cols-[16rem_1fr] gap-6">
-        <ProductFilters onChange={setFilters} />
+        <AnimateOnScroll y={24}>
+          <ProductFilters onChange={setFilters} />
+        </AnimateOnScroll>
         <div>
           <div className="flex items-baseline justify-between">
-            <h2 className="text-xl font-semibold">Products</h2>
+            <AnimateOnScroll y={16}>
+              <h2 className="text-xl font-semibold">Products</h2>
+            </AnimateOnScroll>
             <div className="text-sm text-slate-600">{filtered.length} items</div>
           </div>
           <div className="mt-4 grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filtered.map((p) => (
-              <ProductCard key={p._id} product={p} />
+            {filtered.map((p, idx) => (
+              <AnimateOnScroll key={p._id} y={24} delay={idx * 0.04}>
+                <ProductCard product={p} />
+              </AnimateOnScroll>
             ))}
           </div>
         </div>

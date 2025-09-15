@@ -120,13 +120,6 @@ export const openRazorpay = async (options: {
   onError: (error: Error) => void;
 }) => {
   try {
-    // Load Razorpay script if not already loaded
-    const isLoaded = await loadRazorpayScript();
-    if (!isLoaded) {
-      console.error('[Razorpay] checkout.js failed to load');
-      throw new Error('Unable to load Razorpay. Check your network and try again.');
-    }
-
     // Get payment details from your API
     const paymentData = await initiatePayment({
       amount: Math.round(options.amount * 100), // ensure paise
@@ -148,6 +141,13 @@ export const openRazorpay = async (options: {
     }
     if (!resolvedOrderId) {
       throw new Error('Missing Razorpay order_id. Ensure backend returns orderId or id.');
+    }
+
+    // Load Razorpay script if not already loaded (after API call)
+    const isLoaded = await loadRazorpayScript();
+    if (!isLoaded) {
+      console.error('[Razorpay] checkout.js failed to load');
+      throw new Error('Unable to load Razorpay. Check your network and try again.');
     }
 
     const razorpayOptions = {

@@ -5,32 +5,9 @@ import { Button } from '@/components/ui/button'
 import { formatINR } from '@/lib/format'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { fetchOrders, type Order } from '@/lib/api'
 
-interface OrderItem {
-  id: string
-  name: string
-  price: number
-  quantity: number
-  image: string
-}
-
-interface Order {
-  id: string
-  orderNumber: string
-  date: string
-  status: 'processing' | 'shipped' | 'delivered' | 'cancelled'
-  items: OrderItem[]
-  total: number
-  shippingAddress: {
-    name: string
-    address: string
-    city: string
-    state: string
-    postalCode: string
-    country: string
-  }
-  paymentMethod: string
-}
+// Using Order type from lib/api.ts
 
 export default function OrdersPage() {
   const { user } = useAuth()
@@ -39,87 +16,22 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // In a real app, you would fetch orders from your API
-    // This is a mock implementation
-    const fetchOrders = async () => {
+    const loadOrders = async () => {
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Mock data - in a real app, this would come from your API
-        const mockOrders: Order[] = [
-          {
-            id: '1',
-            orderNumber: 'ORD-123456',
-            date: '2023-05-15',
-            status: 'delivered',
-            items: [
-              {
-                id: 'item1',
-                name: 'Premium T-Shirt',
-                price: 29.99,
-                quantity: 2,
-                image: '/placeholder-product.jpg'
-              },
-              {
-                id: 'item2',
-                name: 'Casual Jeans',
-                price: 59.99,
-                quantity: 1,
-                image: '/placeholder-product.jpg'
-              }
-            ],
-            total: 119.97,
-            shippingAddress: {
-              name: 'John Doe',
-              address: '123 Main St',
-              city: 'Mumbai',
-              state: 'Maharashtra',
-              postalCode: '400001',
-              country: 'India'
-            },
-            paymentMethod: 'Credit Card (Visa)'
-          },
-          {
-            id: '2',
-            orderNumber: 'ORD-123455',
-            date: '2023-06-20',
-            status: 'shipped',
-            items: [
-              {
-                id: 'item3',
-                name: 'Running Shoes',
-                price: 89.99,
-                quantity: 1,
-                image: '/placeholder-product.jpg'
-              }
-            ],
-            total: 89.99,
-            shippingAddress: {
-              name: 'John Doe',
-              address: '123 Main St',
-              city: 'Mumbai',
-              state: 'Maharashtra',
-              postalCode: '400001',
-              country: 'India'
-            },
-            paymentMethod: 'PayPal'
-          }
-        ]
-        
-        setOrders(mockOrders)
+        if (user) {
+          const ordersData = await fetchOrders()
+          setOrders(ordersData)
+        }
       } catch (error) {
         console.error('Failed to fetch orders:', error)
+        // Fallback to empty array on error
+        setOrders([])
       } finally {
         setLoading(false)
       }
     }
 
-    if (user) {
-      fetchOrders()
-    } else {
-      setLoading(false)
-    }
+    loadOrders()
   }, [user])
 
   if (loading) {
@@ -203,12 +115,12 @@ export default function OrdersPage() {
       
       <div className="space-y-6">
         {orders.map((order) => (
-          <div key={order.id} className="border rounded-lg overflow-hidden">
+          <div key={order._id} className="border rounded-lg overflow-hidden">
             <div className="bg-gray-50 px-6 py-4 border-b flex flex-col sm:flex-row justify-between">
               <div className="mb-2 sm:mb-0">
                 <div className="text-sm text-gray-500">Order #{order.orderNumber}</div>
                 <div className="text-sm text-gray-500">
-                  Placed on {new Date(order.date).toLocaleDateString('en-IN')}
+                  Placed on {new Date(order.createdAt).toLocaleDateString('en-IN')}
                 </div>
               </div>
               <div className="flex items-center">
@@ -220,6 +132,8 @@ export default function OrdersPage() {
                       ? 'bg-blue-100 text-blue-800'
                       : order.status === 'processing'
                       ? 'bg-yellow-100 text-yellow-800'
+                      : order.status === 'confirmed'
+                      ? 'bg-blue-100 text-blue-800'
                       : 'bg-red-100 text-red-800'
                   }`}
                 >
@@ -230,23 +144,29 @@ export default function OrdersPage() {
             
             <div className="p-6">
               <div className="space-y-4">
-                {order.items.map((item) => (
-                  <div key={item.id} className="flex items-start">
+                {order.items.map((item, index) => (
+                  <div key={`${item.product._id}-${index}`} className="flex items-start">
                     <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
                       <img 
-                        src={item.image} 
-                        alt={item.name} 
+                        src={item.product.images?.[0] || '/placeholder-product.jpg'} 
+                        alt={item.product.title} 
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="ml-4 flex-1">
-                      <h3 className="font-medium text-gray-900">{item.name}</h3>
+                      <h3 className="font-medium text-gray-900">{item.title || item.product.title}</h3>
                       <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                      {(item.sku || item.product.sku) && (
+                        <p className="text-xs text-gray-400">SKU: {item.sku || item.product.sku}</p>
+                      )}
                     </div>
                     <div className="ml-4 text-right">
-                      <p className="font-medium text-gray-900">{formatINR(item.price * item.quantity)}</p>
+                      <p className="font-medium text-gray-900">{formatINR(item.finalPrice || item.totalPrice || (item.price * item.quantity))}</p>
                       {item.quantity > 1 && (
-                        <p className="text-sm text-gray-500">{formatINR(item.price)} each</p>
+                        <p className="text-sm text-gray-500">{formatINR(item.unitPrice || item.price)} each</p>
+                      )}
+                      {(item.taxAmount || 0) > 0 && (
+                        <p className="text-xs text-gray-400">Tax: {formatINR(item.taxAmount || 0)}</p>
                       )}
                     </div>
                   </div>
@@ -258,23 +178,64 @@ export default function OrdersPage() {
                   <div>
                     <h4 className="text-sm font-medium text-gray-900">Shipping Address</h4>
                     <p className="mt-1 text-sm text-gray-500">
-                      {order.shippingAddress.name}<br />
-                      {order.shippingAddress.address}<br />
+                      {order.shippingAddress.fullName}<br />
+                      {order.shippingAddress.addressLine1}<br />
+                      {order.shippingAddress.addressLine2 && `${order.shippingAddress.addressLine2}<br />`}
                       {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}<br />
                       {order.shippingAddress.country}
                     </p>
+                    {order.shippingAddress.phone && (
+                      <p className="text-sm text-gray-500">Phone: {order.shippingAddress.phone}</p>
+                    )}
+                    {order.shippingAddress.landmark && (
+                      <p className="text-sm text-gray-500">Landmark: {order.shippingAddress.landmark}</p>
+                    )}
                   </div>
                   <div className="text-right">
-                    <h4 className="text-sm font-medium text-gray-900">Order Total</h4>
-                    <p className="mt-1 text-lg font-bold text-gray-900">{formatINR(order.total)}</p>
+                    <h4 className="text-sm font-medium text-gray-900">Order Summary</h4>
+                    <div className="mt-1 text-sm text-gray-500">
+                      <p>Items: {formatINR(order.itemsPrice)}</p>
+                      <p>Tax: {formatINR(order.taxPrice)}</p>
+                      <p>Shipping: {formatINR(order.shippingPrice)}</p>
+                      <p className="text-lg font-bold text-gray-900 mt-2">Total: {formatINR(order.totalPrice)}</p>
+                    </div>
                     <p className="mt-1 text-sm text-gray-500">
                       Paid with {order.paymentMethod}
                     </p>
                   </div>
                 </div>
                 
+                {order.shipmentDetails && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <h5 className="text-sm font-medium text-blue-900">Shipment Information</h5>
+                    {order.shipmentDetails.awbNumber && (
+                      <p className="text-sm text-blue-700">AWB: {order.shipmentDetails.awbNumber}</p>
+                    )}
+                    {order.shipmentDetails.courierPartner && (
+                      <p className="text-sm text-blue-700">Courier: {order.shipmentDetails.courierPartner}</p>
+                    )}
+                    {order.shipmentDetails.trackingUrl && (
+                      <p className="text-sm text-blue-700">
+                        <a href={order.shipmentDetails.trackingUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                          Track Package
+                        </a>
+                      </p>
+                    )}
+                    {order.shipmentDetails.estimatedDeliveryDate && (
+                      <p className="text-sm text-blue-700">Est. Delivery: {new Date(order.shipmentDetails.estimatedDeliveryDate).toLocaleDateString('en-IN')}</p>
+                    )}
+                    {order.shipmentDetails.lastTrackingUpdate && (
+                      <div className="mt-2">
+                        <p className="text-xs text-blue-600">Last Update:</p>
+                        <p className="text-sm text-blue-700">{order.shipmentDetails.lastTrackingUpdate.description}</p>
+                        <p className="text-xs text-blue-600">{new Date(order.shipmentDetails.lastTrackingUpdate.timestamp).toLocaleString('en-IN')}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 <div className="mt-6 flex justify-end space-x-3">
-                  <Button variant="outline" onClick={() => router.push(`/orders/${order.id}`)}>
+                  <Button variant="outline" onClick={() => router.push(`/orders/${order._id}`)}>
                     View Details
                   </Button>
                   {order.status === 'delivered' && (

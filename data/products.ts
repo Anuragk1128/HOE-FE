@@ -2,9 +2,13 @@
 
 export interface Product {
   attributes: {
-    size: string[];
-    color: string[];
+    size?: string[];
+    color?: string[];
     material?: string;
+    fit?: string;
+    styling?: string;
+    occasion?: string;
+    gender?: string;
   };
   _id: string;
   brandId: string | { _id: string; name: string; slug: string };
@@ -19,9 +23,33 @@ export interface Product {
   stock: number;
   status: string;
   tags: string[];
+  sku?: string;
+  shippingCategory?: string;
+  weightKg?: number;
+  dimensionsCm?: {
+    length: number;
+    breadth: number;
+    height: number;
+  };
+  hsnCode?: string;
+  gstRate?: number;
+  productType?: string;
+  lowStockThreshold?: number;
+  isActive?: boolean;
+  vendorId?: string;
+  featured?: boolean;
+  bestseller?: boolean;
+  newArrival?: boolean;
+  onSale?: boolean;
+  rating?: number;
+  numReviews?: number;
+  totalSales?: number;
+  viewCount?: number;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string[];
   createdAt: string;
   updatedAt: string;
-  vendorId?: string;
 }
 
 // Legacy storefront pages (e.g., `app/brands/page.tsx` and `app/categories/page.tsx`) import

@@ -36,6 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/categories" className="block rounded px-2 py-2 hover:bg-slate-100">Categories</Link>
           <Link href="/admin/subcategories" className="block rounded px-2 py-2 hover:bg-slate-100">Subcategories</Link>
           <Link href="/admin/products" className="block rounded px-2 py-2 hover:bg-slate-100">Products</Link>
+          <Link href="/admin/orders" className="block rounded px-2 py-2 hover:bg-slate-100">Orders</Link>
           <div className="pt-4">
             {authed ? (
               <Button className="w-full" variant="outline" size="sm" onClick={onLogout}>Logout</Button>

@@ -15,6 +15,40 @@ export interface Product {
   categoryId?: string
   subcategoryId?: string
   slug?: string
+  sku?: string
+  shippingCategory?: string
+  weightKg?: number
+  dimensionsCm?: {
+    length: number
+    breadth: number
+    height: number
+  }
+  hsnCode?: string
+  gstRate?: number
+  productType?: string
+  attributes?: {
+    size?: string[]
+    color?: string[]
+    material?: string
+    fit?: string
+    styling?: string
+    occasion?: string
+    gender?: string
+  }
+  lowStockThreshold?: number
+  isActive?: boolean
+  vendorId?: string
+  featured?: boolean
+  bestseller?: boolean
+  newArrival?: boolean
+  onSale?: boolean
+  rating?: number
+  numReviews?: number
+  totalSales?: number
+  viewCount?: number
+  metaTitle?: string
+  metaDescription?: string
+  metaKeywords?: string[]
 }
 
 export interface CartItem {

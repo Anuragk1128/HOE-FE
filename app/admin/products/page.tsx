@@ -32,6 +32,26 @@ export default function AdminProductsPage() {
   const [stock, setStock] = useState<number>(0)
   const [status, setStatus] = useState<string>("active")
   const [tags, setTags] = useState<string>("")
+  // New Product Schema Fields
+  const [sku, setSku] = useState<string>("")
+  const [shippingCategory, setShippingCategory] = useState<string>("general")
+  const [weightKg, setWeightKg] = useState<number>(0.5)
+  const [dimensionsLength, setDimensionsLength] = useState<number>(15)
+  const [dimensionsBreadth, setDimensionsBreadth] = useState<number>(10)
+  const [dimensionsHeight, setDimensionsHeight] = useState<number>(5)
+  const [hsnCode, setHsnCode] = useState<string>("")
+  const [gstRate, setGstRate] = useState<number>(12)
+  const [productType, setProductType] = useState<string>("artificial-jewellery")
+  const [lowStockThreshold, setLowStockThreshold] = useState<number>(5)
+  const [isActive, setIsActive] = useState<boolean>(true)
+  const [vendorId, setVendorId] = useState<string>("")
+  const [featured, setFeatured] = useState<boolean>(false)
+  const [bestseller, setBestseller] = useState<boolean>(false)
+  const [newArrival, setNewArrival] = useState<boolean>(false)
+  const [onSale, setOnSale] = useState<boolean>(false)
+  const [metaTitle, setMetaTitle] = useState<string>("")
+  const [metaDescription, setMetaDescription] = useState<string>("")
+  const [metaKeywords, setMetaKeywords] = useState<string>("")
   // Dynamic attributes: array of rows { key, type, value }
   const [attributesRows, setAttributesRows] = useState<Array<{ key: string; type: 'text' | 'list'; value: string }>>([
     { key: "", type: "text", value: "" },
@@ -204,6 +224,26 @@ export default function AdminProductsPage() {
                               setStock(p.stock || 0)
                               setStatus(p.status || "active")
                               setTags((p.tags || []).join(", "))
+                              // Set new fields
+                              setSku(p.sku || "")
+                              setShippingCategory(p.shippingCategory || "general")
+                              setWeightKg(p.weightKg || 0.5)
+                              setDimensionsLength(p.dimensionsCm?.length || 15)
+                              setDimensionsBreadth(p.dimensionsCm?.breadth || 10)
+                              setDimensionsHeight(p.dimensionsCm?.height || 5)
+                              setHsnCode(p.hsnCode || "")
+                              setGstRate(p.gstRate || 12)
+                              setProductType(p.productType || "artificial-jewellery")
+                              setLowStockThreshold(p.lowStockThreshold || 5)
+                              setIsActive(p.isActive ?? true)
+                              setVendorId(p.vendorId || "")
+                              setFeatured(p.featured || false)
+                              setBestseller(p.bestseller || false)
+                              setNewArrival(p.newArrival || false)
+                              setOnSale(p.onSale || false)
+                              setMetaTitle(p.metaTitle || "")
+                              setMetaDescription(p.metaDescription || "")
+                              setMetaKeywords((p.metaKeywords || []).join(", "))
                               const attrs = (p.attributes || {}) as Record<string, unknown>
                               const rows: Array<{ key: string; type: 'text' | 'list'; value: string }> = []
                               Object.entries(attrs).forEach(([k, v]) => {
@@ -290,6 +330,31 @@ export default function AdminProductsPage() {
                         .split(",")
                         .map((t) => t.trim())
                         .filter(Boolean),
+                      // New Product Schema Fields
+                      sku: sku.trim() || undefined,
+                      shippingCategory,
+                      weightKg: Number(weightKg) || 0.5,
+                      dimensionsCm: {
+                        length: Number(dimensionsLength) || 15,
+                        breadth: Number(dimensionsBreadth) || 10,
+                        height: Number(dimensionsHeight) || 5,
+                      },
+                      hsnCode: hsnCode.trim() || undefined,
+                      gstRate: Number(gstRate) || 12,
+                      productType,
+                      lowStockThreshold: Number(lowStockThreshold) || 5,
+                      isActive,
+                      vendorId: vendorId.trim() || undefined,
+                      featured,
+                      bestseller,
+                      newArrival,
+                      onSale,
+                      metaTitle: metaTitle.trim() || undefined,
+                      metaDescription: metaDescription.trim() || undefined,
+                      metaKeywords: metaKeywords
+                        .split(",")
+                        .map((k) => k.trim())
+                        .filter(Boolean),
                     }
 
                     if (editingProduct) {
@@ -317,6 +382,26 @@ export default function AdminProductsPage() {
                     setStock(0)
                     setStatus("active")
                     setTags("")
+                    // Reset new fields
+                    setSku("")
+                    setShippingCategory("general")
+                    setWeightKg(0.5)
+                    setDimensionsLength(15)
+                    setDimensionsBreadth(10)
+                    setDimensionsHeight(5)
+                    setHsnCode("")
+                    setGstRate(12)
+                    setProductType("artificial-jewellery")
+                    setLowStockThreshold(5)
+                    setIsActive(true)
+                    setVendorId("")
+                    setFeatured(false)
+                    setBestseller(false)
+                    setNewArrival(false)
+                    setOnSale(false)
+                    setMetaTitle("")
+                    setMetaDescription("")
+                    setMetaKeywords("")
                     setAttributesRows([{ key: "", type: "text", value: "" }])
                     setEditingProduct(null)
                     // refresh list using either current filters or the edited product's slugs
@@ -435,6 +520,152 @@ export default function AdminProductsPage() {
                   <Label htmlFor="tags">Tags (comma separated)</Label>
                   <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} />
                 </div>
+
+                {/* New Product Schema Fields */}
+                <div className="md:col-span-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Product Details & Shipping</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="sku">SKU</Label>
+                          <Input id="sku" value={sku} onChange={(e) => setSku(e.target.value)} placeholder="Auto-generated if empty" />
+                        </div>
+                        <div>
+                          <Label htmlFor="shippingCategory">Shipping Category</Label>
+                          <select id="shippingCategory" className="w-full border rounded px-3 py-2 text-sm" value={shippingCategory} onChange={(e) => setShippingCategory(e.target.value)}>
+                            <option value="artificial-jewellery">Artificial Jewellery</option>
+                            <option value="earrings">Earrings</option>
+                            <option value="necklaces">Necklaces</option>
+                            <option value="bracelets">Bracelets</option>
+                            <option value="bangles">Bangles</option>
+                            <option value="rings">Rings</option>
+                            <option value="clothes">Clothes</option>
+                            <option value="knitted-clothes">Knitted Clothes</option>
+                            <option value="textiles">Textiles</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="general">General</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label htmlFor="weightKg">Weight (kg)</Label>
+                          <Input id="weightKg" type="number" step="0.1" value={weightKg} onChange={(e) => setWeightKg(Number(e.target.value))} />
+                        </div>
+                        <div>
+                          <Label htmlFor="productType">Product Type</Label>
+                          <select id="productType" className="w-full border rounded px-3 py-2 text-sm" value={productType} onChange={(e) => setProductType(e.target.value)}>
+                            <option value="artificial-jewellery">Artificial Jewellery</option>
+                            <option value="imitation-jewellery">Imitation Jewellery</option>
+                            <option value="fashion-jewellery">Fashion Jewellery</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="textiles">Textiles</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label htmlFor="dimensionsLength">Length (cm)</Label>
+                          <Input id="dimensionsLength" type="number" value={dimensionsLength} onChange={(e) => setDimensionsLength(Number(e.target.value))} />
+                        </div>
+                        <div>
+                          <Label htmlFor="dimensionsBreadth">Breadth (cm)</Label>
+                          <Input id="dimensionsBreadth" type="number" value={dimensionsBreadth} onChange={(e) => setDimensionsBreadth(Number(e.target.value))} />
+                        </div>
+                        <div>
+                          <Label htmlFor="dimensionsHeight">Height (cm)</Label>
+                          <Input id="dimensionsHeight" type="number" value={dimensionsHeight} onChange={(e) => setDimensionsHeight(Number(e.target.value))} />
+                        </div>
+                        <div>
+                          <Label htmlFor="lowStockThreshold">Low Stock Threshold</Label>
+                          <Input id="lowStockThreshold" type="number" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(Number(e.target.value))} />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Tax & Compliance</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="hsnCode">HSN Code</Label>
+                          <Input id="hsnCode" value={hsnCode} onChange={(e) => setHsnCode(e.target.value)} placeholder="Auto-calculated if empty" />
+                        </div>
+                        <div>
+                          <Label htmlFor="gstRate">GST Rate (%)</Label>
+                          <Input id="gstRate" type="number" min="0" max="28" value={gstRate} onChange={(e) => setGstRate(Number(e.target.value))} />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Business & Marketing</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="vendorId">Vendor ID</Label>
+                          <Input id="vendorId" value={vendorId} onChange={(e) => setVendorId(e.target.value)} />
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center">
+                            <input type="checkbox" id="isActive" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="mr-2" />
+                            <Label htmlFor="isActive">Active</Label>
+                          </div>
+                          <div className="flex items-center">
+                            <input type="checkbox" id="featured" checked={featured} onChange={(e) => setFeatured(e.target.checked)} className="mr-2" />
+                            <Label htmlFor="featured">Featured</Label>
+                          </div>
+                          <div className="flex items-center">
+                            <input type="checkbox" id="bestseller" checked={bestseller} onChange={(e) => setBestseller(e.target.checked)} className="mr-2" />
+                            <Label htmlFor="bestseller">Bestseller</Label>
+                          </div>
+                          <div className="flex items-center">
+                            <input type="checkbox" id="newArrival" checked={newArrival} onChange={(e) => setNewArrival(e.target.checked)} className="mr-2" />
+                            <Label htmlFor="newArrival">New Arrival</Label>
+                          </div>
+                          <div className="flex items-center">
+                            <input type="checkbox" id="onSale" checked={onSale} onChange={(e) => setOnSale(e.target.checked)} className="mr-2" />
+                            <Label htmlFor="onSale">On Sale</Label>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">SEO & Meta</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="metaTitle">Meta Title</Label>
+                          <Input id="metaTitle" value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} />
+                        </div>
+                        <div>
+                          <Label htmlFor="metaDescription">Meta Description</Label>
+                          <Input id="metaDescription" value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} />
+                        </div>
+                        <div>
+                          <Label htmlFor="metaKeywords">Meta Keywords (comma separated)</Label>
+                          <Input id="metaKeywords" value={metaKeywords} onChange={(e) => setMetaKeywords(e.target.value)} />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
                 {error && <div className="md:col-span-2 text-sm text-red-600">{error}</div>}
                 {success && <div className="md:col-span-2 text-sm text-green-600">{success}</div>}
                 <div className="md:col-span-2">
@@ -457,6 +688,26 @@ export default function AdminProductsPage() {
                           setStock(0)
                           setStatus("active")
                           setTags("")
+                          // Reset new fields
+                          setSku("")
+                          setShippingCategory("general")
+                          setWeightKg(0.5)
+                          setDimensionsLength(15)
+                          setDimensionsBreadth(10)
+                          setDimensionsHeight(5)
+                          setHsnCode("")
+                          setGstRate(12)
+                          setProductType("artificial-jewellery")
+                          setLowStockThreshold(5)
+                          setIsActive(true)
+                          setVendorId("")
+                          setFeatured(false)
+                          setBestseller(false)
+                          setNewArrival(false)
+                          setOnSale(false)
+                          setMetaTitle("")
+                          setMetaDescription("")
+                          setMetaKeywords("")
                           setAttributesRows([{ key: "", type: "text", value: "" }])
                           setError(null)
                           setSuccess(null)

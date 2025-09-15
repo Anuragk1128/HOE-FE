@@ -6,7 +6,7 @@ import { formatINR } from '@/lib/utils';
 import { openRazorpay } from '@/lib/payment';
 import { toast } from 'sonner';
 import { useCart } from '@/contexts/cart-context';
-import { API_BASE_URL } from '@/lib/api';
+import { createOrder, type CreateOrderInput, type Address, type SellerDetails } from '@/lib/api';
 
 export function RazorpayButton({
   amount,
@@ -15,6 +15,7 @@ export function RazorpayButton({
   email,
   contact,
   shippingInfo,
+  billingInfo,
   onSuccess,
   onError,
   disabled = false,
@@ -25,6 +26,7 @@ export function RazorpayButton({
   email: string;
   contact: string;
   shippingInfo: any;
+  billingInfo?: any;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
   disabled?: boolean;
@@ -51,7 +53,7 @@ export function RazorpayButton({
         })),
         shippingAddress: {
           fullName: shippingInfo.firstName ? `${shippingInfo.firstName} ${shippingInfo.lastName || ''}`.trim() : name,
-          addressLine1: shippingInfo.address,
+          addressLine1: shippingInfo.addressLine1,
           city: shippingInfo.city,
           state: shippingInfo.state,
           postalCode: shippingInfo.postalCode,
@@ -60,31 +62,94 @@ export function RazorpayButton({
         },
         onSuccess: async (paymentId: string, razorpayOrderId: string) => {
           try {
-            // Call your order creation API here
-            const token = localStorage.getItem('authToken');
-            const response = await fetch(`${API_BASE_URL}/orders`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                paymentId,
-                orderId: razorpayOrderId,
-                amount,
-                shippingInfo,
-                items: cart.map(item => ({
-                  product: item.product._id,
-                  quantity: item.quantity,
-                  price: item.product.price
-                }))
-              }),
-            });
+            // Create shipping address
+            const shippingAddress: Address = {
+              fullName: shippingInfo.firstName ? `${shippingInfo.firstName} ${shippingInfo.lastName || ''}`.trim() : name,
+              addressLine1: shippingInfo.addressLine1,
+              addressLine2: shippingInfo.addressLine2,
+              city: shippingInfo.city,
+              state: shippingInfo.state,
+              postalCode: shippingInfo.postalCode,
+              country: shippingInfo.country || 'India',
+              phone: shippingInfo.phone || contact,
+              landmark: shippingInfo.landmark,
+              latitude: shippingInfo.latitude,
+              longitude: shippingInfo.longitude,
+            };
 
-            if (!response.ok) {
-              const error = await response.json();
-              throw new Error(error.message || 'Failed to create order');
-            }
+            // Create billing address if different from shipping
+            const billingAddress: Address | undefined = billingInfo?.sameAsShipping ? undefined : {
+              fullName: billingInfo ? `${billingInfo.firstName} ${billingInfo.lastName || ''}`.trim() : shippingAddress.fullName,
+              addressLine1: billingInfo?.addressLine1 || shippingAddress.addressLine1,
+              addressLine2: billingInfo?.addressLine2 || shippingAddress.addressLine2,
+              city: billingInfo?.city || shippingAddress.city,
+              state: billingInfo?.state || shippingAddress.state,
+              postalCode: billingInfo?.postalCode || shippingAddress.postalCode,
+              country: billingInfo?.country || shippingAddress.country,
+              phone: billingInfo?.phone || shippingAddress.phone,
+              landmark: billingInfo?.landmark || shippingAddress.landmark,
+              latitude: billingInfo?.latitude || shippingAddress.latitude,
+              longitude: billingInfo?.longitude || shippingAddress.longitude,
+            };
+
+            // Default seller details (should be configurable)
+            const sellerDetails: SellerDetails = {
+              address: {
+                fullAddress: 'Your Store Address, City, State, Pincode',
+                pincode: 123456,
+                city: 'Your City',
+                state: 'Your State',
+                country: 'India',
+              },
+              contact: {
+                name: 'Store Manager',
+                mobile: 9876543210,
+              },
+            };
+
+            // Create order with new structure
+            const orderData: CreateOrderInput = {
+              items: cart.map(item => ({
+                productId: item.product._id,
+                quantity: item.quantity,
+                title: item.product.title,
+                image: item.product.images?.[0],
+                price: item.product.price,
+                sku: item.product.sku,
+                category: item.product.shippingCategory,
+                weight: item.product.weightKg,
+                dimensions: item.product.dimensionsCm ? {
+                  length: item.product.dimensionsCm.length,
+                  breadth: item.product.dimensionsCm.breadth,
+                  height: item.product.dimensionsCm.height,
+                } : undefined,
+                hsnCode: item.product.hsnCode,
+              })),
+              customerDetails: {
+                name: name,
+                email: email,
+                mobile: contact,
+              },
+              shippingAddress,
+              billingAddress,
+              sellerDetails,
+              paymentMethod: 'online',
+              razorpayDetails: {
+                razorpayOrderId: razorpayOrderId,
+                razorpayPaymentId: paymentId,
+                paymentMethod: 'card', // or detect from Razorpay response
+                paymentStatus: 'captured',
+              },
+              itemsPrice: amount,
+              shippingPrice: 0, // Calculate based on shipping logic
+              taxPrice: Math.round(amount * 0.18), // Calculate based on items
+              totalPrice: amount,
+              currency: 'INR',
+              orderNotes: `Order created via Razorpay payment. Payment ID: ${paymentId}`,
+            };
+
+            const order = await createOrder(orderData);
+            console.log('Order created successfully:', order);
 
             // Clear cart and show success
             await clearCart();
@@ -92,7 +157,7 @@ export function RazorpayButton({
             onSuccess?.();
           } catch (error) {
             console.error('Order creation error:', error);
-            toast.error('Order created but there was an issue updating the status.');
+            toast.error('Payment successful but failed to create order. Please contact support.');
             onError?.(error as Error);
           }
         },

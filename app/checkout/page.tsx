@@ -6,7 +6,7 @@ import { useCart } from '@/contexts/cart-context';
 import { Button } from '@/components/ui/button';
 import { formatINR } from '@/lib/utils';
 import { useAuth } from '@/components/auth/auth-provider';
-import { API_BASE_URL } from '@/lib/api';
+import { API_BASE_URL, type Address } from '@/lib/api';
 import { toast } from 'sonner';
 import { RazorpayButton } from '@/components/payment/razorpay-button';
 
@@ -17,11 +17,30 @@ type ShippingInfo = {
   lastName: string
   email: string
   phone: string
-  address: string
+  addressLine1: string
+  addressLine2?: string
   city: string
   state: string
   postalCode: string
   country: string
+  landmark?: string
+  latitude?: string
+  longitude?: string
+}
+
+type BillingInfo = {
+  sameAsShipping: boolean
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  addressLine1: string
+  addressLine2?: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  landmark?: string
 }
 
 type PaymentInfo = {
@@ -44,11 +63,29 @@ export default function CheckoutPage() {
     lastName: '',
     email: '',
     phone: '',
-    address: '',
+    addressLine1: '',
+    addressLine2: '',
     city: '',
     state: '',
     postalCode: '',
     country: 'India',
+    landmark: '',
+    latitude: '',
+    longitude: '',
+  })
+  const [billingInfo, setBillingInfo] = useState<BillingInfo>({
+    sameAsShipping: true,
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: 'India',
+    landmark: '',
   })
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({
     cardNumber: '',
@@ -96,7 +133,7 @@ export default function CheckoutPage() {
           lastName: prev.lastName || lastName || '',
           email: prev.email || u.email || '',
           phone: prev.phone || u.phone || '',
-          address: prev.address || u.address || '',
+          addressLine1: prev.addressLine1 || u.address || '',
           // Keep city/state/postalCode empty to be required if not derivable
         }))
       } catch (e) {
@@ -106,21 +143,7 @@ export default function CheckoutPage() {
     return () => controller.abort()
   }, [user?.token, mounted])
 
-  // Address Management
-  type Address = {
-    _id?: string
-    fullName: string
-    addressLine1: string
-    addressLine2?: string
-    city: string
-    state: string
-    postalCode: string
-    country: string
-    phone: string
-    latitude?: string
-    longitude?: string
-    landmark?: string
-  }
+  // Address Management - using Address type from lib/api.ts
 
   const [addresses, setAddresses] = useState<Address[]>([])
   const [addressesLoading, setAddressesLoading] = useState(false)
@@ -188,11 +211,15 @@ export default function CheckoutPage() {
       lastName: lastName || prev.lastName,
       email: prev.email, // keep email from user
       phone: addr.phone || prev.phone,
-      address: `${addr.addressLine1}${addr.addressLine2 ? ", " + addr.addressLine2 : ''}`,
+      addressLine1: addr.addressLine1 || prev.addressLine1,
+      addressLine2: addr.addressLine2 || prev.addressLine2,
       city: addr.city || prev.city,
       state: addr.state || prev.state,
       postalCode: addr.postalCode || prev.postalCode,
       country: addr.country || prev.country,
+      landmark: addr.landmark || prev.landmark,
+      latitude: addr.latitude || prev.latitude,
+      longitude: addr.longitude || prev.longitude,
     }))
   }
 
@@ -303,12 +330,7 @@ export default function CheckoutPage() {
 
   const renderPaymentButton = () => (
     <div className="space-y-6">
-      <div className="bg-blue-50 p-4 rounded-md">
-        <h3 className="text-lg font-medium text-blue-800">Secure Payment</h3>
-        <p className="mt-1 text-sm text-blue-700">
-          You will be redirected to Razorpay's secure payment page to complete your purchase.
-        </p>
-      </div>
+     
       
       <div className="mt-8">
         <RazorpayButton
@@ -318,18 +340,13 @@ export default function CheckoutPage() {
           email={shippingInfo.email}
           contact={shippingInfo.phone}
           shippingInfo={shippingInfo}
+          billingInfo={billingInfo}
           onSuccess={handlePaymentSuccess}
           onError={handlePaymentError}
           disabled={isProcessing}
         />
         
-        <div className="mt-4 flex items-center justify-center">
-          <img 
-            src="https://razorpay.com/build/browser/static/razorpay-logo.5a165a21.svg" 
-            alt="Razorpay" 
-            className="h-6 opacity-80"
-          />
-        </div>
+        
       </div>
     </div>
   )
@@ -599,16 +616,46 @@ export default function CheckoutPage() {
               </div>
               
               <div className="md:col-span-2">
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                  Address *
+                <label htmlFor="addressLine1" className="block text-sm font-medium text-gray-700">
+                  Address Line 1 *
                 </label>
                 <input
                   type="text"
-                  id="address"
+                  id="addressLine1"
                   required
-                  value={shippingInfo.address}
+                  value={shippingInfo.addressLine1}
                   onChange={(e) =>
-                    setShippingInfo({ ...shippingInfo, address: e.target.value })
+                    setShippingInfo({ ...shippingInfo, addressLine1: e.target.value })
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="addressLine2" className="block text-sm font-medium text-gray-700">
+                  Address Line 2
+                </label>
+                <input
+                  type="text"
+                  id="addressLine2"
+                  value={shippingInfo.addressLine2 || ''}
+                  onChange={(e) =>
+                    setShippingInfo({ ...shippingInfo, addressLine2: e.target.value })
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="landmark" className="block text-sm font-medium text-gray-700">
+                  Landmark
+                </label>
+                <input
+                  type="text"
+                  id="landmark"
+                  value={shippingInfo.landmark || ''}
+                  onChange={(e) =>
+                    setShippingInfo({ ...shippingInfo, landmark: e.target.value })
                   }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -698,9 +745,11 @@ export default function CheckoutPage() {
                 <h3 className="text-lg font-medium text-gray-900">Shipping Information</h3>
                 <div className="mt-2 text-gray-600">
                   <p>{`${shippingInfo.firstName} ${shippingInfo.lastName}`}</p>
-                  <p>{shippingInfo.address}</p>
+                  <p>{shippingInfo.addressLine1}</p>
+                  {shippingInfo.addressLine2 && <p>{shippingInfo.addressLine2}</p>}
                   <p>{`${shippingInfo.city}, ${shippingInfo.state} ${shippingInfo.postalCode}`}</p>
                   <p>{shippingInfo.country}</p>
+                  {shippingInfo.landmark && <p className="text-sm text-gray-500">Landmark: {shippingInfo.landmark}</p>}
                   <p className="mt-2">{shippingInfo.email}</p>
                   <p>{shippingInfo.phone}</p>
                 </div>

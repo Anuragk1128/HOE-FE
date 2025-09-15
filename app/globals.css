@@ -4,33 +4,51 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #ffffff; /* Main background color */
-  --foreground: #1e293b; /* Primary text color */
+  --background: #ffffff;
+  /* Main background color */
+  --foreground: #1e293b;
+  /* Primary text color */
 
-  --card: #f1f5f9; /* Card background */
-  --card-foreground: #1e1e2f; /* Card text color */
+  --card: #f1f5f9;
+  /* Card background */
+  --card-foreground: #1e1e2f;
+  /* Card text color */
 
-  --popover: #ffffff; /* Popover background */
-  --popover-foreground: #1e293b; /* Popover text color */
+  --popover: #ffffff;
+  /* Popover background */
+  --popover-foreground: #1e293b;
+  /* Popover text color */
 
-  --primary: #1e293b; /* Primary actions (slate-800) */
-  --primary-foreground: #ffffff; /* Text on primary */
+  --primary: #1e293b;
+  /* Primary actions (slate-800) */
+  --primary-foreground: #ffffff;
+  /* Text on primary */
 
-  --secondary: #d97706; /* Accent highlight (amber-400) */
-  --secondary-foreground: #ffffff; /* Text on secondary */
+  --secondary: #d97706;
+  /* Accent highlight (amber-400) */
+  --secondary-foreground: #ffffff;
+  /* Text on secondary */
 
-  --muted: #f1f5f9; /* Muted background */
-  --muted-foreground: #1e1e2f; /* Muted text */
+  --muted: #f1f5f9;
+  /* Muted background */
+  --muted-foreground: #1e1e2f;
+  /* Muted text */
 
-  --accent: #d97706; /* Accent for interactive elements */
-  --accent-foreground: #ffffff; /* Text on accent */
+  --accent: #d97706;
+  /* Accent for interactive elements */
+  --accent-foreground: #ffffff;
+  /* Text on accent */
 
-  --destructive: #ff4d4d; /* Destructive */
+  --destructive: #ff4d4d;
+  /* Destructive */
   --destructive-foreground: #ffffff;
 
-  --border: #eaeaea; /* Borders */
-  --input: #f1f5f9; /* Input background */
-  --ring: rgba(0, 0, 0, 0.1); /* Focus rings */
+  --border: #eaeaea;
+  /* Borders */
+  --input: #f1f5f9;
+  /* Input background */
+  --ring: rgba(0, 0, 0, 0.1);
+  /* Focus rings */
 
   --chart-1: #1e293b;
   --chart-2: #d97706;
@@ -51,20 +69,26 @@
 }
 
 .dark {
-  --background: #1e1e2f; /* Deep slate background */
-  --foreground: #ffffff; /* High-contrast text */
+  --background: #1e1e2f;
+  /* Deep slate background */
+  --foreground: #ffffff;
+  /* High-contrast text */
 
-  --card: #1e293b; /* Slightly lighter card */
+  --card: #1e293b;
+  /* Slightly lighter card */
   --card-foreground: #ffffff;
 
   --popover: #1e293b;
   --popover-foreground: #ffffff;
 
-  --primary: #ffffff; /* Invert primary for prominence */
+  --primary: #ffffff;
+  /* Invert primary for prominence */
   --primary-foreground: #1e293b;
 
-  --secondary: #d97706; /* Amber accent retained */
-  --secondary-foreground: #1e293b; /* Better contrast on amber */
+  --secondary: #d97706;
+  /* Amber accent retained */
+  --secondary-foreground: #1e293b;
+  /* Better contrast on amber */
 
   --muted: #1e293b;
   --muted-foreground: #f1f5f9;
@@ -140,6 +164,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

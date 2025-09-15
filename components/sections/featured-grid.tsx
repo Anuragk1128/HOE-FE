@@ -35,7 +35,9 @@ export function FeaturedGrid() {
     <section className="bg-white w-full overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="flex items-end justify-between mb-6 md:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Featured Products</h2>
+          <AnimateOnScroll y={16}>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Featured Products</h2>
+          </AnimateOnScroll>
         </div>
         {loading ? (
           <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6">

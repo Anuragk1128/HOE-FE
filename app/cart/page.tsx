@@ -1,3 +1,4 @@
+// app/cart/page.tsx
 'use client'
 
 import { useCart } from '@/contexts/cart-context'
@@ -6,68 +7,71 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { formatINR } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
-import { useAuth } from '@/components/auth/auth-provider'
-import { API_BASE_URL } from '@/lib/api'
+import { useState, useEffect } from 'react'
+import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function CartPage() {
-  const { cart, updateQuantity, removeFromCart, cartTotal, itemCount, clearCart } = useCart()
+  const { 
+    cart, 
+    updateQuantity, 
+    removeFromCart, 
+    cartTotal, 
+    itemCount, 
+    clearCart, 
+    loading,
+    error 
+  } = useCart()
+  
   const router = useRouter()
   const [isClient, setIsClient] = useState(false)
-  const { user } = useAuth()
-  const [serverCart, setServerCart] = useState<Array<{ _id: string; quantity: number; product: { _id: string; title: string; slug: string; images: string[]; price: number } }>>([])
-  const [loadingServerCart, setLoadingServerCart] = useState(false)
-  const shippingFee = cart.length > 0 ? 0 : 0 // Free shipping for now
-  const computedSubtotal = serverCart.length
-    ? serverCart.reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0)
-    : cartTotal
-  const tax = computedSubtotal * 0.1 // 10% tax
-  const orderTotal = computedSubtotal + shippingFee + tax
+  const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     setIsClient(true)
   }, [])
 
-  useEffect(() => {
-    const fetchServerCart = async () => {
-      if (!user?.token) {
-        setServerCart([])
-        return
-      }
-      try {
-        setLoadingServerCart(true)
-        const res = await fetch(`${API_BASE_URL}/cart`, {
-          credentials: 'include',
-          headers: { Accept: 'application/json' },
-        })
-        if (!res.ok) {
-          setServerCart([])
-          return
-        }
-        const data = await res.json()
-        const list = Array.isArray(data) ? data : []
-        setServerCart(list)
-      } finally {
-        setLoadingServerCart(false)
-      }
-    }
-    fetchServerCart()
-  }, [user?.token])
+  const handleUpdateQuantity = async (cartItemId: string, newQuantity: number) => {
+    if (newQuantity < 1) return
 
-  const removeServerCartItem = async (productId: string) => {
-    if (!user?.token) return
+    setUpdatingItems(prev => new Set(prev).add(cartItemId))
+    
     try {
-      const res = await fetch(`${API_BASE_URL}/cart/${productId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: { Accept: '*/*' },
+      await updateQuantity(cartItemId, newQuantity)
+    } catch (error) {
+      console.error('Failed to update quantity:', error)
+    } finally {
+      setUpdatingItems(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(cartItemId)
+        return newSet
       })
-      if (!res.ok) return
-      setServerCart((prev) => prev.filter((i) => i.product?._id !== productId))
-    } catch {}
+    }
   }
 
-  if (!isClient) {
+  const handleRemoveItem = async (cartItemId: string) => {
+    setUpdatingItems(prev => new Set(prev).add(cartItemId))
+    
+    try {
+      await removeFromCart(cartItemId)
+    } catch (error) {
+      console.error('Failed to remove item:', error)
+    } finally {
+      setUpdatingItems(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(cartItemId)
+        return newSet
+      })
+    }
+  }
+
+  // Calculate totals
+  const shippingFee = cartTotal > 500 ? 0 : 50 // Free shipping above ₹500
+  const tax = cartTotal * 0.1 // 10% tax
+  const orderTotal = cartTotal + shippingFee + tax
+
+  // Loading state
+  if (!isClient || loading) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="animate-pulse">
@@ -99,33 +103,33 @@ export default function CartPage() {
     )
   }
 
-  const effectiveItemCount = serverCart.length || itemCount
-
-  if (!loadingServerCart && serverCart.length === 0 && cart.length === 0) {
+  // Error state
+  if (error) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
         <div className="max-w-md mx-auto">
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1}
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-          <h2 className="mt-2 text-2xl font-bold text-gray-900">Your cart is empty</h2>
-          <p className="mt-1 text-gray-500">Looks like you haven't added anything to your cart yet.</p>
-          <div className="mt-6">
-            <Button onClick={() => router.push('/products')} className="px-6">
-              Continue Shopping
-            </Button>
-          </div>
+          <div className="text-red-500 text-xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error loading cart</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Empty cart state
+  if (cart.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-12 text-center">
+        <div className="max-w-md mx-auto">
+          <ShoppingBag className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
+          <p className="text-gray-600 mb-6">Looks like you haven't added anything to your cart yet.</p>
+          <Button onClick={() => router.push('/products')} className="px-6">
+            Continue Shopping
+          </Button>
         </div>
       </div>
     )
@@ -133,86 +137,126 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Cart ({effectiveItemCount} {effectiveItemCount === 1 ? 'item' : 'items'})</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Your Cart ({itemCount} {itemCount === 1 ? 'item' : 'items'})
+        </h1>
+        {cart.length > 0 && (
+          <Button 
+            variant="outline" 
+            onClick={clearCart}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            Clear Cart
+          </Button>
+        )}
+      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
-        <div className="lg:col-span-2 space-y-6">
-          {(serverCart.length ? serverCart : cart).map((item: any) => (
-            <div key={item.id || item._id || item.product?._id} className="flex flex-col sm:flex-row items-start sm:items-center p-4 border rounded-lg">
-              <div className="relative w-full sm:w-24 h-24 bg-gray-100 rounded overflow-hidden">
-                {(item.image || item.product?.images?.[0]) && (
-                  <Image
-                    src={item.image || item.product.images[0]}
-                    alt={item.name || item.product?.title || 'Product image'}
-                    fill
-                    className="object-cover"
-                  />
-                )}
-              </div>
-              
-              <div className="mt-4 sm:mt-0 sm:ml-6 flex-1 w-full">
-                <div className="flex justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    <Link href={`/products/${item.productId || item.product?._id}`} className="hover:underline">
-                      {item.name || item.product?.title}
-                    </Link>
-                  </h3>
-                  <p className="ml-4 font-medium text-gray-900">{formatINR(item.price ?? item.product?.price ?? 0)}</p>
-                </div>
-                
-                <div className="mt-2 flex items-center justify-between">
-                  <div className="flex items-center border rounded-md">
-                    <span className="px-3 py-1 text-gray-700">Qty</span>
-                    <span className="w-8 text-center">{item.quantity}</span>
-                  </div>
-                  {!serverCart.length ? (
-                    <button
-                      onClick={() => removeFromCart(item.productId)}
-                      className="text-sm font-medium text-red-600 hover:text-red-500"
-                    >
-                      Remove
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => removeServerCartItem(item.product?._id)}
-                      className="text-sm font-medium text-red-600 hover:text-red-500"
-                    >
-                      Remove
-                    </button>
+        <div className="lg:col-span-2 space-y-4">
+          {cart.map((item) => {
+            const isUpdating = updatingItems.has(item._id)
+            
+            return (
+              <div 
+                key={item._id} 
+                className={`flex flex-col sm:flex-row items-start sm:items-center p-4 border rounded-lg bg-white ${
+                  isUpdating ? 'opacity-50 pointer-events-none' : ''
+                }`}
+              >
+                {/* Product Image */}
+                <div className="relative w-24 h-24 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                  {item.product?.images?.[0] && (
+                    <Image
+                      src={item.product.images[0]}
+                      alt={item.product?.title || 'Product image'}
+                      fill
+                      className="object-cover"
+                      sizes="96px"
+                    />
                   )}
                 </div>
+                
+                {/* Product Details */}
+                <div className="mt-4 sm:mt-0 sm:ml-6 flex-1 w-full">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-medium text-gray-900 mb-1">
+                        <Link 
+                          href={`/products/${item.product?.slug || item.product?._id}`} 
+                          className="hover:text-blue-600 transition-colors"
+                        >
+                          {item.product?.title?.trim() || 'Product'}
+                        </Link>
+                      </h3>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {formatINR(item.product?.price || 0)}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Subtotal: {formatINR((item.product?.price || 0) * item.quantity)}
+                      </p>
+                    </div>
+                    
+                    {/* Quantity Controls & Remove Button */}
+                    <div className="flex items-center justify-between sm:justify-end mt-4 sm:mt-0 w-full sm:w-auto">
+                      {/* Quantity Controls */}
+                      <div className="flex items-center border rounded-lg">
+                        <button
+                          onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
+                          disabled={item.quantity <= 1 || isUpdating}
+                          className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="px-4 py-2 font-medium min-w-[3rem] text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
+                          disabled={isUpdating}
+                          className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                      
+                      {/* Remove Button */}
+                      <button
+                        onClick={() => handleRemoveItem(item._id)}
+                        disabled={isUpdating}
+                        className="ml-4 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Remove item"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
-          
-          {!serverCart.length && (
-            <div className="flex justify-end">
-              <button
-                onClick={clearCart}
-                className="text-sm font-medium text-red-600 hover:text-red-500"
-              >
-                Clear cart
-              </button>
-            </div>
-          )}
+            )
+          })}
         </div>
         
         {/* Order Summary */}
         <div className="lg:col-span-1">
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Order Summary</h2>
+          <div className="bg-gray-50 p-6 rounded-lg sticky top-4">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
             
-            <div className="space-y-3">
+            <div className="space-y-3 mb-4">
               <div className="flex justify-between">
-                <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium">{formatINR(computedSubtotal)}</span>
+                <span className="text-gray-600">Subtotal ({itemCount} items)</span>
+                <span className="font-medium">{formatINR(cartTotal)}</span>
               </div>
               
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
                 <span className="font-medium">
-                  {shippingFee === 0 ? 'Free' : formatINR(shippingFee)}
+                  {shippingFee === 0 ? (
+                    <span className="text-green-600">Free</span>
+                  ) : (
+                    formatINR(shippingFee)
+                  )}
                 </span>
               </div>
               
@@ -221,23 +265,27 @@ export default function CartPage() {
                 <span className="font-medium">{formatINR(tax)}</span>
               </div>
               
-              <div className="border-t border-gray-200 pt-3 mt-3">
-                <div className="flex justify-between">
-                  <span className="text-lg font-medium">Order Total</span>
-                  <span className="text-lg font-bold">{formatINR(orderTotal)}</span>
+              {shippingFee > 0 && (
+                <div className="text-sm text-gray-500 bg-blue-50 p-2 rounded">
+                  💡 Add {formatINR(500 - cartTotal)} more for free shipping!
                 </div>
+              )}
+            </div>
+            
+            <div className="border-t border-gray-200 pt-4 mb-6">
+              <div className="flex justify-between items-center">
+                <span className="text-xl font-semibold">Total</span>
+                <span className="text-xl font-bold text-gray-900">{formatINR(orderTotal)}</span>
               </div>
             </div>
             
-            <div className="mt-6">
-              <Button 
-                onClick={() => router.push('/checkout')}
-                className="w-full py-6 text-base"
-                disabled={cart.length === 0}
-              >
-                Proceed to Checkout
-              </Button>
-            </div>
+            <Button 
+              onClick={() => router.push('/checkout')}
+              className="w-full py-3 text-lg font-semibold"
+              disabled={cart.length === 0 || loading}
+            >
+              Proceed to Checkout
+            </Button>
             
             <p className="mt-4 text-center text-sm text-gray-500">
               or{' '}

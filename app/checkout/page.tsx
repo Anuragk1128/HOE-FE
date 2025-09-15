@@ -1,10 +1,14 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useCart } from '@/contexts/cart-context'
-import { Button } from '@/components/ui/button'
-import { formatINR } from '@/lib/utils'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCart } from '@/contexts/cart-context';
+import { Button } from '@/components/ui/button';
+import { formatINR } from '@/lib/utils';
+import { useAuth } from '@/components/auth/auth-provider';
+import { API_BASE_URL } from '@/lib/api';
+import { toast } from 'sonner';
+import { RazorpayButton } from '@/components/payment/razorpay-button';
 
 type CheckoutStep = 'shipping' | 'payment' | 'review' | 'confirmation'
 
@@ -27,10 +31,14 @@ type PaymentInfo = {
   cvv: string
 }
 
+// Removed direct Razorpay usage from this page; handled via RazorpayButton component
+
 export default function CheckoutPage() {
   const router = useRouter()
   const { cart, cartTotal, clearCart } = useCart()
+  const { user } = useAuth()
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('shipping')
+  const [isProcessing, setIsProcessing] = useState(false)
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
     firstName: '',
     lastName: '',
@@ -50,52 +58,281 @@ export default function CheckoutPage() {
   })
   const [orderPlaced, setOrderPlaced] = useState(false)
   const [orderNumber, setOrderNumber] = useState('')
+  const [mounted, setMounted] = useState(false)
+ 
+  // Set mounted state after initial render to prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
-  const shippingFee = 0 // Free shipping
-  const tax = cartTotal * 0.1 // 10% tax
-  const orderTotal = cartTotal + shippingFee + tax
+  // Autofill shipping details from logged-in user
+  useEffect(() => {
+    if (!mounted) return // Skip on server-side
+    
+    const token = user?.token || (typeof window !== 'undefined' ? localStorage.getItem('authToken') : null)
+    if (!token) return
+    
+    const controller = new AbortController()
+    ;(async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/users/me`, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          signal: controller.signal,
+        })
+        const data = await res.json().catch(() => ({} as any))
+        if (!res.ok) return
+        const u = (data && (data.user || data)) as any
+        if (!u) return
+        const name: string = u.name || ''
+        const [firstName, ...rest] = name.trim().split(' ').filter(Boolean)
+        const lastName = rest.join(' ')
+        setShippingInfo(prev => ({
+          ...prev,
+          firstName: prev.firstName || firstName || '',
+          lastName: prev.lastName || lastName || '',
+          email: prev.email || u.email || '',
+          phone: prev.phone || u.phone || '',
+          address: prev.address || u.address || '',
+          // Keep city/state/postalCode empty to be required if not derivable
+        }))
+      } catch (e) {
+        // noop
+      }
+    })()
+    return () => controller.abort()
+  }, [user?.token, mounted])
+
+  // Address Management
+  type Address = {
+    _id?: string
+    fullName: string
+    addressLine1: string
+    addressLine2?: string
+    city: string
+    state: string
+    postalCode: string
+    country: string
+    phone: string
+    latitude?: string
+    longitude?: string
+    landmark?: string
+  }
+
+  const [addresses, setAddresses] = useState<Address[]>([])
+  const [addressesLoading, setAddressesLoading] = useState(false)
+  const [addressesError, setAddressesError] = useState<string | null>(null)
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [savingDefault, setSavingDefault] = useState(false)
+  const [createLoading, setCreateLoading] = useState(false)
+  const [editMode, setEditMode] = useState(false)
+  const [savingEdit, setSavingEdit] = useState(false)
+
+  const [newAddress, setNewAddress] = useState<Address>({
+    fullName: '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: 'India',
+    phone: '',
+    latitude: '',
+    longitude: '',
+    landmark: '',
+  })
+
+  const token = user?.token || (typeof window !== 'undefined' ? localStorage.getItem('authToken') : null)
+
+  const fetchAddresses = async () => {
+    if (!token) return
+    setAddressesLoading(true)
+    setAddressesError(null)
+    try {
+      const res = await fetch(`${API_BASE_URL}/addresses`, {
+        method: 'GET',
+        headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json().catch(() => ({})) as any
+      if (!res.ok) throw new Error((data as any)?.message || 'Failed to fetch addresses')
+      const list: Address[] = (Array.isArray((data as any).data) ? (data as any).data : Array.isArray(data) ? data : (data as any).addresses) || []
+      setAddresses(list)
+      // If user has addresses and none selected, select the first and map to shipping
+      if (list.length && !selectedAddressId) {
+        setSelectedAddressId(list[0]._id || null)
+        mapAddressToShipping(list[0])
+      }
+    } catch (e: any) {
+      setAddressesError(e?.message || 'Unable to load addresses')
+    } finally {
+      setAddressesLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (token) fetchAddresses()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
+
+  const mapAddressToShipping = (addr: Address) => {
+    const fullName = addr.fullName || ''
+    const [firstName, ...rest] = fullName.trim().split(' ').filter(Boolean)
+    const lastName = rest.join(' ')
+    setShippingInfo(prev => ({
+      ...prev,
+      firstName: firstName || prev.firstName,
+      lastName: lastName || prev.lastName,
+      email: prev.email, // keep email from user
+      phone: addr.phone || prev.phone,
+      address: `${addr.addressLine1}${addr.addressLine2 ? ", " + addr.addressLine2 : ''}`,
+      city: addr.city || prev.city,
+      state: addr.state || prev.state,
+      postalCode: addr.postalCode || prev.postalCode,
+      country: addr.country || prev.country,
+    }))
+  }
+
+  const handleSelectAddress = (addrId: string) => {
+    setSelectedAddressId(addrId)
+    const addr = addresses.find(a => (a._id || '') === addrId)
+    if (addr) mapAddressToShipping(addr)
+  }
+
+  const handleCreateAddress = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!token) return
+    setCreateLoading(true)
+    try {
+      const res = await fetch(`${API_BASE_URL}/addresses`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newAddress),
+      })
+      const data = await res.json().catch(() => ({})) as any
+      if (!res.ok) throw new Error((data as any)?.message || 'Failed to create address')
+      // Refresh list and select the newly created if returned
+      await fetchAddresses()
+      setShowAddForm(false)
+      setNewAddress({
+        fullName: '', addressLine1: '', addressLine2: '', city: '', state: '', postalCode: '', country: 'India', phone: '', latitude: '', longitude: '', landmark: ''
+      })
+    } catch (e: any) {
+      alert(e?.message || 'Error creating address')
+    } finally {
+      setCreateLoading(false)
+    }
+  }
+
+  const handleSaveAsDefault = async () => {
+    if (!token || !user?.id || !selectedAddressId) return
+    const addr = addresses.find(a => (a._id || '') === selectedAddressId)
+    if (!addr) return
+    setSavingDefault(true)
+    try {
+      const res = await fetch(`${API_BASE_URL}/addresses/${encodeURIComponent(user.id)}`, {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(addr),
+      })
+      const data = await res.json().catch(() => ({})) as any
+      if (!res.ok) throw new Error((data as any)?.message || 'Failed to update user address')
+      // Optionally refetch user/me to keep local state aligned
+    } catch (e: any) {
+      alert(e?.message || 'Error updating address')
+    } finally {
+      setSavingDefault(false)
+    }
+  }
+
+  const handleSaveEdit = async () => {
+    if (!token || !user?.id) return
+    setSavingEdit(true)
+    try {
+      const res = await fetch(`${API_BASE_URL}/addresses/${encodeURIComponent(user.id)}`, {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newAddress),
+      })
+      const data = await res.json().catch(() => ({})) as any
+      if (!res.ok) throw new Error((data as any)?.message || 'Failed to update address')
+      setShowAddForm(false)
+      setEditMode(false)
+      await fetchAddresses()
+    } catch (e: any) {
+      alert(e?.message || 'Error updating address')
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  const shippingFee = 0; // Free shipping
+  const tax = cartTotal * 0.1; // 10% tax
+  const orderTotal = cartTotal + shippingFee + tax;
 
   const handleShippingSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setCurrentStep('payment')
   }
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setCurrentStep('review')
+  const handlePaymentSuccess = () => {
+    setOrderPlaced(true)
+    setOrderNumber(`ORD-${Date.now()}`)
+    setCurrentStep('confirmation')
   }
 
-  const handlePlaceOrder = async () => {
-    // In a real app, you would send this data to your backend
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Generate a random order number
-      const orderNum = `ORD-${Math.floor(100000 + Math.random() * 900000)}`
-      setOrderNumber(orderNum)
-      
-      // Clear cart and show confirmation
-      clearCart()
-      setOrderPlaced(true)
-      setCurrentStep('confirmation')
-    } catch (error) {
-      console.error('Failed to place order:', error)
-      alert('Failed to place order. Please try again.')
-    }
+  const handlePaymentError = (error: Error) => {
+    console.error('Payment error:', error)
+    toast.error(error.message || 'Payment failed. Please try again.')
   }
 
-  if (!cart.length && !orderPlaced) {
-    return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <h2 className="text-2xl font-semibold text-gray-800">Your cart is empty</h2>
-        <p className="mt-2 text-gray-600">Please add some items to your cart before checking out.</p>
-        <Button onClick={() => router.push('/products')} className="mt-4">
-          Continue Shopping
-        </Button>
+  const renderPaymentButton = () => (
+    <div className="space-y-6">
+      <div className="bg-blue-50 p-4 rounded-md">
+        <h3 className="text-lg font-medium text-blue-800">Secure Payment</h3>
+        <p className="mt-1 text-sm text-blue-700">
+          You will be redirected to Razorpay's secure payment page to complete your purchase.
+        </p>
       </div>
-    )
-  }
+      
+      <div className="mt-8">
+        <RazorpayButton
+          amount={cartTotal}
+          orderId={`order_${Date.now()}`}
+          name={`${shippingInfo.firstName} ${shippingInfo.lastName}`.trim()}
+          email={shippingInfo.email}
+          contact={shippingInfo.phone}
+          shippingInfo={shippingInfo}
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
+          disabled={isProcessing}
+        />
+        
+        <div className="mt-4 flex items-center justify-center">
+          <img 
+            src="https://razorpay.com/build/browser/static/razorpay-logo.5a165a21.svg" 
+            alt="Razorpay" 
+            className="h-6 opacity-80"
+          />
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -154,7 +391,163 @@ export default function CheckoutPage() {
       <div className="max-w-4xl mx-auto">
         {currentStep === 'shipping' && (
           <form onSubmit={handleShippingSubmit} className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Shipping Information</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Shipping Information</h2>
+            </div>
+
+            {/* Saved Addresses Section */}
+            <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Saved Addresses</h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddForm(s => !s)
+                    setEditMode(false)
+                    setNewAddress({ fullName: '', addressLine1: '', addressLine2: '', city: '', state: '', postalCode: '', country: 'India', phone: '', latitude: '', longitude: '', landmark: '' })
+                  }}
+                  className="inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
+                  title="Add new address"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"/></svg>
+                  Add Address
+                </button>
+              </div>
+
+              {addressesLoading && <p className="text-sm text-gray-500">Loading addresses...</p>}
+              {addressesError && <p className="text-sm text-red-600">{addressesError}</p>}
+              {!addressesLoading && !addressesError && (
+                <div className="space-y-3">
+                  {addresses.length ? (
+                    addresses.map(addr => (
+                      <label key={(addr._id || addr.addressLine1) + addr.postalCode} className="flex items-start gap-3 p-3 border rounded-md hover:bg-gray-50 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="selectedAddress"
+                          className="mt-1"
+                          checked={selectedAddressId === (addr._id || '')}
+                          onChange={() => handleSelectAddress(addr._id || '')}
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium text-gray-900">{addr.fullName} <span className="text-gray-500 font-normal">• {addr.phone}</span></p>
+                            {selectedAddressId === (addr._id || '') && (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  className="text-sm text-blue-600 hover:underline"
+                                  onClick={() => {
+                                    setEditMode(true)
+                                    setShowAddForm(true)
+                                    setNewAddress({ ...addr })
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-700">{addr.addressLine1}{addr.addressLine2 ? `, ${addr.addressLine2}` : ''}</p>
+                          <p className="text-sm text-gray-700">{addr.city}, {addr.state} {addr.postalCode}, {addr.country}</p>
+                          {addr.landmark ? <p className="text-xs text-gray-500">Landmark: {addr.landmark}</p> : null}
+                          {(addr.latitude || addr.longitude) ? <p className="text-xs text-gray-500">Lat/Lng: {addr.latitude || '-'}, {addr.longitude || '-'}</p> : null}
+                        </div>
+                      </label>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No saved addresses yet. Add a new address.</p>
+                  )}
+
+                  <div className="flex items-center gap-3 pt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const addr = addresses.find(a => (a._id || '') === selectedAddressId)
+                        if (addr) mapAddressToShipping(addr)
+                      }}
+                      disabled={!selectedAddressId}
+                    >
+                      Use Selected for Shipping
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleSaveAsDefault}
+                      disabled={!selectedAddressId || savingDefault}
+                    >
+                      {savingDefault ? 'Saving...' : 'Save as Default'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {showAddForm && (
+                <form onSubmit={(e) => {
+                  if (editMode) {
+                    e.preventDefault()
+                    // Save edited address as default for user
+                    handleSaveEdit()
+                  } else {
+                    handleCreateAddress(e)
+                  }
+                }} className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700">Full Name *</label>
+                    <input type="text" required value={newAddress.fullName} onChange={(e)=>setNewAddress({...newAddress, fullName: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700">Address Line 1 *</label>
+                    <input type="text" required value={newAddress.addressLine1} onChange={(e)=>setNewAddress({...newAddress, addressLine1: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700">Address Line 2</label>
+                    <input type="text" value={newAddress.addressLine2 || ''} onChange={(e)=>setNewAddress({...newAddress, addressLine2: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">City *</label>
+                    <input type="text" required value={newAddress.city} onChange={(e)=>setNewAddress({...newAddress, city: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">State *</label>
+                    <input type="text" required value={newAddress.state} onChange={(e)=>setNewAddress({...newAddress, state: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Postal Code *</label>
+                    <input type="text" required value={newAddress.postalCode} onChange={(e)=>setNewAddress({...newAddress, postalCode: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Country *</label>
+                    <input type="text" required value={newAddress.country} onChange={(e)=>setNewAddress({...newAddress, country: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Phone *</label>
+                    <input type="tel" required value={newAddress.phone} onChange={(e)=>setNewAddress({...newAddress, phone: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Latitude</label>
+                    <input type="text" value={newAddress.latitude || ''} onChange={(e)=>setNewAddress({...newAddress, latitude: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Longitude</label>
+                    <input type="text" value={newAddress.longitude || ''} onChange={(e)=>setNewAddress({...newAddress, longitude: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700">Landmark</label>
+                    <input type="text" value={newAddress.landmark || ''} onChange={(e)=>setNewAddress({...newAddress, landmark: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+
+                  <div className="md:col-span-2 flex items-center gap-3 pt-2">
+                    <Button type="submit" disabled={createLoading}>
+                      {editMode ? (savingEdit ? 'Saving...' : 'Save Changes') : (createLoading ? 'Adding...' : 'Add Address')}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => { setShowAddForm(false); setEditMode(false); }}>
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
+
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -294,98 +687,7 @@ export default function CheckoutPage() {
           </form>
         )}
         
-        {currentStep === 'payment' && (
-          <form onSubmit={handlePaymentSubmit} className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Payment Information</h2>
-            
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <div className="space-y-6">
-                <div>
-                  <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700">
-                    Card Number *
-                  </label>
-                  <input
-                    type="text"
-                    id="cardNumber"
-                    required
-                    placeholder="1234 5678 9012 3456"
-                    value={paymentInfo.cardNumber}
-                    onChange={(e) =>
-                      setPaymentInfo({ ...paymentInfo, cardNumber: e.target.value })
-                    }
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="cardName" className="block text-sm font-medium text-gray-700">
-                    Name on Card *
-                  </label>
-                  <input
-                    type="text"
-                    id="cardName"
-                    required
-                    placeholder="John Doe"
-                    value={paymentInfo.cardName}
-                    onChange={(e) =>
-                      setPaymentInfo({ ...paymentInfo, cardName: e.target.value })
-                    }
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700">
-                      Expiry Date *
-                    </label>
-                    <input
-                      type="text"
-                      id="expiryDate"
-                      required
-                      placeholder="MM/YY"
-                      value={paymentInfo.expiryDate}
-                      onChange={(e) =>
-                        setPaymentInfo({ ...paymentInfo, expiryDate: e.target.value })
-                      }
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="cvv" className="block text-sm font-medium text-gray-700">
-                      CVV *
-                    </label>
-                    <input
-                      type="text"
-                      id="cvv"
-                      required
-                      placeholder="123"
-                      value={paymentInfo.cvv}
-                      onChange={(e) =>
-                        setPaymentInfo({ ...paymentInfo, cvv: e.target.value })
-                      }
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-between pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCurrentStep('shipping')}
-              >
-                Back
-              </Button>
-              <Button type="submit" className="px-6">
-                Review Order
-              </Button>
-            </div>
-          </form>
-        )}
+        {currentStep === 'payment' && renderPaymentButton()}
         
         {currentStep === 'review' && (
           <div className="space-y-8">
@@ -407,8 +709,7 @@ export default function CheckoutPage() {
               <div className="p-6 border-b border-gray-200">
                 <h3 className="text-lg font-medium text-gray-900">Payment Method</h3>
                 <div className="mt-2 text-gray-600">
-                  <p>Visa ending in {paymentInfo.cardNumber.slice(-4)}</p>
-                  <p>Expires {paymentInfo.expiryDate}</p>
+                  <p>Razorpay</p>
                 </div>
               </div>
               
@@ -416,12 +717,12 @@ export default function CheckoutPage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Order Summary</h3>
                 <div className="space-y-4">
                   {cart.map((item) => (
-                    <div key={item.id} className="flex justify-between">
+                    <div key={item._id} className="flex justify-between">
                       <div>
-                        <p className="font-medium">{item.name}</p>
+                        <p className="font-medium">{item.product.title}</p>
                         <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                       </div>
-                      <p className="font-medium">{formatINR(item.price * item.quantity)}</p>
+                      <p className="font-medium">{formatINR(item.product.price * item.quantity)}</p>
                     </div>
                   ))}
                   
@@ -454,8 +755,12 @@ export default function CheckoutPage() {
               >
                 Back
               </Button>
-              <Button onClick={handlePlaceOrder} className="px-6">
-                Place Order
+              <Button 
+                type="button"
+                onClick={() => setCurrentStep('payment')} 
+                className="px-6"
+              >
+                Go to Payment
               </Button>
             </div>
           </div>

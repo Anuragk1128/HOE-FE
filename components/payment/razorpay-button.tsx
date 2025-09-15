@@ -44,6 +44,20 @@ export function RazorpayButton({
         name,
         email,
         contact,
+        items: cart.map((item) => ({
+          product: item.product._id,
+          quantity: item.quantity,
+          price: item.product.price,
+        })),
+        shippingAddress: {
+          fullName: shippingInfo.firstName ? `${shippingInfo.firstName} ${shippingInfo.lastName || ''}`.trim() : name,
+          addressLine1: shippingInfo.address,
+          city: shippingInfo.city,
+          state: shippingInfo.state,
+          postalCode: shippingInfo.postalCode,
+          country: shippingInfo.country || 'India',
+          phone: shippingInfo.phone || contact,
+        },
         onSuccess: async (paymentId: string, razorpayOrderId: string) => {
           try {
             // Call your order creation API here

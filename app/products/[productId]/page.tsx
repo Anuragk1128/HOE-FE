@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
+import { useEffect, useState, use, useRef } from 'react'
 import { Product } from '@/data/products'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
@@ -10,6 +10,7 @@ import { AuthModal } from '@/components/auth/auth-modal'
 import { toast } from 'sonner'
 import Image from 'next/image'
 import { API_BASE_URL } from '@/lib/api'
+import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut, Move } from 'lucide-react'
 
 interface ProductDetails extends Product {
   brand?: {
@@ -29,6 +30,12 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [zoomLevel, setZoomLevel] = useState(1)
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 })
+  const [isZoomed, setIsZoomed] = useState(false)
+  const imageRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { addToCart } = useCart()
   const { user } = useAuth()
@@ -93,6 +100,65 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
     }
   }
 
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 0.5, 3))
+    setIsZoomed(true)
+  }
+
+  const handleZoomOut = () => {
+    const newZoom = Math.max(zoomLevel - 0.5, 1)
+    setZoomLevel(newZoom)
+    if (newZoom <= 1) {
+      setZoomLevel(1)
+      setIsZoomed(false)
+      setPosition({ x: 0, y: 0 })
+    }
+  }
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoomLevel <= 1) return
+    setIsDragging(true)
+    setStartPos({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
+    })
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || zoomLevel <= 1) return
+    
+    // Calculate new position
+    const newX = e.clientX - startPos.x
+    const newY = e.clientY - startPos.y
+    
+    // Get image dimensions
+    if (imageRef.current) {
+      const { width, height } = imageRef.current.getBoundingClientRect()
+      const maxX = (width * (zoomLevel - 1)) / 2
+      const maxY = (height * (zoomLevel - 1)) / 2
+      
+      // Constrain position to keep image within bounds
+      setPosition({
+        x: Math.max(-maxX, Math.min(maxX, newX)),
+        y: Math.max(-maxY, Math.min(maxY, newY))
+      })
+    }
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  const handleMouseLeave = () => {
+    setIsDragging(false)
+  }
+
+  const resetZoom = () => {
+    setZoomLevel(1)
+    setIsZoomed(false)
+    setPosition({ x: 0, y: 0 })
+  }
+
   const handleBuyNow = async () => {
     if (!user?.token) {
       setShowAuthModal(true)
@@ -138,40 +204,140 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Product Images */}
         <div className="space-y-4">
-          <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
+          <div 
+            className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-100 cursor-zoom-in"
+            style={{ cursor: isZoomed ? 'move' : 'zoom-in' }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            onClick={(e) => {
+              // Only zoom in/out on click if not dragging
+              if (!isDragging) {
+                if (isZoomed) {
+                  resetZoom()
+                } else {
+                  handleZoomIn()
+                }
+              }
+            }}
+            ref={imageRef}
+          >
             {product.images && product.images.length > 0 ? (
-              <Image
-                src={product.images[selectedImage]}
-                alt={product.title}
-                fill
-                className="object-cover"
-                priority
-              />
+              <div 
+                className="w-full h-full transition-transform duration-300 ease-in-out"
+                style={{
+                  transform: `scale(${zoomLevel}) translate(${position.x}px, ${position.y}px)`,
+                  transformOrigin: 'center center',
+                  willChange: 'transform'
+                }}
+              >
+                <Image
+                  src={product.images[selectedImage]}
+                  alt={product.title}
+                  width={800}
+                  height={800}
+                  className="w-full h-full object-contain"
+                  priority
+                />
+              </div>
             ) : (
               <div className="flex h-full items-center justify-center text-gray-400">
                 No image available
               </div>
             )}
+            
+            {/* Zoom controls */}
+            {isZoomed && (
+              <div className="absolute bottom-4 right-4 flex flex-col space-y-2">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleZoomIn()
+                  }}
+                  className="p-2 bg-white/80 rounded-full shadow-md hover:bg-white transition-colors"
+                  aria-label="Zoom in"
+                >
+                  <ZoomIn className="w-5 h-5 text-gray-800" />
+                </button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleZoomOut()
+                  }}
+                  className="p-2 bg-white/80 rounded-full shadow-md hover:bg-white transition-colors"
+                  aria-label="Zoom out"
+                >
+                  <ZoomOut className="w-5 h-5 text-gray-800" />
+                </button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    resetZoom()
+                  }}
+                  className="p-2 bg-white/80 rounded-full shadow-md hover:bg-white transition-colors"
+                  aria-label="Reset zoom"
+                >
+                  <X className="w-5 h-5 text-gray-800" />
+                </button>
+              </div>
+            )}
           </div>
           
           {product.images && product.images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`relative aspect-square overflow-hidden rounded-md ${
-                    selectedImage === index ? 'ring-2 ring-blue-500' : ''
-                  }`}
-                >
-                  <Image
-                    src={image}
-                    alt={`${product.title} - ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
+            <div className="relative">
+              <div className="flex items-center space-x-2 overflow-x-auto py-2 scrollbar-hide">
+                {product.images.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedImage(index)
+                      resetZoom()
+                    }}
+                    className={`flex-shrink-0 relative w-16 h-16 rounded-md overflow-hidden border-2 transition-all ${
+                      selectedImage === index 
+                        ? 'border-blue-500 ring-2 ring-blue-200' 
+                        : 'border-transparent hover:border-gray-300'
+                    }`}
+                  >
+                    <Image
+                      src={image}
+                      alt={`${product.title} - ${index + 1}`}
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+              
+              {/* Navigation arrows for mobile */}
+              {product.images.length > 4 && (
+                <>
+                  <button 
+                    onClick={() => {
+                      const prev = selectedImage > 0 ? selectedImage - 1 : product.images.length - 1
+                      setSelectedImage(prev)
+                      resetZoom()
+                    }}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 -ml-2 p-1 bg-white/80 rounded-full shadow-md hover:bg-white transition-colors"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-gray-800" />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const next = selectedImage < product.images.length - 1 ? selectedImage + 1 : 0
+                      setSelectedImage(next)
+                      resetZoom()
+                    }}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 -mr-2 p-1 bg-white/80 rounded-full shadow-md hover:bg-white transition-colors"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-800" />
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

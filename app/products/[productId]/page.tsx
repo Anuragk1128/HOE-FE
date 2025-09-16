@@ -84,37 +84,12 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
 
   const handleAddToCart = async () => {
     if (!product) return
-    if (!user?.token) {
-      setShowAuthModal(true)
-      return
-    }
     try {
-      const res = await fetch(`${API_BASE_URL}/cart/${product._id}`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify({ quantity }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        const message = data?.message || data?.error || 'Failed to add to cart'
-        toast.error(message)
-        return
-      }
-      // Sync local cart for immediate UX
-      addToCart({
-        name: product.title,
-        price: product.price,
-        image: product.images[0],
-        quantity,
-        productId: product._id,
-      })
-      toast.success('Added to cart')
+      // Always add quantity 1 as per requirement; CartContext will handle auth/toasts
+      await addToCart(product._id, 1)
     } catch (e: any) {
-      toast.error(e?.message || 'Failed to add to cart')
+      // CartContext already shows a toast on error; keep a minimal catch
+      console.error('Add to cart error:', e)
     }
   }
 

@@ -48,17 +48,36 @@ export function RazorpayButton({
         contact,
         items: cart.map((item) => ({
           product: item.product._id,
-          quantity: item.quantity,
+          title: item.product.title,
+          image: item.product.images?.[0],
           price: item.product.price,
+          quantity: item.quantity,
         })),
         shippingAddress: {
           fullName: shippingInfo.firstName ? `${shippingInfo.firstName} ${shippingInfo.lastName || ''}`.trim() : name,
           addressLine1: shippingInfo.addressLine1,
+          addressLine2: shippingInfo.addressLine2,
           city: shippingInfo.city,
           state: shippingInfo.state,
           postalCode: shippingInfo.postalCode,
           country: shippingInfo.country || 'India',
           phone: shippingInfo.phone || contact,
+          latitude: shippingInfo.latitude,
+          longitude: shippingInfo.longitude,
+          landmark: shippingInfo.landmark,
+        },
+        billingAddress: billingInfo?.sameAsShipping ? undefined : {
+          fullName: (billingInfo && `${billingInfo.firstName} ${billingInfo.lastName || ''}`.trim()) || (shippingInfo.firstName ? `${shippingInfo.firstName} ${shippingInfo.lastName || ''}`.trim() : name),
+          addressLine1: billingInfo?.addressLine1,
+          addressLine2: billingInfo?.addressLine2,
+          city: billingInfo?.city,
+          state: billingInfo?.state,
+          postalCode: billingInfo?.postalCode,
+          country: billingInfo?.country || 'India',
+          phone: billingInfo?.phone,
+          latitude: billingInfo?.latitude,
+          longitude: billingInfo?.longitude,
+          landmark: billingInfo?.landmark,
         },
         onSuccess: async (paymentId: string, razorpayOrderId: string) => {
           try {
@@ -196,7 +215,7 @@ export function RazorpayButton({
         
         <div className="mt-4 flex items-center justify-center">
           <img 
-            src="https://razorpay.com/build/browser/static/razorpay-logo.5a165a21.svg" 
+            src="https://res.cloudinary.com/deamrxfwp/image/upload/v1758003588/Razorpay-Logo_lzrhke.jpg" 
             alt="Razorpay" 
             className="h-6 opacity-80"
           />

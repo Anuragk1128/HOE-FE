@@ -112,7 +112,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (response.status === 401) {
           // Token expired, redirect to login
           localStorage.removeItem('authToken')
-          router.push('/login')
+          router.push('/account')
           return
         }
         throw new Error(`Failed to fetch cart: ${response.status}`)
@@ -161,7 +161,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const token = getAuthToken()
     if (!token) {
       toast.error('Please login to add items to cart')
-      router.push('/login')
+      router.push('/account')
       return
     }
 
@@ -197,7 +197,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (response.status === 401) {
           localStorage.removeItem('authToken')
           toast.error('Session expired. Please login again.')
-          router.push('/login')
+          router.push('/account')
           return
         }
         let errorPayload: any = null
@@ -311,7 +311,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const token = getAuthToken()
     if (!token) {
-      router.push('/login')
+      router.push('/account')
       return
     }
 
@@ -360,7 +360,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = async () => {
     const token = getAuthToken()
     if (!token) {
-      router.push('/login')
+      router.push('/account')
       return
     }
 

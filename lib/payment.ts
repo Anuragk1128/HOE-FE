@@ -185,7 +185,7 @@ export const openRazorpay = async (options: {
       key: resolvedKey,
       amount: resolvedAmount,
       currency: paymentData.currency,
-      name: 'Your Store Name',
+      name: 'House Of Evolve',
       description: 'Order Payment',
       order_id: resolvedOrderId,
       handler: async function (response: RazorpayPaymentResponse) {

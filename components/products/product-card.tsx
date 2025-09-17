@@ -79,13 +79,8 @@ export function ProductCard({ product }: { product: Product }) {
                   e.preventDefault();
                   e.stopPropagation();
                   
-                  addToCart({
-                    productId: product._id,
-                    name: product.title,
-                    price: product.price,
-                    quantity: 1,
-                    image: product.images?.[0]?.url || ''
-                  });
+                  // CartContext.addToCart expects (productId: string, quantity?: number)
+                  addToCart(product._id, 1);
                   
                   toast.success('Added to cart!', {
                     position: 'top-center',

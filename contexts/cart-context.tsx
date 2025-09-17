@@ -169,7 +169,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setLoading(true)
       
       // Attempt 1: POST /cart/:productId with body { quantity } per backend contract
-      let response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
+      const safeProductId = encodeURIComponent(String(productId))
+      let response = await fetch(`${API_BASE_URL}/cart/${safeProductId}`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',

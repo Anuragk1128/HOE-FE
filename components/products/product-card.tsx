@@ -4,11 +4,14 @@ import { Button } from "@/components/ui/button"
 import { formatINR } from "@/lib/utils"
 import { Product } from "@/data/products"
 import Link from "next/link"
+import { useCart } from "@/contexts/cart-context"
+import { toast } from "sonner"
 
 export function ProductCard({ product }: { product: Product }) {
+  const { addToCart } = useCart()
   // Extract brand info directly from product data
   // Handle both string and object types for brandId
-  const brand = typeof product.brandId === 'object' && product.brandId !== null 
+  const brand = typeof product.brandId === 'object' && product.brandId !== null
     ? product.brandId as { _id: string; name: string; slug: string }
     : null;
 
@@ -75,8 +78,25 @@ export function ProductCard({ product }: { product: Product }) {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  // Add to cart logic here
-                  console.log('Adding to cart:', product._id);
+                  
+                  addToCart({
+                    productId: product._id,
+                    name: product.title,
+                    price: product.price,
+                    quantity: 1,
+                    image: product.images?.[0]?.url || ''
+                  });
+                  
+                  toast.success('Added to cart!', {
+                    position: 'top-center',
+                    duration: 2000,
+                    style: {
+                      background: '#10B981',
+                      color: 'white',
+                      padding: '12px 20px',
+                      borderRadius: '8px',
+                    }
+                  });
                 }}
               >
                 <span className="hidden sm:inline">Add to cart</span>

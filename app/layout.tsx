@@ -8,6 +8,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import { AuthProvider } from '@/components/auth/auth-provider'
 import { CartProvider } from '@/contexts/cart-context'
 import { WishlistProvider } from '@/contexts/wishlist-context'
+import { Toaster } from '@/components/ui/sonner'
 
 export const metadata: Metadata = {
   title: 'House Of Evolve',
@@ -32,6 +33,7 @@ export default function RootLayout({
             </CartProvider>
           </AuthProvider>
         </GoogleOAuthProvider>
+        <Toaster position="top-center" richColors expand={false} />
         <Analytics />
       </body>
     </html>

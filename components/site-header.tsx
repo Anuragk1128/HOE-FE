@@ -169,28 +169,10 @@ export function SiteHeader({
 
               </div>
 
-              {/* Cart - Moved to rightmost */}
-              <div className="relative group ml-4">
-                <Link
-                  href="/cart"
-                  className="flex items-center px-4 py-1.5 rounded"
-                >
-                  <div className="relative">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="w-6 h-6 text-white"
-                    >
-                      <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.704-.486l1.875-5.25a.75.75 0 00-.704-1.014H6.12l-1.165-4.368a1.5 1.5 0 00-1.455-1.132H2.25z" />
-                      <path d="M3 18a2.25 2.25 0 104.5 0 2.25 2.25 0 00-4.5 0zm11.25 2.25a2.25 2.25 0 110-4.5 2.25 2.25 0 010 4.5z" />
-                    </svg>
-                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-xs font-bold text-slate-900">
-                      {0}
-                    </span>
-                  </div>
-                  <span className="ml-2 text-sm font-medium text-white">Cart</span>
-                </Link>
+              {/* Cart - Live count via CartIcon */}
+              <div className="relative group ml-4 flex items-center">
+                <CartIcon />
+                <span className="ml-2 text-sm font-medium text-white">Cart</span>
               </div>
             </div>
           </div>

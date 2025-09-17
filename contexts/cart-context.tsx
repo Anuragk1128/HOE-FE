@@ -100,14 +100,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true)
       setError(null)
-      
+
       const response = await fetch(`${API_BASE_URL}/cart`, {
         headers: {
           'accept': 'application/json',
           'Authorization': `Bearer ${token}`
         }
       })
-      
+
       if (!response.ok) {
         if (response.status === 401) {
           // Token expired, redirect to login
@@ -117,13 +117,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
         throw new Error(`Failed to fetch cart: ${response.status}`)
       }
-      
+
       const data = await response.json()
       console.log('Cart API Response:', data) // Debug log
-      
+
       // Handle different response formats
       let cartItems: CartItem[] = []
-      
+
       if (Array.isArray(data)) {
         // If response is directly an array
         cartItems = data
@@ -142,7 +142,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
 
       setCart(cartItems)
-      
+
     } catch (err) {
       console.error('Error fetching cart:', err)
       setError(err instanceof Error ? err.message : 'Failed to load cart')
@@ -169,7 +169,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setLoading(true)
       
       // Attempt 1: POST /cart/:productId with body { quantity } per backend contract
-      let response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
+      const safeProductId = encodeURIComponent(String(productId))
+      let response = await fetch(`${API_BASE_URL}/cart/${safeProductId}`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',
@@ -220,7 +221,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // Refresh cart after adding
       await fetchCart()
       toast.success('Added to cart')
-      
+
     } catch (err) {
       console.error('Error adding to cart:', err)
       toast.error(err instanceof Error ? err.message : 'Failed to add item to cart')
@@ -236,7 +237,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     try {
       setLoading(true)
-      
+
       const response = await fetch(`${API_BASE_URL}/cart/${cartItemId}`, {
         method: 'DELETE',
         headers: {
@@ -253,10 +254,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // Update local state immediately for better UX
       setCart(prev => prev.filter(item => item._id !== cartItemId))
       toast.success('Removed from cart')
-      
+
       // Refresh cart to sync with server
       await fetchCart()
-      
+
     } catch (err) {
       console.error('Error removing from cart:', err)
       toast.error('Failed to remove item from cart')
@@ -317,7 +318,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     try {
       setLoading(true)
-      
+
       const response = await fetch(`${API_BASE_URL}/cart/${cartItemId}`, {
         method: 'PATCH',
         headers: {
@@ -334,19 +335,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
 
       // Update local state immediately
-      setCart(prev => 
-        prev.map(item => 
-          item._id === cartItemId 
+      setCart(prev =>
+        prev.map(item =>
+          item._id === cartItemId
             ? { ...item, quantity }
             : item
         )
       )
-      
+
       toast.success('Quantity updated')
-      
+
       // Refresh cart to sync with server
       await fetchCart()
-      
+
     } catch (err) {
       console.error('Error updating quantity:', err)
       toast.error(err instanceof Error ? err.message : 'Failed to update quantity')
@@ -366,9 +367,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     try {
       setLoading(true)
-      
+
       // Clear each item individually
-      const deletePromises = cart.map(item => 
+      const deletePromises = cart.map(item =>
         fetch(`${API_BASE_URL}/cart/${item._id}`, {
           method: 'DELETE',
           headers: {
@@ -377,12 +378,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
           }
         })
       )
-      
+
       await Promise.all(deletePromises)
-      
+
       setCart([])
       toast.success('Cart cleared')
-      
+
     } catch (err) {
       console.error('Error clearing cart:', err)
       toast.error(err instanceof Error ? err.message : 'Failed to clear cart')

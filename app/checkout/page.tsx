@@ -11,6 +11,10 @@ import { toast } from 'sonner';
 import { RazorpayButton } from '@/components/payment/razorpay-button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { indianStates, getDistrictsByState } from '@/lib/indian-states-districts';
+import { useLocationServices } from '@/hooks/useLocationServices';
+import { LocationButton } from '@/components/checkout/LocationButton';
+import { AddressValidator } from '@/components/checkout/AddressValidator';
+import { CheckIcon } from 'lucide-react';
 
 type CheckoutStep = 'shipping' | 'payment' | 'review' | 'confirmation'
 
@@ -99,8 +103,44 @@ export default function CheckoutPage() {
   })
   const [orderPlaced, setOrderPlaced] = useState(false)
   const [orderNumber, setOrderNumber] = useState('')
-  const [mounted, setMounted] = useState(false)
- 
+  const [isAddressValidated, setIsAddressValidated] = useState(false);
+  const { getCurrentLocation, validateAddress, loading: locationLoading, error: locationError } = useLocationServices();
+  const [mounted, setMounted] = useState(false);
+  const [locationCoordinates, setLocationCoordinates] = useState<{ latitude: string; longitude: string } | null>(null);
+
+  // Handle when location is detected
+  const handleLocationDetected = (address: any) => {
+    setShippingInfo(prev => ({
+      ...prev,
+      addressLine1: address.addressLine1 || prev.addressLine1,
+      addressLine2: address.addressLine2 || prev.addressLine2,
+      city: address.city || prev.city,
+      state: address.state || prev.state,
+      district: address.district || prev.district,
+      postalCode: address.postalCode || prev.postalCode,
+      country: address.country || prev.country,
+      latitude: address.latitude || prev.latitude,
+      longitude: address.longitude || prev.longitude
+    }));
+  };
+
+  // Handle when address is validated
+  const handleAddressValidated = (coordinates: { latitude: string; longitude: string }) => {
+    if (coordinates.latitude && coordinates.longitude) {
+      setIsAddressValidated(true);
+      setLocationCoordinates(coordinates);
+      setShippingInfo(prev => ({
+        ...prev,
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude
+      }));
+      toast.success('Address validated successfully!');
+    } else {
+      setIsAddressValidated(false);
+      toast.error('Could not validate address. Please check the details.');
+    }
+  };
+
   // Set mounted state after initial render to prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
@@ -241,9 +281,22 @@ export default function CheckoutPage() {
     if (addr) mapAddressToShipping(addr)
   }
 
-  const handleCreateAddress = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!token) return
+  const handleCreateAddress = async (e?: React.FormEvent) => {
+    if (e && 'preventDefault' in e) e.preventDefault();
+    if (!token) return;
+
+    // Require coordinates and required fields
+    if (!newAddress.latitude || !newAddress.longitude) {
+      toast.error('Please use "Use My Current Location" or validate the address before saving');
+      return;
+    }
+
+    if (!newAddress.fullName || !newAddress.addressLine1 || !newAddress.city ||
+        !newAddress.state || !newAddress.postalCode || !newAddress.phone) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     setCreateLoading(true)
     try {
       const res = await fetch(`${API_BASE_URL}/addresses`, {
@@ -253,7 +306,11 @@ export default function CheckoutPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newAddress),
+        body: JSON.stringify({
+          ...newAddress,
+          latitude: (newAddress.latitude || '').toString(),
+          longitude: (newAddress.longitude || '').toString(),
+        }),
       })
       const data = await res.json().catch(() => ({})) as any
       if (!res.ok) throw new Error((data as any)?.message || 'Failed to create address')
@@ -263,8 +320,10 @@ export default function CheckoutPage() {
       setNewAddress({
         fullName: '', addressLine1: '', addressLine2: '', city: '', state: '', district: '', postalCode: '', country: 'India', phone: '', latitude: '', longitude: '', landmark: ''
       })
+      toast.success('Address added successfully with location coordinates!')
     } catch (e: any) {
-      alert(e?.message || 'Error creating address')
+      console.error('Create address error:', e)
+      toast.error(e?.message || 'Error creating address')
     } finally {
       setCreateLoading(false)
     }
@@ -323,11 +382,17 @@ export default function CheckoutPage() {
   const shippingFee = 0; // Free shipping
   const tax = cartTotal * 0.1; // 10% tax
   const orderTotal = cartTotal + shippingFee + tax;
-
+ 
   const handleShippingSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setCurrentStep('payment')
-  }
+    e.preventDefault();
+    
+    if (!shippingInfo.latitude || !shippingInfo.longitude || !isAddressValidated) {
+      toast.error('Please validate your address before proceeding');
+      return;
+    }
+    
+    setCurrentStep('payment');
+  };
 
   const handlePaymentSuccess = () => {
     setOrderPlaced(true)
@@ -511,15 +576,40 @@ export default function CheckoutPage() {
               )}
 
               {showAddForm && (
-                <form onSubmit={(e) => {
-                  if (editMode) {
-                    e.preventDefault()
-                    // Save edited address as default for user
-                    handleSaveEdit()
-                  } else {
-                    handleCreateAddress(e)
-                  }
-                }} className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Quick Location Detection for New Address */}
+                  <div className="md:col-span-2 mb-4">
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-3 mb-3">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <h4 className="text-sm font-medium text-blue-900">Quick Location Detection</h4>
+                      </div>
+                      <LocationButton
+                        onLocationDetected={(locationData: any) => {
+                          setNewAddress({
+                            ...newAddress,
+                            addressLine1: locationData.addressLine1 || newAddress.addressLine1,
+                            addressLine2: locationData.addressLine2 || newAddress.addressLine2,
+                            city: locationData.city || newAddress.city,
+                            state: locationData.state || newAddress.state,
+                            postalCode: locationData.postalCode || newAddress.postalCode,
+                            country: locationData.country || 'India',
+                            latitude: locationData.latitude,
+                            longitude: locationData.longitude,
+                          });
+                          toast.success('Location detected! Please verify and complete the remaining fields.');
+                        }}
+                        disabled={createLoading}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-blue-700 mt-2">
+                        Click to auto-detect your location and pre-fill address fields, then complete any missing information below.
+                      </p>
+                    </div>
+                  </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700">Full Name *</label>
                     <input type="text" required value={newAddress.fullName} onChange={(e)=>setNewAddress({...newAddress, fullName: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
@@ -552,28 +642,78 @@ export default function CheckoutPage() {
                     <label className="block text-sm font-medium text-gray-700">Phone *</label>
                     <input type="tel" required value={newAddress.phone} onChange={(e)=>setNewAddress({...newAddress, phone: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Latitude</label>
-                    <input type="text" value={newAddress.latitude || ''} onChange={(e)=>setNewAddress({...newAddress, latitude: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  {/* Location Status (replaces direct lat/lng inputs) */}
+                  <div className="md:col-span-2">
+                    <div className="bg-gray-50 p-3 rounded-lg border">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">Location Status:</span>
+                        {newAddress.latitude && newAddress.longitude ? (
+                          <div className="flex items-center text-green-600">
+                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            <span className="text-sm font-medium">Location Verified</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-orange-600 font-medium">Location Not Set</span>
+                        )}
+                      </div>
+                      {newAddress.latitude && newAddress.longitude && (
+                        <div className="mt-2 text-xs text-gray-500">
+                          Coordinates: {newAddress.latitude}, {newAddress.longitude}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Longitude</label>
-                    <input type="text" value={newAddress.longitude || ''} onChange={(e)=>setNewAddress({...newAddress, longitude: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-                  </div>
+                  {/* Keep hidden inputs for form submission */}
+                  <input type="hidden" value={newAddress.latitude || ''} />
+                  <input type="hidden" value={newAddress.longitude || ''} />
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700">Landmark</label>
                     <input type="text" value={newAddress.landmark || ''} onChange={(e)=>setNewAddress({...newAddress, landmark: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
                   </div>
 
+                  {/* Address Validation for new address */}
+                  <div className="md:col-span-2 bg-gray-50 p-4 rounded-lg border">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Save Address</h4>
+                    <AddressValidator
+                      address={{
+                        addressLine1: newAddress.addressLine1,
+                        addressLine2: newAddress.addressLine2,
+                        city: newAddress.city,
+                        state: newAddress.state,
+                        postalCode: newAddress.postalCode,
+                        country: newAddress.country
+                      }}
+                      onValidated={(coordinates) => {
+                        setNewAddress({
+                          ...newAddress,
+                          latitude: coordinates.latitude,
+                          longitude: coordinates.longitude
+                        });
+                      }}
+                      disabled={createLoading}
+                    />
+                    {!newAddress.latitude && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        Please save your address to ensure accurate delivery location.
+                      </p>
+                    )}
+                  </div>
+
                   <div className="md:col-span-2 flex items-center gap-3 pt-2">
-                    <Button type="submit" disabled={createLoading}>
+                    <Button 
+                      type="button"
+                      onClick={() => (editMode ? handleSaveEdit() : handleCreateAddress())}
+                      disabled={createLoading || (editMode ? savingEdit : false) || !newAddress.latitude}
+                    >
                       {editMode ? (savingEdit ? 'Saving...' : 'Save Changes') : (createLoading ? 'Adding...' : 'Add Address')}
                     </Button>
                     <Button type="button" variant="outline" onClick={() => { setShowAddForm(false); setEditMode(false); }}>
                       Cancel
                     </Button>
                   </div>
-                </form>
+                </div>
               )}
             </div>
 
@@ -612,6 +752,36 @@ export default function CheckoutPage() {
               </div>
               
               <div className="md:col-span-2">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-1">
+                    <LocationButton 
+                      onLocationDetected={handleLocationDetected}
+                      disabled={locationLoading}
+                    />
+                  </div>
+                  
+                  <div className="flex-1">
+                    <AddressValidator
+                      address={{
+                        addressLine1: shippingInfo.addressLine1,
+                        addressLine2: shippingInfo.addressLine2 || '',
+                        city: shippingInfo.city,
+                        state: shippingInfo.state,
+                        postalCode: shippingInfo.postalCode,
+                        country: shippingInfo.country
+                      }}
+                      onValidated={handleAddressValidated}
+                      disabled={!shippingInfo.addressLine1 || !shippingInfo.city || !shippingInfo.state || !shippingInfo.postalCode}
+                    />
+                  </div>
+                </div>
+                
+                {isAddressValidated && (
+                  <div className="mb-4 p-2 bg-green-50 text-green-700 text-sm rounded-md">
+                    ✓ Address saved and ready for checkout
+                  </div>
+                )}
+                
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Email *
                 </label>
@@ -672,6 +842,8 @@ export default function CheckoutPage() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
+
+              
               
               <div>
                 <label htmlFor="city" className="block text-sm font-medium text-gray-700">
@@ -704,6 +876,18 @@ export default function CheckoutPage() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
+
+              {/* Hidden fields for coordinates */}
+              <input
+                type="hidden"
+                value={shippingInfo.latitude || ''}
+                onChange={(e) => setShippingInfo({ ...shippingInfo, latitude: e.target.value })}
+              />
+              <input
+                type="hidden"
+                value={shippingInfo.longitude || ''}
+                onChange={(e) => setShippingInfo({ ...shippingInfo, longitude: e.target.value })}
+              />
               
               <div>
                 <label htmlFor="state" className="block text-sm font-medium text-gray-700">
@@ -767,16 +951,38 @@ export default function CheckoutPage() {
               </div>
             </div>
             
+            {/* Address Validation */}
+            <div className="md:col-span-2 bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Address Validation</h3>
+              <AddressValidator
+                address={{
+                  addressLine1: shippingInfo.addressLine1,
+                  addressLine2: shippingInfo.addressLine2,
+                  city: shippingInfo.city,
+                  state: shippingInfo.state,
+                  postalCode: shippingInfo.postalCode,
+                  country: shippingInfo.country
+                }}
+                onValidated={handleAddressValidated}
+                disabled={isProcessing}
+              />
+              {!isAddressValidated && (
+                <p className="text-xs text-gray-500 mt-2">
+                  Please save your address
+                </p>
+              )}
+            </div>
+            {/* Submit shipping and proceed to payment */}
             <div className="flex justify-end pt-4">
-              <Button type="submit" className="px-6">
+              <Button type="submit" className="px-6" disabled={!isAddressValidated}>
                 Continue to Payment
               </Button>
             </div>
           </form>
         )}
-        
+
         {currentStep === 'payment' && renderPaymentButton()}
-        
+
         {currentStep === 'review' && (
           <div className="space-y-8">
             <h2 className="text-2xl font-bold text-gray-900">Review Your Order</h2>
@@ -881,24 +1087,5 @@ export default function CheckoutPage() {
         )}
       </div>
     </div>
-  )
-}
-
-function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M5 13l4 4L19 7"
-      />
-    </svg>
   )
 }

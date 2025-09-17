@@ -398,6 +398,72 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                 </p>
               </div>
             </div>
+
+            {/* Specifications & Attributes */}
+            <div className="mt-6 space-y-4">
+              <h3 className="text-sm font-medium text-gray-900">Specifications</h3>
+              
+
+              {/* Attribute Chips */}
+              {product.attributes && (
+                <div className="space-y-3">
+                  {(Array.isArray(product.attributes.size) && product.attributes.size.length > 0) && (
+                    <div>
+                      <h4 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Sizes</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {product.attributes.size.map((s, idx) => (
+                          <span key={`${s}-${idx}`} className="px-2 py-1 text-xs rounded border bg-white">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(Array.isArray(product.attributes.color) && product.attributes.color.length > 0) && (
+                    <div>
+                      <h4 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Colors</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {product.attributes.color.map((c, idx) => (
+                          <span key={`${c}-${idx}`} className="px-2 py-1 text-xs rounded border bg-white">{c}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(product.attributes.material || product.attributes.fit || product.attributes.occasion || product.attributes.styling || product.attributes.gender) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {product.attributes.material && (
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wide text-gray-500">Material</h4>
+                          <p className="mt-1 text-gray-900">{product.attributes.material}</p>
+                        </div>
+                      )}
+                      {product.attributes.fit && (
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wide text-gray-500">Fit</h4>
+                          <p className="mt-1 text-gray-900">{product.attributes.fit}</p>
+                        </div>
+                      )}
+                      {product.attributes.occasion && (
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wide text-gray-500">Occasion</h4>
+                          <p className="mt-1 text-gray-900">{product.attributes.occasion}</p>
+                        </div>
+                      )}
+                      {product.attributes.styling && (
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wide text-gray-500">Style</h4>
+                          <p className="mt-1 text-gray-900">{product.attributes.styling}</p>
+                        </div>
+                      )}
+                      {product.attributes.gender && (
+                        <div>
+                          <h4 className="text-xs uppercase tracking-wide text-gray-500">Gender</h4>
+                          <p className="mt-1 text-gray-900">{product.attributes.gender}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {product.stock && product.stock > 0 ? (

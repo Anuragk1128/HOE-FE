@@ -23,6 +23,7 @@ export interface Product {
     breadth: number
     height: number
   }
+
   hsnCode?: string
   gstRate?: number
   productType?: string
@@ -66,6 +67,7 @@ interface CartContextType {
   error: string | null
   addToCart: (productId: string, quantity?: number) => Promise<void>
   removeFromCart: (cartItemId: string) => Promise<void>
+  removeProductFromCart: (productId: string) => Promise<void>
   updateQuantity: (cartItemId: string, quantity: number) => Promise<void>
   clearCart: () => Promise<void>
   itemCount: number
@@ -165,30 +167,56 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     try {
       setLoading(true)
-
-      // Based on your backend routes, the endpoint should be POST /api/cart/add
-      const response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
+      
+      // Attempt 1: POST /cart/:productId with body { quantity } per backend contract
+      let response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          productId: productId,  // Make sure this matches your backend expectation
-          quantity: quantity
-        })
+        body: JSON.stringify({ quantity })
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        console.error('Add to cart API Error:', errorData)
-        throw new Error(errorData.message || 'Failed to add item to cart')
+      // Fallback: if endpoint not found or method not allowed, try /cart/add
+      if (!response.ok && (response.status === 404 || response.status === 405)) {
+        response = await fetch(`${API_BASE_URL}/cart/add`, {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ productId, quantity })
+        })
       }
 
-      const data = await response.json()
-      console.log('Add to cart response:', data)
+      if (!response.ok) {
+        // Handle unauthorized
+        if (response.status === 401) {
+          localStorage.removeItem('authToken')
+          toast.error('Session expired. Please login again.')
+          router.push('/account')
+          return
+        }
+        let errorPayload: any = null
+        let errorText = ''
+        try { errorPayload = await response.json() } catch { 
+          try { errorText = await response.text() } catch {}
+        }
+        console.error('[Cart] Add to cart API Error:', { status: response.status, errorPayload, errorText })
+        throw new Error(
+          (errorPayload && (errorPayload.message || errorPayload.error)) ||
+          (errorText || `Failed to add item to cart (status ${response.status})`)
+        )
+      }
 
+      try {
+        const data = await response.json()
+        console.log('Add to cart response:', data)
+      } catch {}
+      
       // Refresh cart after adding
       await fetchCart()
       toast.success('Added to cart')
@@ -233,6 +261,42 @@ export function CartProvider({ children }: { children: ReactNode }) {
       console.error('Error removing from cart:', err)
       toast.error('Failed to remove item from cart')
       // Refresh cart on error to sync state
+      await fetchCart()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Remove by productId using DELETE /cart/:productId (backend supports removal via product id)
+  const removeProductFromCart = async (productId: string) => {
+    const token = getAuthToken()
+    if (!token) return
+
+    try {
+      setLoading(true)
+
+      const response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to remove product from cart')
+      }
+
+      // Optimistically update local state (remove all items matching this product id)
+      setCart(prev => prev.filter(item => item.product?._id !== productId))
+      toast.success('Removed from cart')
+
+      // Sync with server
+      await fetchCart()
+    } catch (err) {
+      console.error('Error removing product from cart:', err)
+      toast.error('Failed to remove product from cart')
       await fetchCart()
     } finally {
       setLoading(false)
@@ -348,6 +412,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         error,
         addToCart,
         removeFromCart,
+        removeProductFromCart,
         updateQuantity,
         clearCart,
         itemCount,

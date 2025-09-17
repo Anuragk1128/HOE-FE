@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import SafeImage from '@/components/shared/safe-image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -84,16 +85,12 @@ export default async function CategoryProductsPage({
                   <div className="aspect-square relative overflow-hidden bg-slate-50">
                     {product.images?.[0] ? (
                       <>
-                        <Image
+                        <SafeImage
                           src={product.images[0]}
                           alt={product.title}
                           width={400}
                           height={400}
                           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
                         />
                         {product.compareAtPrice > product.price && (
                           <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">

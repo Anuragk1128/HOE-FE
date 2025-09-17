@@ -16,6 +16,7 @@ export default function CartPage() {
     cart, 
     updateQuantity, 
     removeFromCart, 
+    removeProductFromCart,
     cartTotal, 
     itemCount, 
     clearCart, 
@@ -49,11 +50,15 @@ export default function CartPage() {
     }
   }
 
-  const handleRemoveItem = async (cartItemId: string) => {
+  const handleRemoveItem = async (cartItemId: string, productId?: string) => {
     setUpdatingItems(prev => new Set(prev).add(cartItemId))
     
     try {
-      await removeFromCart(cartItemId)
+      if (productId) {
+        await removeProductFromCart(productId)
+      } else {
+        await removeFromCart(cartItemId)
+      }
     } catch (error) {
       console.error('Failed to remove item:', error)
     } finally {
@@ -223,7 +228,7 @@ export default function CartPage() {
                       
                       {/* Remove Button */}
                       <button
-                        onClick={() => handleRemoveItem(item._id)}
+                        onClick={() => handleRemoveItem(item._id, item.product?._id)}
                         disabled={isUpdating}
                         className="ml-4 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Remove item"

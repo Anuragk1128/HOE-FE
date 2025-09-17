@@ -8,30 +8,44 @@ export interface RazorpayPaymentResponse {
 }
 
 export interface InitiatePaymentResponse {
-  orderId?: string; // some APIs return orderId
-  id?: string;      // some return id
-  amount: number | string;
-  currency: string;
-  key?: string;     // can be key
-  key_id?: string;  // or key_id
+  razorpayOrderId: string;    // backend-provided
+  razorpayKeyId: string;      // backend-provided
+  amount: number | string;    // amount in paise
+  currency: string;           // e.g., 'INR'
+  orderId: string;            // your platform order id
+  orderNumber: string;        // human friendly order number
 }
 
 type InitiatePayload = {
-  amount: number; // paise
-  orderId: string;
-  currency: string;
-  items: Array<{ product: string; quantity: number; price: number }>;
+  items: Array<{ product: string; title: string; image?: string; price: number; quantity: number }>;
   customerDetails: { name: string; email: string; mobile: string };
   shippingAddress: {
     fullName: string;
     addressLine1: string;
+    addressLine2?: string;
     city: string;
     state: string;
     postalCode: string;
     country: string;
     phone: string;
+    latitude?: string;
+    longitude?: string;
+    landmark?: string;
   };
-  receipt?: string;
+  billingAddress?: {
+    fullName: string;
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    phone: string;
+    latitude?: string;
+    longitude?: string;
+    landmark?: string;
+  };
+  paymentMethod: 'online';
 };
 
 export const initiatePayment = async (payloadIn: InitiatePayload): Promise<InitiatePaymentResponse> => {
@@ -39,7 +53,7 @@ export const initiatePayment = async (payloadIn: InitiatePayload): Promise<Initi
   if (!token) {
     throw new Error('Not authenticated. Please login to proceed with payment.');
   }
-  const payload = { ...payloadIn, receipt: payloadIn.receipt || payloadIn.orderId };
+  const payload = { ...payloadIn };
   console.debug('[Razorpay] initiate request:', `${API_BASE_URL}/orders/payment/initiate`, payload);
   const response = await fetch(`${API_BASE_URL}/orders/payment/initiate`, {
     method: 'POST',
@@ -68,19 +82,18 @@ export const initiatePayment = async (payloadIn: InitiatePayload): Promise<Initi
 
 export const verifyPayment = async (
   paymentResponse: RazorpayPaymentResponse,
-  meta: { amount: number; orderId: string }
 ) => {
   const token = localStorage.getItem('authToken');
-  const response = await fetch(`${API_BASE_URL}/orders/payment/verify`, {
+  const response = await fetch(`${API_BASE_URL}/orders/payment/confirm`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify({
-      ...paymentResponse,
-      amount: meta.amount, // paise or as expected by your backend
-      orderId: meta.orderId,
+      razorpay_order_id: paymentResponse.razorpay_order_id,
+      razorpay_payment_id: paymentResponse.razorpay_payment_id,
+      razorpay_signature: paymentResponse.razorpay_signature,
     }),
   });
 
@@ -101,71 +114,87 @@ export const verifyPayment = async (
 };
 
 export const openRazorpay = async (options: {
-  amount: number; // rupees
-  orderId: string;
+  amount: number; // rupees (for UI only; backend computes real amount)
+  orderId: string; // local order identifier (not sent to initiate API)
   name: string;
   email: string;
   contact: string;
-  items: Array<{ product: string; quantity: number; price: number }>;
+  items: Array<{ product: string; title: string; image?: string; price: number; quantity: number }>;
   shippingAddress: {
     fullName: string;
     addressLine1: string;
+    addressLine2?: string;
     city: string;
     state: string;
     postalCode: string;
     country: string;
     phone: string;
+    latitude?: string;
+    longitude?: string;
+    landmark?: string;
+  };
+  billingAddress?: {
+    fullName: string;
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    phone: string;
+    latitude?: string;
+    longitude?: string;
+    landmark?: string;
   };
   onSuccess: (paymentId: string, orderId: string) => void;
   onError: (error: Error) => void;
 }) => {
   try {
+    // Load Razorpay script first to fail fast if unavailable
+    console.debug('[Razorpay] Loading script...');
+    const isLoaded = await loadRazorpayScript();
+    if (!isLoaded || !(window as any).Razorpay) {
+      throw new Error('Unable to load Razorpay. Check your network and try again.');
+    }
+
+    console.debug('[Razorpay] Script loaded, initiating payment...');
+
     // Get payment details from your API
     const paymentData = await initiatePayment({
-      amount: Math.round(options.amount * 100), // ensure paise
-      orderId: options.orderId,
-      currency: 'INR',
       items: options.items,
       customerDetails: { name: options.name, email: options.email, mobile: options.contact },
       shippingAddress: options.shippingAddress,
+      billingAddress: options.billingAddress,
+      paymentMethod: 'online',
     });
-    console.debug('[Razorpay] initiatePayment response:', paymentData);
+    console.debug('[Razorpay] Payment initiated:', paymentData);
 
-    // Normalize fields and add fallback for key
-    const resolvedKey = (paymentData as any).key || (paymentData as any).key_id || (process as any)?.env?.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-    const resolvedOrderId = (paymentData as any).orderId || (paymentData as any).id;
-    const resolvedAmount = typeof paymentData.amount === 'string' ? paymentData.amount : String(paymentData.amount);
+    // Use backend-provided fields
+    const resolvedKey = paymentData.razorpayKeyId || (process as any)?.env?.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    const resolvedOrderId = paymentData.razorpayOrderId;
+    const resolvedAmount = typeof paymentData.amount === 'string' ? parseInt(paymentData.amount) : paymentData.amount;
 
     if (!resolvedKey) {
-      throw new Error('Missing Razorpay key. Ensure backend returns key/key_id or set NEXT_PUBLIC_RAZORPAY_KEY_ID.');
+      throw new Error('Missing Razorpay key. Check backend response and environment variables.');
     }
     if (!resolvedOrderId) {
-      throw new Error('Missing Razorpay order_id. Ensure backend returns orderId or id.');
-    }
-
-    // Load Razorpay script if not already loaded (after API call)
-    const isLoaded = await loadRazorpayScript();
-    if (!isLoaded) {
-      console.error('[Razorpay] checkout.js failed to load');
-      throw new Error('Unable to load Razorpay. Check your network and try again.');
+      throw new Error('Missing Razorpay order_id from backend response.');
     }
 
     const razorpayOptions = {
       key: resolvedKey,
       amount: resolvedAmount,
       currency: paymentData.currency,
-      name: 'Your Store Name',
+      name: 'House Of Evolve',
       description: 'Order Payment',
       order_id: resolvedOrderId,
       handler: async function (response: RazorpayPaymentResponse) {
         try {
-          await verifyPayment(response, {
-            amount: Number(resolvedAmount),
-            orderId: resolvedOrderId,
-          });
+          console.debug('[Razorpay] Payment success, verifying...', response);
+          await verifyPayment(response);
           options.onSuccess(response.razorpay_payment_id, response.razorpay_order_id);
         } catch (error) {
-          console.error('[Razorpay] verifyPayment error:', error);
+          console.error('[Razorpay] Verification failed:', error);
           options.onError(error as Error);
         }
       },
@@ -179,6 +208,7 @@ export const openRazorpay = async (options: {
       },
       modal: {
         ondismiss: () => {
+          console.debug('[Razorpay] Payment cancelled by user');
           options.onError(new Error('Payment cancelled by user'));
         },
       },

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/cart-context';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,8 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { API_BASE_URL, type Address } from '@/lib/api';
 import { toast } from 'sonner';
 import { RazorpayButton } from '@/components/payment/razorpay-button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { indianStates, getDistrictsByState } from '@/lib/indian-states-districts';
 
 type CheckoutStep = 'shipping' | 'payment' | 'review' | 'confirmation'
 
@@ -21,6 +23,7 @@ type ShippingInfo = {
   addressLine2?: string
   city: string
   state: string
+  district?: string
   postalCode: string
   country: string
   landmark?: string
@@ -67,6 +70,7 @@ export default function CheckoutPage() {
     addressLine2: '',
     city: '',
     state: '',
+    district: '',
     postalCode: '',
     country: 'India',
     landmark: '',
@@ -161,6 +165,7 @@ export default function CheckoutPage() {
     addressLine2: '',
     city: '',
     state: '',
+    district: '',
     postalCode: '',
     country: 'India',
     phone: '',
@@ -168,6 +173,12 @@ export default function CheckoutPage() {
     longitude: '',
     landmark: '',
   })
+
+  // Get districts based on selected state for shipping
+  const districts = useMemo(() => 
+    shippingInfo.state ? getDistrictsByState(shippingInfo.state) : [],
+    [shippingInfo.state]
+  )
 
   const token = user?.token || (typeof window !== 'undefined' ? localStorage.getItem('authToken') : null)
 
@@ -215,6 +226,7 @@ export default function CheckoutPage() {
       addressLine2: addr.addressLine2 || prev.addressLine2,
       city: addr.city || prev.city,
       state: addr.state || prev.state,
+      district: addr.district || prev.district,
       postalCode: addr.postalCode || prev.postalCode,
       country: addr.country || prev.country,
       landmark: addr.landmark || prev.landmark,
@@ -249,7 +261,7 @@ export default function CheckoutPage() {
       await fetchAddresses()
       setShowAddForm(false)
       setNewAddress({
-        fullName: '', addressLine1: '', addressLine2: '', city: '', state: '', postalCode: '', country: 'India', phone: '', latitude: '', longitude: '', landmark: ''
+        fullName: '', addressLine1: '', addressLine2: '', city: '', state: '', district: '', postalCode: '', country: 'India', phone: '', latitude: '', longitude: '', landmark: ''
       })
     } catch (e: any) {
       alert(e?.message || 'Error creating address')
@@ -421,7 +433,7 @@ export default function CheckoutPage() {
                   onClick={() => {
                     setShowAddForm(s => !s)
                     setEditMode(false)
-                    setNewAddress({ fullName: '', addressLine1: '', addressLine2: '', city: '', state: '', postalCode: '', country: 'India', phone: '', latitude: '', longitude: '', landmark: '' })
+                    setNewAddress({ fullName: '', addressLine1: '', addressLine2: '', city: '', state: '', district: '', postalCode: '', country: 'India', phone: '', latitude: '', longitude: '', landmark: '' })
                   }}
                   className="inline-flex items-center px-3 py-1.5 rounded-md border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
                   title="Add new address"
@@ -697,16 +709,45 @@ export default function CheckoutPage() {
                 <label htmlFor="state" className="block text-sm font-medium text-gray-700">
                   State *
                 </label>
-                <input
-                  type="text"
-                  id="state"
-                  required
+                <Select
                   value={shippingInfo.state}
-                  onChange={(e) =>
-                    setShippingInfo({ ...shippingInfo, state: e.target.value })
-                  }
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
+                  onValueChange={(value) => setShippingInfo({ ...shippingInfo, state: value })}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select State" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {indianStates.map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">
+                  District *
+                </label>
+                <Select
+                  value={shippingInfo.district}
+                  onValueChange={(value) => setShippingInfo({ ...shippingInfo, district: value })}
+                  disabled={!shippingInfo.state}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={
+                      shippingInfo.state ? 'Select District' : 'Select State First'
+                    } />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {districts.map((district) => (
+                      <SelectItem key={district} value={district}>
+                        {district}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>

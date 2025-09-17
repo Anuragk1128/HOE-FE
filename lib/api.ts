@@ -548,6 +548,7 @@ export type Address = {
   addressLine2?: string;
   city: string;
   state: string;
+  district?: string;
   postalCode: string;
   country: string;
   phone: string;

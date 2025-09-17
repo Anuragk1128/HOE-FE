@@ -182,7 +182,40 @@ export type AdminProduct = {
   stock: number;
   status: string;
   tags?: string[];
-  attributes?: { size?: string[]; color?: string[] };
+  sku?: string;
+  shippingCategory?: string;
+  weightKg?: number;
+  dimensionsCm?: {
+    length: number;
+    breadth: number;
+    height: number;
+  };
+  hsnCode?: string;
+  gstRate?: number;
+  productType?: string;
+  attributes?: {
+    size?: string[];
+    color?: string[];
+    material?: string;
+    fit?: string;
+    styling?: string;
+    occasion?: string;
+    gender?: string;
+  };
+  lowStockThreshold?: number;
+  isActive?: boolean;
+  vendorId?: string;
+  featured?: boolean;
+  bestseller?: boolean;
+  newArrival?: boolean;
+  onSale?: boolean;
+  rating?: number;
+  numReviews?: number;
+  totalSales?: number;
+  viewCount?: number;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string[];
   brandId: { _id: string; name: string; slug: string };
   categoryId: { _id: string; name: string; slug: string };
   subcategoryId: { _id: string; name: string; slug: string };
@@ -244,10 +277,39 @@ export type CreateProductInput = {
   images?: string[];
   price: number;
   compareAtPrice?: number;
-  attributes?: Record<string, unknown>;
   stock: number;
   status: string;
   tags?: string[];
+  sku?: string;
+  shippingCategory?: string;
+  weightKg?: number;
+  dimensionsCm?: {
+    length: number;
+    breadth: number;
+    height: number;
+  };
+  hsnCode?: string;
+  gstRate?: number;
+  productType?: string;
+  attributes?: {
+    size?: string[];
+    color?: string[];
+    material?: string;
+    fit?: string;
+    styling?: string;
+    occasion?: string;
+    gender?: string;
+  };
+  lowStockThreshold?: number;
+  isActive?: boolean;
+  vendorId?: string;
+  featured?: boolean;
+  bestseller?: boolean;
+  newArrival?: boolean;
+  onSale?: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string[];
 };
 
 export async function createProduct(payload: CreateProductInput): Promise<AdminProduct> {
@@ -321,10 +383,39 @@ export type UpdateProductPayload = {
   images?: string[];
   price?: number;
   compareAtPrice?: number;
-  attributes?: Record<string, unknown>;
   stock?: number;
   status?: string;
   tags?: string[];
+  sku?: string;
+  shippingCategory?: string;
+  weightKg?: number;
+  dimensionsCm?: {
+    length: number;
+    breadth: number;
+    height: number;
+  };
+  hsnCode?: string;
+  gstRate?: number;
+  productType?: string;
+  attributes?: {
+    size?: string[];
+    color?: string[];
+    material?: string;
+    fit?: string;
+    styling?: string;
+    occasion?: string;
+    gender?: string;
+  };
+  lowStockThreshold?: number;
+  isActive?: boolean;
+  vendorId?: string;
+  featured?: boolean;
+  bestseller?: boolean;
+  newArrival?: boolean;
+  onSale?: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string[];
 };
 
 export async function updateProduct(params: {
@@ -404,6 +495,358 @@ export async function adminAuthedFetch(input: RequestInfo | URL, init: RequestIn
   const headers = new Headers(init.headers || {});
   if (token) headers.set("Authorization", `Bearer ${token}`);
   return fetch(input, { ...init, headers });
+}
+
+// Order Types
+export type OrderItem = {
+  product: {
+    _id: string;
+    title: string;
+    price: number;
+    images: string[];
+    sku?: string;
+    shippingCategory?: string;
+    weightKg?: number;
+    hsnCode?: string;
+    gstRate?: number;
+    productType?: string;
+    attributes?: {
+      size?: string[];
+      color?: string[];
+      material?: string;
+      fit?: string;
+      styling?: string;
+      occasion?: string;
+      gender?: string;
+    };
+  };
+  title: string;
+  image?: string;
+  price: number;
+  quantity: number;
+  // Additional fields for Shipyaari
+  sku?: string;
+  category?: string;
+  weight?: number; // in kg
+  dimensions?: {
+    length: number; // in cm
+    breadth: number;
+    height: number;
+  };
+  hsnCode?: string;
+  unitPrice?: number;
+  totalPrice?: number;
+  taxAmount?: number;
+  finalPrice?: number;
+};
+
+// Address Schema
+export type Address = {
+  _id?: string; // For saved addresses
+  fullName: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  phone: string;
+  // Additional fields for location services
+  latitude?: string;
+  longitude?: string;
+  landmark?: string;
+};
+
+// Razorpay Payment Schema
+export type RazorpayPayment = {
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
+  paymentMethod?: string; // card, netbanking, upi, etc.
+  paymentStatus: 'pending' | 'authorized' | 'captured' | 'failed';
+};
+
+// Shipment Schema
+export type Shipment = {
+  shipyaariOrderId?: string;
+  awbNumber?: string;
+  courierPartner?: string;
+  trackingUrl?: string;
+  shipmentStatus: 'pending' | 'processing' | 'shipped' | 'in_transit' | 'out_for_delivery' | 'delivered' | 'failed' | 'cancelled';
+  estimatedDeliveryDate?: string;
+  actualDeliveryDate?: string;
+  shipmentError?: string;
+  trackingHistory?: Array<{
+    status: string;
+    location: string;
+    timestamp: string;
+    description: string;
+    updatedAt: string;
+  }>;
+  shippingLabel?: {
+    labelUrl?: string;
+    invoiceUrl?: string;
+    manifestUrl?: string;
+    generatedAt?: string;
+  };
+  cancellation?: {
+    isCancelled: boolean;
+    cancelledAt?: string;
+    cancelReason?: string;
+    cancelledBy?: string; // 'customer', 'admin', 'system'
+  };
+  lastTrackingUpdate?: {
+    status: string;
+    location: string;
+    timestamp: string;
+    description: string;
+  };
+};
+
+// Seller Details Schema
+export type SellerDetails = {
+  address: {
+    fullAddress: string;
+    pincode: number;
+    city: string;
+    state: string;
+    country: string;
+    latitude?: string;
+    longitude?: string;
+  };
+  contact: {
+    name: string;
+    mobile: number;
+    alternateMobile?: number;
+  };
+};
+
+// Status History
+export type StatusHistory = {
+  status: string;
+  timestamp: string;
+  updatedBy: string;
+  notes?: string;
+};
+
+export type Order = {
+  _id: string;
+  orderId: string;
+  orderNumber: string;
+  user: string;
+  customerDetails: {
+    name: string;
+    email: string;
+    mobile: string;
+  };
+  items: OrderItem[];
+  shippingAddress: Address;
+  billingAddress?: Address;
+  sellerDetails: SellerDetails;
+  paymentMethod: 'online' | 'cod' | 'wallet';
+  razorpayDetails?: RazorpayPayment;
+  shipmentDetails?: Shipment;
+  itemsPrice: number;
+  shippingPrice: number;
+  taxPrice: number;
+  totalPrice: number;
+  currency: string;
+  status: 'pending' | 'confirmed' | 'paid' | 'processing' | 'shipped' | 'in_transit' | 'delivered' | 'cancelled';
+  paidAt?: string;
+  shippedAt?: string;
+  deliveredAt?: string;
+  cancelledAt?: string;
+  cancellationReason?: string;
+  orderNotes?: string;
+  specialInstructions?: string;
+  insurance?: boolean;
+  statusHistory: StatusHistory[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateOrderInput = {
+  items: Array<{
+    productId: string;
+    quantity: number;
+    title?: string;
+    image?: string;
+    price?: number;
+    sku?: string;
+    category?: string;
+    weight?: number;
+    dimensions?: {
+      length: number;
+      breadth: number;
+      height: number;
+    };
+    hsnCode?: string;
+  }>;
+  customerDetails: {
+    name: string;
+    email: string;
+    mobile: string;
+  };
+  shippingAddress: Address;
+  billingAddress?: Address;
+  sellerDetails: SellerDetails;
+  paymentMethod: 'online' | 'cod' | 'wallet';
+  razorpayDetails?: RazorpayPayment;
+  itemsPrice: number;
+  shippingPrice: number;
+  taxPrice: number;
+  totalPrice: number;
+  currency?: string;
+  orderNotes?: string;
+  specialInstructions?: string;
+  insurance?: boolean;
+};
+
+// Order API Functions
+export async function createOrder(payload: CreateOrderInput): Promise<Order> {
+  const token = localStorage.getItem('authToken');
+  if (!token) throw new Error('Not authenticated');
+  
+  const response = await fetch(`${API_BASE_URL}/orders`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    let message = 'Failed to create order';
+    try {
+      const err = (await response.json()) as { message?: string; error?: string };
+      message = err.message || err.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = (await response.json()) as { data?: Order } | Order;
+  return (data as any).data ?? (data as Order);
+}
+
+export async function fetchOrders(): Promise<Order[]> {
+  const token = localStorage.getItem('authToken');
+  if (!token) throw new Error('Not authenticated');
+  
+  const response = await fetch(`${API_BASE_URL}/orders`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    let message = 'Failed to fetch orders';
+    try {
+      const err = (await response.json()) as { message?: string; error?: string };
+      message = err.message || err.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = (await response.json()) as { data?: Order[] } | Order[];
+  return Array.isArray(data) ? (data as Order[]) : (data.data ?? []);
+}
+
+export async function fetchOrderById(orderId: string): Promise<Order> {
+  const token = localStorage.getItem('authToken');
+  if (!token) throw new Error('Not authenticated');
+  
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    let message = 'Failed to fetch order';
+    try {
+      const err = (await response.json()) as { message?: string; error?: string };
+      message = err.message || err.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = (await response.json()) as { data?: Order } | Order;
+  return (data as any).data ?? (data as Order);
+}
+
+// Admin Order Functions
+export async function fetchAdminOrders(params?: {
+  status?: string;
+  userId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ orders: Order[]; total: number; page: number; limit: number }> {
+  const token = getAdminToken();
+  if (!token) throw new Error('Not authenticated');
+  
+  const query = new URLSearchParams();
+  if (params?.status) query.set('status', params.status);
+  if (params?.userId) query.set('userId', params.userId);
+  if (params?.dateFrom) query.set('dateFrom', params.dateFrom);
+  if (params?.dateTo) query.set('dateTo', params.dateTo);
+  if (params?.page) query.set('page', params.page.toString());
+  if (params?.limit) query.set('limit', params.limit.toString());
+  
+  const response = await fetch(`${API_BASE_URL}/admin/orders?${query.toString()}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    let message = 'Failed to fetch admin orders';
+    try {
+      const err = (await response.json()) as { message?: string; error?: string };
+      message = err.message || err.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  return response.json();
+}
+
+export async function updateOrderStatus(orderId: string, status: string, trackingInfo?: {
+  trackingNumber?: string;
+  carrier?: string;
+  estimatedDelivery?: string;
+}): Promise<Order> {
+  const token = getAdminToken();
+  if (!token) throw new Error('Not authenticated');
+  
+  const response = await fetch(`${API_BASE_URL}/admin/orders/${orderId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status, trackingInfo }),
+  });
+
+  if (!response.ok) {
+    let message = 'Failed to update order status';
+    try {
+      const err = (await response.json()) as { message?: string; error?: string };
+      message = err.message || err.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = (await response.json()) as { data?: Order } | Order;
+  return (data as any).data ?? (data as Order);
 }
 
 

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { fetchBrands, type Brand, fetchCategoriesByBrandSlug, type Category, fetchSubcategoriesByBrandAndCategorySlug, type Subcategory, fetchAdminProducts, type AdminProduct, createProduct, updateProduct } from "@/lib/api"
+import { fetchBrands, type Brand, fetchCategoriesByBrandSlug, type Category, fetchSubcategoriesByBrandAndCategorySlug, type Subcategory, fetchAdminProducts, type AdminProduct, createProduct, updateProduct, deleteProduct } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 
 export default function AdminProductsPage() {
@@ -20,6 +20,7 @@ export default function AdminProductsPage() {
   const [error, setError] = useState<string | null>(null)
   const [q, setQ] = useState("")
   const [creating, setCreating] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement | null>(null)
@@ -263,6 +264,70 @@ export default function AdminProductsPage() {
                             }}
                           >
                             Edit
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="text-red-600 border-red-200 hover:bg-red-50"
+                            disabled={deletingId === p._id}
+                            onClick={async () => {
+                              setError(null)
+                              setSuccess(null)
+                              const ok = window.confirm(`Delete product "${p.title}"? This cannot be undone.`)
+                              if (!ok) return
+                              try {
+                                setDeletingId(p._id)
+                                await deleteProduct({
+                                  brandId: p.brandId._id,
+                                  categoryId: p.categoryId._id,
+                                  subcategoryId: p.subcategoryId._id,
+                                  productId: p._id,
+                                })
+                                // If we were editing this product, reset the form
+                                if (editingProduct && editingProduct._id === p._id) {
+                                  setEditingProduct(null)
+                                  setTitle("")
+                                  setSlug("")
+                                  setDescription("")
+                                  setImage("")
+                                  setPrice(0)
+                                  setCompareAtPrice(0)
+                                  setStock(0)
+                                  setStatus("active")
+                                  setTags("")
+                                  setSku("")
+                                  setShippingCategory("general")
+                                  setWeightKg(0.5)
+                                  setDimensionsLength(15)
+                                  setDimensionsBreadth(10)
+                                  setDimensionsHeight(5)
+                                  setHsnCode("")
+                                  setGstRate(12)
+                                  setProductType("artificial-jewellery")
+                                  setLowStockThreshold(5)
+                                  setIsActive(true)
+                                  setVendorId("")
+                                  setFeatured(false)
+                                  setBestseller(false)
+                                  setNewArrival(false)
+                                  setOnSale(false)
+                                  setMetaTitle("")
+                                  setMetaDescription("")
+                                  setMetaKeywords("")
+                                  setAttributesRows([{ key: "", type: "text", value: "" }])
+                                }
+                                // Refresh products with current filters
+                                const items = await fetchAdminProducts({ brand: brandSlug, category: categorySlug, subcategory: subcategorySlug })
+                                setProducts(items)
+                                setSuccess("Product deleted successfully")
+                              } catch (err: any) {
+                                setError(err?.message || "Failed to delete product")
+                              } finally {
+                                setDeletingId(null)
+                              }
+                            }}
+                          >
+                            {deletingId === p._id ? "Deleting..." : "Delete"}
                           </Button>
                         </div>
                       </div>

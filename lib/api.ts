@@ -345,7 +345,91 @@ export async function createProduct(payload: CreateProductInput): Promise<AdminP
   return (data as any).data ?? (data as AdminProduct);
 }
 
+export async function deleteProduct(params: {
+  brandId: string;
+  categoryId: string;
+  subcategoryId: string;
+  productId: string;
+}): Promise<void> {
+  const token = getAdminToken();
+  if (!token) throw new Error("Not authenticated");
+  const { brandId, categoryId, subcategoryId, productId } = params;
+  const res = await fetch(
+    `${API_BASE_URL}/admin/brands/${encodeURIComponent(brandId)}/categories/${encodeURIComponent(categoryId)}/subcategories/${encodeURIComponent(subcategoryId)}/products/${encodeURIComponent(productId)}`,
+    {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json, */*",
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  if (!res.ok) {
+    let message = "Failed to delete product";
+    try {
+      const err = (await res.json()) as { message?: string; error?: string };
+      message = err.message || err.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+  // Many APIs return 204 No Content on successful delete; simply return.
+  return;
+}
+
 // Storefront: fetch products by brand/category/subcategory slugs via nested endpoint
+export type BulkUploadResult = {
+  row: number;
+  success: boolean;
+  productId?: string;
+  title?: string;
+  brand?: string;
+  category?: string;
+  subcategory?: string;
+  error?: string;
+};
+
+export type BulkUploadSummary = {
+  total: number;
+  successful: number;
+  failed: number;
+};
+
+export type BulkUploadResponse = {
+  success: boolean;
+  filename: string;
+  summary: BulkUploadSummary;
+  results: BulkUploadResult[];
+  errors: string[];
+};
+
+export async function bulkUploadProducts(file: File): Promise<BulkUploadResponse> {
+  const token = getAdminToken();
+  if (!token) throw new Error('Not authenticated');
+  const form = new FormData();
+  form.append('productFile', file, file.name);
+
+  const res = await fetch(`${API_BASE_URL}/admin/products/bulk-upload`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // Note: Do NOT set Content-Type; browser will set multipart boundary.
+      Accept: 'application/json',
+    } as any,
+    body: form,
+  });
+
+  if (!res.ok) {
+    let message = 'Failed to bulk upload products';
+    try {
+      const err = (await res.json()) as { message?: string; error?: string };
+      message = err.message || err.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = (await res.json()) as BulkUploadResponse | { data: BulkUploadResponse };
+  return (data as any).data ?? (data as BulkUploadResponse);
+}
 export type SlugProduct = {
   _id: string;
   title: string;

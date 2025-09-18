@@ -8,30 +8,38 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 const heroSlides = [
   {
     id: 1,
+    title: "New Season Collection",
+    description: "Discover our latest arrivals for the season",
+    ctaText: "Shop Now",
+    ctaLink: "/products",
+    bgColor: "bg-gradient-to-r from-blue-400 to-blue-900"
+  },
+  {
+    id: 2,
     image: "/hero-bg.png",
     alt: "New Arrivals",
     title: "New Season Collection",
     description: "Discover our latest arrivals for the season",
     ctaText: "Shop Now",
-    ctaLink: "/new-arrivals"
+    ctaLink: "/products"
   },
   {
-    id: 2,
+    id: 3,
     image: "https://res.cloudinary.com/deamrxfwp/image/upload/v1758023506/hero_hoe_earring_2_hb0ncn.jpg",
     alt: "Special Offers",
     title: "Special Offers",
     description: "Limited time offers on selected item",
     ctaText: "View Deals",
-    ctaLink: "/sale"
+    ctaLink: "/categories"
   },
   {
-    id: 3,
+    id: 4,
     image: "/backpack-on-white.png",
     alt: "Trending Now",
     title: "Trending Now",
     description: "Shop what's trending this season",
     ctaText: "Explore",
-    ctaLink: "/trending"
+    ctaLink: "/brands"
   }
 ]
 
@@ -96,23 +104,25 @@ export function HeroSection() {
         <div className="flex h-full">
           {heroSlides.map((slide) => (
             <div key={slide.id} className="flex-[0_0_100%] min-w-0 relative h-full">
-              <div className="absolute inset-0">
-                <Image
-                  src={slide.image}
-                  alt={slide.alt}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
-                  priority
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-900/60 to-slate-900/30" />
+              <div className={`absolute inset-0 ${slide.bgColor || ''}`}>
+                {slide.image && (
+                  <Image
+                    src={slide.image}
+                    alt={slide.alt || ''}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
+                    priority
+                    className="w-full h-full object-cover"
+                  />
+                )}
+                <div className={`absolute inset-0 ${slide.bgColor ? 'bg-gradient-to-r from-black/30 to-black/20' : 'bg-gradient-to-r from-slate-900/60 to-slate-900/30'}`} />
               </div>
-              <div className="container h-full mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="container h-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="h-full flex flex-col justify-center max-w-2xl py-16 sm:py-20 lg:py-24">
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight text-white drop-shadow-lg">
                     {slide.title}
                   </h1>
-                  <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-slate-200 max-w-xl">
+                  <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-white/90 font-medium max-w-xl">
                     {slide.description}
                   </p>
                   <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -122,12 +132,7 @@ export function HeroSection() {
                     >
                       <a href={slide.ctaLink}>{slide.ctaText}</a>
                     </Button>
-                    <Button 
-                      variant="secondary" 
-                      className="bg-white/90 text-slate-900 hover:bg-white text-sm sm:text-base px-6 py-3 sm:px-8 sm:py-4 w-full sm:w-auto"
-                    >
-                      Learn more
-                    </Button>
+                  
                   </div>
                 </div>
               </div>

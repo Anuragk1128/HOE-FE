@@ -63,10 +63,10 @@ export function SiteHeader({
               <div className="flex justify-center md:justify-start">
                 <Link href="/" aria-label="Home" className="flex-shrink-0">
                   <Image
-                    src="/logo.png"
+                    src="https://res.cloudinary.com/deamrxfwp/image/upload/v1758200202/hoe_logo_pnfrl6.jpg"
                     alt="Logo"
                     width={80}
-                    height={40}
+                    height={60}
                     priority
                     className="h-7 sm:h-8 md:h-9 w-auto"
                   />

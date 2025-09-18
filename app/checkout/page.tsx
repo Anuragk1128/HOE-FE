@@ -9,8 +9,6 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { API_BASE_URL, type Address } from '@/lib/api';
 import { toast } from 'sonner';
 import { RazorpayButton } from '@/components/payment/razorpay-button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { indianStates, getDistrictsByState } from '@/lib/indian-states-districts';
 import { useLocationServices } from '@/hooks/useLocationServices';
 import { LocationButton } from '@/components/checkout/LocationButton';
 import { AddressValidator } from '@/components/checkout/AddressValidator';
@@ -214,11 +212,7 @@ export default function CheckoutPage() {
     landmark: '',
   })
 
-  // Get districts based on selected state for shipping
-  const districts = useMemo(() => 
-    shippingInfo.state ? getDistrictsByState(shippingInfo.state) : [],
-    [shippingInfo.state]
-  )
+  // Removed districts dropdown; using free-text inputs for state/district
 
   const token = user?.token || (typeof window !== 'undefined' ? localStorage.getItem('authToken') : null)
 
@@ -643,28 +637,7 @@ export default function CheckoutPage() {
                     <input type="tel" required value={newAddress.phone} onChange={(e)=>setNewAddress({...newAddress, phone: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
                   </div>
                   {/* Location Status (replaces direct lat/lng inputs) */}
-                  <div className="md:col-span-2">
-                    <div className="bg-gray-50 p-3 rounded-lg border">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700">Location Status:</span>
-                        {newAddress.latitude && newAddress.longitude ? (
-                          <div className="flex items-center text-green-600">
-                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            <span className="text-sm font-medium">Location Verified</span>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-orange-600 font-medium">Location Not Set</span>
-                        )}
-                      </div>
-                      {newAddress.latitude && newAddress.longitude && (
-                        <div className="mt-2 text-xs text-gray-500">
-                          Coordinates: {newAddress.latitude}, {newAddress.longitude}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                 
                   {/* Keep hidden inputs for form submission */}
                   <input type="hidden" value={newAddress.latitude || ''} />
                   <input type="hidden" value={newAddress.longitude || ''} />
@@ -893,45 +866,28 @@ export default function CheckoutPage() {
                 <label htmlFor="state" className="block text-sm font-medium text-gray-700">
                   State *
                 </label>
-                <Select
+                <input
+                  type="text"
+                  id="state"
+                  required
                   value={shippingInfo.state}
-                  onValueChange={(value) => setShippingInfo({ ...shippingInfo, state: value })}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select State" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {indianStates.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(e) => setShippingInfo({ ...shippingInfo, state: e.target.value })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
               </div>
               
               <div>
                 <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">
                   District *
                 </label>
-                <Select
+                <input
+                  type="text"
+                  id="district"
+                  required
                   value={shippingInfo.district}
-                  onValueChange={(value) => setShippingInfo({ ...shippingInfo, district: value })}
-                  disabled={!shippingInfo.state}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={
-                      shippingInfo.state ? 'Select District' : 'Select State First'
-                    } />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {districts.map((district) => (
-                      <SelectItem key={district} value={district}>
-                        {district}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(e) => setShippingInfo({ ...shippingInfo, district: e.target.value })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
               </div>
               
               <div>

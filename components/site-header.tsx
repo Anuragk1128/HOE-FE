@@ -56,8 +56,8 @@ export function SiteHeader({
     <>
       <header className="w-full relative">
         {/* Top ribbon: logo, search and auth - Sticky */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-white text-black h-12 md:h-14">
-          <div className="mx-auto w-full h-full px-3 sm:px-4 lg:px-8">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-white text-black h-12 md:h-14 shadow-sm">
+          <div className="mx-auto w-full h-full px-3 sm:px-4 lg:px-6 max-w-[1800px]">
             <div className="relative w-full h-full flex items-center justify-between md:justify-start gap-2 md:gap-4">
               {/* Logo - Always centered on mobile, left on desktop */}
               <div className="flex justify-center md:justify-start">
@@ -87,7 +87,7 @@ export function SiteHeader({
               </div>
               {/* Desktop search */}
               <form
-                className="hidden md:flex items-stretch flex-1 basis-0 min-w-0 max-w-none lg:max-w-2xl mx-2 md:mx-3 h-9"
+                className="hidden md:flex items-stretch flex-1 basis-0 min-w-0 max-w-2xl mx-2 md:mx-3 h-9 w-full"
                 onSubmit={(e) => {
                   e.preventDefault()
                   onSearch?.(query)
@@ -148,7 +148,7 @@ export function SiteHeader({
               </form>
 
               {/* Right side: Account, Returns & Orders */}
-              <div className="hidden md:flex items-center gap-4 md:gap-5 lg:gap-6 flex-shrink-0 ">
+              <div className="hidden md:flex items-center gap-3 md:gap-4 lg:gap-5 flex-shrink-0 ml-auto">
                 {/* Returns & Orders */}
                 <Link href="/orders" className="flex flex-col px-4 py-1.5 rounded group">
                   <div className="text-xs text-black ">Returns</div>
@@ -173,7 +173,7 @@ export function SiteHeader({
               </div>
 
               {/* Cart - Live count via CartIcon */}
-              <div className="relative group ml-auto md:ml-4 flex items-center">
+              <div className="relative group ml-2 md:ml-4 flex items-center">
                 <CartIcon />
                
               </div>
@@ -183,8 +183,8 @@ export function SiteHeader({
       </header>
       {/* Main bar: categories - Non-sticky */}
       {/* Lower bar offset equals fixed header height for consistent spacing */}
-      <div className="bg-background pt-12 md:pt-14">
-        <div className="mx-auto max-w-6xl px-4 sm:px-5 md:px-6">
+      <div className="bg-background pt-12 md:pt-14 border-b">
+        <div className="mx-auto w-full px-4 sm:px-5 md:px-6 max-w-[1800px]">
           <div className="flex items-center justify-between py-1 md:py-3">
             {/* Left group: mobile trigger */}
             <div className="flex items-center gap-3 md:gap-5">
@@ -286,16 +286,14 @@ export function SiteHeader({
             </div>
 
             {/* Desktop nav centered */}
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/categories" className="hover:underline">Categories</Link>
-              <Link href="/brands" className="hover:underline">Brands</Link>
-              <Link href="/products" className="hover:underline">Products</Link>
-
-              <Link href="/collections/sportswear" className="hover:underline">Sports Wear</Link>
-              <Link href="/collections/gymwear" className="hover:underline">Gymwear</Link>
-              <Link href="/collections/necklaces" className="hover:underline">Necklaces</Link>
-              <Link href="/collections/earrings" className="hover:underline">Earrings</Link>
-              
+            <nav className="hidden md:flex items-center gap-4 lg:gap-6 overflow-x-auto whitespace-nowrap scrollbar-hide px-2 -mx-2">
+              <Link href="/categories" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Categories</Link>
+              <Link href="/brands" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Brands</Link>
+              <Link href="/products" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Products</Link>
+              <Link href="/collections/sportswear" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Sports Wear</Link>
+              <Link href="/collections/gymwear" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Gymwear</Link>
+              <Link href="/collections/necklaces" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Necklaces</Link>
+              <Link href="/collections/earrings" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Earrings</Link>
             </nav>
 
             {/* Wishlist only in lower header */}

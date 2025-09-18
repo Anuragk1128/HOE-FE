@@ -213,6 +213,11 @@ export type AdminProduct = {
   numReviews?: number;
   totalSales?: number;
   viewCount?: number;
+  // Computed fields from backend
+  taxAmount?: number;
+  priceIncludingTax?: number;
+  inStock?: boolean;
+  isLowStock?: boolean;
   metaTitle?: string;
   metaDescription?: string;
   metaKeywords?: string[];

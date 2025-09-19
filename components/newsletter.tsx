@@ -14,7 +14,7 @@ const Newsletter = () => {
   };
 
   return (
-    <section className="w-full bg-black text-white py-12 sm:py-16">
+    <section className="w-full bg-gray-400 text-white py-12 sm:py-16">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center text-white mb-8 sm:mb-12">
           <AnimateOnScroll y={16}>

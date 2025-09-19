@@ -12,7 +12,7 @@ const heroSlides = [
     description: "Discover our latest arrivals for the season",
     ctaText: "Shop Now",
     ctaLink: "/products",
-    bgColor: "bg-gradient-to-r from-blue-400 to-blue-900"
+    bgColor: "bg-gradient-to-b from-slate-500 to-slate-800"
   },
   {
     id: 2,

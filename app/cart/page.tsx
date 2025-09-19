@@ -146,15 +146,7 @@ export default function CartPage() {
         <h1 className="text-3xl font-bold text-gray-900">
           Your Cart ({itemCount} {itemCount === 1 ? 'item' : 'items'})
         </h1>
-        {cart.length > 0 && (
-          <Button 
-            variant="outline" 
-            onClick={clearCart}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            Clear Cart
-          </Button>
-        )}
+     
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -207,23 +199,11 @@ export default function CartPage() {
                     <div className="flex items-center justify-between sm:justify-end mt-4 sm:mt-0 w-full sm:w-auto">
                       {/* Quantity Controls */}
                       <div className="flex items-center border rounded-lg">
-                        <button
-                          onClick={() => handleUpdateQuantity(item._id, item.quantity - 1)}
-                          disabled={item.quantity <= 1 || isUpdating}
-                          className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </button>
+                      
                         <span className="px-4 py-2 font-medium min-w-[3rem] text-center">
                           {item.quantity}
                         </span>
-                        <button
-                          onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
-                          disabled={isUpdating}
-                          className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </button>
+                       
                       </div>
                       
                       {/* Remove Button */}

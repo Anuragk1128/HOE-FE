@@ -56,19 +56,19 @@ export function SiteHeader({
     <>
       <header className="w-full relative">
         {/* Top ribbon: logo, search and auth - Sticky */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-white text-black h-12 md:h-14 shadow-sm">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-slate-500 to-slate-800 text-black h-14 md:h-14 shadow-sm">
           <div className="mx-auto w-full h-full px-3 sm:px-4 lg:px-6 max-w-[1800px]">
             <div className="relative w-full h-full flex items-center justify-between md:justify-start gap-2 md:gap-4">
               {/* Logo - Always centered on mobile, left on desktop */}
               <div className="flex justify-center md:justify-start">
                 <Link href="/" aria-label="Home" className="flex-shrink-0">
                   <Image
-                    src="https://res.cloudinary.com/deamrxfwp/image/upload/v1758200202/hoe_logo_pnfrl6.jpg"
+                    src="/hoeee.png"
                     alt="Logo"
-                    width={80}
-                    height={60}
+                    width={100}
+                    height={100}
                     priority
-                    className="h-7 sm:h-8 md:h-9 w-auto"
+                    className="h-12 sm:h-14 md:h-14 w-auto"
                   />
                 </Link>
               </div>
@@ -77,12 +77,12 @@ export function SiteHeader({
               {/* Show location block from lg and up to free space for search on iPad widths */}
               <div className="hidden lg:flex flex-col ml-4 px-3 py-1.5 rounded cursor-pointer group">
                 <div className="flex items-center">
-                  <MapPin className="h-4 w-4 text-black " />
-                  <span className="ml-1 text-xs text-black ">Deliver to</span>
+                  <MapPin className="h-4 w-4 text-white " />
+                  <span className="ml-1 text-xs text-white ">Deliver to</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-sm font-medium text-black">Noida 201301</span>
-                  <ChevronDown className="h-4 w-4 text-black" />
+                  <span className="text-sm font-medium text-white">Noida 201301</span>
+                  <ChevronDown className="h-4 w-4 text-white" />
                 </div>
               </div>
               {/* Desktop search */}
@@ -99,7 +99,7 @@ export function SiteHeader({
                   <button
                     type="button"
                     onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                    className="h-full flex items-center px-3 bg-muted  text-black text-sm font-medium rounded-l-md border-r border-border focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+                    className="h-full flex items-center px-3 bg-muted  text-black text-sm font-medium rounded-l-md border-r border-border focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                   >
                     <span className="truncate max-w-[120px]">{selectedCategory}</span>
                     {isCategoryOpen ? (
@@ -120,7 +120,7 @@ export function SiteHeader({
                               setIsCategoryOpen(false)
                             }}
                             className={`block w-full text-left px-4 py-2 text-sm ${selectedCategory === category
-                              ? 'bg-accent/10 text-primary font-medium'
+                              ? 'bg-black text-white font-medium'
                               : 'text-black hover:bg-muted'
                               }`}
                           >
@@ -136,12 +136,12 @@ export function SiteHeader({
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search products..."
-                    className="h-full rounded-none border-0 text-black placeholder-foreground/60 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 bg-white"
+                    className="h-full rounded-none border-0 text-black placeholder-foreground/60 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 bg-white"
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="h-full rounded-l-none rounded-r-md bg-accent text-black hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+                  className="h-full rounded-l-none rounded-r-md bg-black text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                 >
                   <Search className="h-4 w-4" />
                 </Button>
@@ -151,21 +151,21 @@ export function SiteHeader({
               <div className="hidden md:flex items-center gap-3 md:gap-4 lg:gap-5 flex-shrink-0 ml-auto">
                 {/* Returns & Orders */}
                 <Link href="/orders" className="flex flex-col px-4 py-1.5 rounded group">
-                  <div className="text-xs text-black ">Returns</div>
+                  <div className="text-xs text-white ">Returns</div>
                   <div className="flex items-center">
-                    <span className="text-sm font-medium text-black">& Orders</span>
+                    <span className="text-sm font-medium text-white">& Orders</span>
                   </div>
                 </Link>
 
                 {/* Account & Lists */}
                 <Link href="/account">
                   <div className="flex flex-col items-center text-center px-4 py-1.5 rounded cursor-pointer group">
-                    <div className="text-xs text-primary-black">
+                    <div className="text-xs text-white">
                       {user ? `Hello, ${user.name?.split(' ')[0] || 'User'}` : 'Hello, Sign in'}
                     </div>
                     <div className="flex items-center justify-center">
-                      <span className="text-sm font-medium text-black">Account & Lists</span>
-                      <ChevronDown className="h-4 w-4 text-primary-black" />
+                      <span className="text-sm font-medium text-white">Account & Lists</span>
+                      <ChevronDown className="h-4 w-4 text-white" />
                     </div>
                   </div>
                 </Link>
@@ -173,7 +173,7 @@ export function SiteHeader({
               </div>
 
               {/* Cart - Live count via CartIcon */}
-              <div className="relative group ml-2 md:ml-4 flex items-center">
+              <div className="relative group ml-2 md:ml-4 flex items-center ">
                 <CartIcon />
                
               </div>
@@ -358,7 +358,7 @@ export function SiteHeader({
             />
             <Button
               type="submit"
-              className="bg-accent text-black hover:bg-accent/90 h-9"
+              className="bg-accent text-white hover:bg-accent/90 h-9"
             >
               <Search className="h-4 w-4" />
             </Button>

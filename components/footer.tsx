@@ -47,14 +47,14 @@ export default function Footer() {
     fetchData()
   }, [])
   return (
-    <footer className="bg-slate-800 text-slate-100 border-t border-slate-700" aria-labelledby="footer-heading">
+    <footer className="bg-gradient-to-b from-slate-600 to-slate-800 text-slate-100 border-t border-slate-700" aria-labelledby="footer-heading">
       <h2 id="footer-heading" className="sr-only">Footer</h2>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 lg:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <Image src="https://res.cloudinary.com/deamrxfwp/image/upload/v1758200202/hoe_logo_pnfrl6.jpg" alt="HOE" width={80} height={80} />
+              <Image src="/hoeee.png" alt="HOE" width={80} height={80} />
               <span className="text-2xl font-bold text-white">HOE</span>
             </div>
             <p className="text-sm text-slate-300 mb-6">Quality gear and apparel curated from top brands.</p>

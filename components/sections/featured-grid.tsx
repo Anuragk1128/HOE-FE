@@ -36,18 +36,18 @@ export function FeaturedGrid() {
 
   return (
     <section className="bg-gradient-to-b from-gray-50 to-white w-full overflow-hidden">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-20 bg-gradient-to-b from-slate-600 to-slate-800">
         {/* Enhanced Header Section */}
         <div className="text-center mb-12 md:mb-16">
           <AnimateOnScroll y={20}>
-            <div className="inline-flex items-center space-x-2 bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center space-x-2 bg-orange-100 text-accent-400 px-4 py-2 rounded-full text-sm font-medium mb-4">
               <Star className="w-4 h-4 fill-current" />
               <span>Featured Collection</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
               Handpicked for You
             </h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
+            <p className="text-white text-lg max-w-2xl mx-auto leading-relaxed">
               Discover our most loved products, carefully selected by our team and highly rated by customers
             </p>
           </AnimateOnScroll>
@@ -55,7 +55,7 @@ export function FeaturedGrid() {
 
         {/* Loading State */}
         {loading ? (
-          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {[...Array(8)].map((_, idx) => (
               <div key={idx} className="group">
                 <div className="bg-gray-200 animate-pulse rounded-2xl h-80 sm:h-96 mb-4"></div>

@@ -56,7 +56,7 @@ export function SiteHeader({
     <>
       <header className="w-full relative">
         {/* Top ribbon: logo, search and auth - Sticky */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-slate-500 to-slate-800 text-black h-14 md:h-14 shadow-sm">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-sky-700 to-sky-950 text-black h-14 md:h-14 shadow-sm">
           <div className="mx-auto w-full h-full px-3 sm:px-4 lg:px-6 max-w-[1800px]">
             <div className="relative w-full h-full flex items-center justify-between md:justify-start gap-2 md:gap-4">
               {/* Logo - Always centered on mobile, left on desktop */}
@@ -141,7 +141,7 @@ export function SiteHeader({
                 </div>
                 <Button
                   type="submit"
-                  className="h-full rounded-l-none rounded-r-md bg-black text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                  className="h-full rounded-l-none rounded-r-md bg-orange-500 text-white hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                 >
                   <Search className="h-4 w-4" />
                 </Button>
@@ -173,7 +173,7 @@ export function SiteHeader({
               </div>
 
               {/* Cart - Live count via CartIcon */}
-              <div className="relative group ml-2 md:ml-4 flex items-center ">
+              <div className="relative group ml-2 md:ml-4 flex items-center   ">
                 <CartIcon />
                
               </div>
@@ -192,10 +192,10 @@ export function SiteHeader({
               {/* Mobile menu trigger */}
               <Sheet>
                 <SheetTrigger
-                  className="md:hidden z-20 pointer-events-auto inline-flex items-center justify-center rounded-md p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="md:hidden z-20 pointer-events-auto inline-flex items-center justify-center rounded-md p-2 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-400 mt-2"
                   aria-label="Open menu"
                 >
-                  <Menu className="h-5 w-5" />
+                  <Menu className="h-5 w-5 " />
                 </SheetTrigger>
                 <SheetContent side="left" className="w-72 sm:w-80 z-[100]">
                   <SheetClose asChild>

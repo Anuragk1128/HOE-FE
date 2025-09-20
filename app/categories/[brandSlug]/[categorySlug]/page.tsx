@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { formatPrice } from '@/lib/format';
-
+import {ProductCard} from '@/components/products/product-card';
 interface Product {
   _id: string;
   title: string;
@@ -92,11 +92,7 @@ export default async function CategoryProductsPage({
                           height={400}
                           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                         />
-                        {product.compareAtPrice > product.price && (
-                          <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
-                            SALE
-                          </div>
-                        )}
+                      
                       </>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">

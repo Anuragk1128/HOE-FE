@@ -21,7 +21,7 @@ export function FeaturedGrid() {
           // Get up to 8 featured products or products with high ratings
           const featuredProducts = data.data
             .filter((p: Product) => p.tags?.includes("featured") || p.status === "active")
-            .slice(0, 8)
+            .slice(0, 10)
           setFeatured(featuredProducts)
         }
       } catch (error) {
@@ -35,30 +35,27 @@ export function FeaturedGrid() {
   }, [])
 
   return (
-    <section className="bg-gradient-to-b from-gray-50 to-white w-full overflow-hidden">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-20 bg-gradient-to-b from-slate-600 to-slate-800">
+    <section className="w-full bg-gradient-to-b from-gray-300 to-gray-6
+    
+    00">
+      <div className="mx-auto max-w-7xl px-4 sm:px-2 lg:px-3 py-2 md:py-2 w-full">
         {/* Enhanced Header Section */}
-        <div className="text-center mb-12 md:mb-16">
+        <div className="text-center mb-4 md:mb-2">
           <AnimateOnScroll y={20}>
-            <div className="inline-flex items-center space-x-2 bg-orange-100 text-accent-400 px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center space-x-2 bg-orange-100 text-accent-400 px-1 py-1 rounded-full text-sm font-medium mb-4">
               <Star className="w-4 h-4 fill-current" />
               <span>Featured Collection</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Handpicked for You
-            </h2>
-            <p className="text-white text-lg max-w-2xl mx-auto leading-relaxed">
-              Discover our most loved products, carefully selected by our team and highly rated by customers
-            </p>
+         
           </AnimateOnScroll>
         </div>
 
         {/* Loading State */}
         {loading ? (
-          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-            {[...Array(8)].map((_, idx) => (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-5 md:gap-6 lg:gap-6 xl:gap-6">
+            {[...Array(10)].map((_, idx) => (
               <div key={idx} className="group">
-                <div className="bg-gray-200 animate-pulse rounded-2xl h-80 sm:h-96 mb-4"></div>
+                <div className="bg-gray-200 animate-pulse rounded-2xl h-60 sm:h-76 "></div>
                 <div className="space-y-3">
                   <div className="h-4 bg-gray-200 animate-pulse rounded w-3/4"></div>
                   <div className="h-4 bg-gray-200 animate-pulse rounded w-1/2"></div>
@@ -70,11 +67,13 @@ export function FeaturedGrid() {
         ) : (
           <>
             {/* Products Grid */}
-            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-1 sm:gap-2 md:gap-2 lg:gap-2 xl:gap-2">
               {featured.map((product, idx) => (
                 <div key={product._id} className="w-full h-full">
                   <AnimateOnScroll y={30} delay={idx * 0.08}>
-                    <ProductCard product={product} />
+                    <div className="h-full flex flex-col">
+                      <ProductCard product={product} />
+                    </div>
                   </AnimateOnScroll>
                 </div>
               ))}

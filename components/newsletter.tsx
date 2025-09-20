@@ -39,7 +39,7 @@ const Newsletter = () => {
             />
             <button
               type="submit"
-              className="w-full sm:w-auto bg-amber-500 text-white px-6 py-4 rounded-full sm:rounded-r-full sm:rounded-l-none hover:bg-amber-600 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 focus:ring-offset-black"
+              className="w-full sm:w-auto bg-orange-500 text-white px-6 py-4 rounded-full sm:rounded-r-full sm:rounded-l-none hover:bg-amber-600 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 focus:ring-offset-black"
               aria-label="Subscribe to newsletter"
             >
               Subscribe

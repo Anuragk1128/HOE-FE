@@ -12,7 +12,7 @@ const heroSlides = [
     description: "Discover our latest arrivals for the season",
     ctaText: "Shop Now",
     ctaLink: "/products",
-    bgColor: "bg-gradient-to-b from-slate-500 to-slate-800"
+    bgColor: "bg-gradient-to-b from-sky-700 to-sky-950"
   },
   {
     id: 2,
@@ -128,7 +128,7 @@ export function HeroSection() {
                   <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     <Button 
                       asChild 
-                      className="bg-gray-400 text-slate-900 hover:bg-gray-300 text-sm sm:text-base px-6 py-3 sm:px-8 sm:py-4 w-full sm:w-auto"
+                      className="bg-orange-500 text-slate-900 hover:bg-gray-300 text-sm sm:text-base px-6 py-3 sm:px-8 sm:py-4 w-full sm:w-auto"
                     >
                       <a href={slide.ctaLink}>{slide.ctaText}</a>
                     </Button>

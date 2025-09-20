@@ -5,14 +5,14 @@ import { AnimateOnScroll } from "@/components/gsap/animate-on-scroll"
 
 export default function Cards(){
     return(
-        <section className="bg-slate-800">
-        <div className="mx-auto max-w-6xl px-4 py-8">
-            <Card className="overflow-hidden">
+        <section className="bg-gray-300">
+        <div className="mx-auto max-w-6xl px-2 py-2">
+            <Card className="bg-gray-200">
                 <AnimateOnScroll y={24}>
                   <h1 className="item-center font-bold justify-center text-center text-2xl hover:underline "> Our Collections</h1>
                 </AnimateOnScroll>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-gray-200">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 bg-gray-200">
                     
                     <AnimateOnScroll y={24}>
                     <Link href="/collections/necklaces" className="block group">

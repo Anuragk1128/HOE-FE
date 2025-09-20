@@ -6,7 +6,7 @@ import { Badge } from "./ui/badge"
 
 export default function Cards() {
     return (
-        <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-amber-400 to-gray-400">
+        <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-sky-700 to-white">
             <div className="mx-auto max-w-7xl">
                 {/* Header Section */}
                 <div className="text-center mb-12">

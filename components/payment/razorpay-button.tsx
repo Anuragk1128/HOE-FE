@@ -6,7 +6,7 @@ import { formatINR } from '@/lib/utils';
 import { openRazorpay } from '@/lib/payment';
 import { toast } from 'sonner';
 import { useCart } from '@/contexts/cart-context';
-import { createOrder, type CreateOrderInput, type Address, type SellerDetails } from '@/lib/api';
+// Removed unused createOrder-related types to prevent accidental duplicate order creation
 
 export function RazorpayButton({
   amount,
@@ -79,104 +79,15 @@ export function RazorpayButton({
           longitude: billingInfo?.longitude,
           landmark: billingInfo?.landmark,
         },
-        onSuccess: async (paymentId: string, razorpayOrderId: string) => {
+        onSuccess: async (_paymentId: string, _razorpayOrderId: string) => {
           try {
-            // Create shipping address
-            const shippingAddress: Address = {
-              fullName: shippingInfo.firstName ? `${shippingInfo.firstName} ${shippingInfo.lastName || ''}`.trim() : name,
-              addressLine1: shippingInfo.addressLine1,
-              addressLine2: shippingInfo.addressLine2,
-              city: shippingInfo.city,
-              state: shippingInfo.state,
-              postalCode: shippingInfo.postalCode,
-              country: shippingInfo.country || 'India',
-              phone: shippingInfo.phone || contact,
-              landmark: shippingInfo.landmark,
-              latitude: shippingInfo.latitude,
-              longitude: shippingInfo.longitude,
-            };
-
-            // Create billing address if different from shipping
-            const billingAddress: Address | undefined = billingInfo?.sameAsShipping ? undefined : {
-              fullName: billingInfo ? `${billingInfo.firstName} ${billingInfo.lastName || ''}`.trim() : shippingAddress.fullName,
-              addressLine1: billingInfo?.addressLine1 || shippingAddress.addressLine1,
-              addressLine2: billingInfo?.addressLine2 || shippingAddress.addressLine2,
-              city: billingInfo?.city || shippingAddress.city,
-              state: billingInfo?.state || shippingAddress.state,
-              postalCode: billingInfo?.postalCode || shippingAddress.postalCode,
-              country: billingInfo?.country || shippingAddress.country,
-              phone: billingInfo?.phone || shippingAddress.phone,
-              landmark: billingInfo?.landmark || shippingAddress.landmark,
-              latitude: billingInfo?.latitude || shippingAddress.latitude,
-              longitude: billingInfo?.longitude || shippingAddress.longitude,
-            };
-
-            // Default seller details (should be configurable)
-            const sellerDetails: SellerDetails = {
-              address: {
-                fullAddress: 'Your Store Address, City, State, Pincode',
-                pincode: 123456,
-                city: 'Your City',
-                state: 'Your State',
-                country: 'India',
-              },
-              contact: {
-                name: 'Store Manager',
-                mobile: 9876543210,
-              },
-            };
-
-            // Create order with new structure
-            const orderData: CreateOrderInput = {
-              items: cart.map(item => ({
-                productId: item.product._id,
-                quantity: item.quantity,
-                title: item.product.title,
-                image: item.product.images?.[0],
-                price: item.product.price,
-                sku: item.product.sku,
-                category: item.product.shippingCategory,
-                weight: item.product.weightKg,
-                dimensions: item.product.dimensionsCm ? {
-                  length: item.product.dimensionsCm.length,
-                  breadth: item.product.dimensionsCm.breadth,
-                  height: item.product.dimensionsCm.height,
-                } : undefined,
-                hsnCode: item.product.hsnCode,
-              })),
-              customerDetails: {
-                name: name,
-                email: email,
-                mobile: contact,
-              },
-              shippingAddress,
-              billingAddress,
-              sellerDetails,
-              paymentMethod: 'online',
-              razorpayDetails: {
-                razorpayOrderId: razorpayOrderId,
-                razorpayPaymentId: paymentId,
-                paymentMethod: 'card', // or detect from Razorpay response
-                paymentStatus: 'captured',
-              },
-              itemsPrice: amount,
-              shippingPrice: 0, // Calculate based on shipping logic
-              taxPrice: Math.round(amount * 0.18), // Calculate based on items
-              totalPrice: amount,
-              currency: 'INR',
-              orderNotes: `Order created via Razorpay payment. Payment ID: ${paymentId}`,
-            };
-
-            const order = await createOrder(orderData);
-            console.log('Order created successfully:', order);
-
-            // Clear cart and show success
+            // The order record is already handled by backend initiate/confirm & webhook
             await clearCart();
-            toast.success('Order placed successfully!');
+            toast.success('Payment successful! Order placed.');
             onSuccess?.();
           } catch (error) {
-            console.error('Order creation error:', error);
-            toast.error('Payment successful but failed to create order. Please contact support.');
+            console.error('Post-payment cleanup error:', error);
+            toast.error('Payment successful, but there was an issue clearing your cart.');
             onError?.(error as Error);
           }
         },

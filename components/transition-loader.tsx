@@ -30,7 +30,7 @@ export default function TransitionLoader({ durationMs = 2000 }: { durationMs?: n
     <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-background/90 backdrop-blur-sm">
       <div className="flex flex-col items-center">
         <Image
-          src="/logo.png"
+          src="/Hoe logo original.png"
           alt="House Of Evolve"
           width={96}
           height={96}

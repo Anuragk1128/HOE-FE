@@ -110,8 +110,7 @@ export default function CheckoutPage() {
   const handleLocationDetected = (address: any) => {
     setShippingInfo(prev => ({
       ...prev,
-      addressLine1: address.addressLine1 || prev.addressLine1,
-      addressLine2: address.addressLine2 || prev.addressLine2,
+      // Don't auto-fill address fields - keep existing values
       city: address.city || prev.city,
       state: address.state || prev.state,
       district: address.district || prev.district,
@@ -120,6 +119,7 @@ export default function CheckoutPage() {
       latitude: address.latitude || prev.latitude,
       longitude: address.longitude || prev.longitude
     }));
+    toast.success('Location detected!')
   };
 
   // Handle when address is validated
@@ -592,8 +592,7 @@ export default function CheckoutPage() {
                         onLocationDetected={(locationData: any) => {
                           setNewAddress({
                             ...newAddress,
-                            addressLine1: locationData.addressLine1 || newAddress.addressLine1,
-                            addressLine2: locationData.addressLine2 || newAddress.addressLine2,
+                            // Don't auto-fill address fields - keep existing values
                             city: locationData.city || newAddress.city,
                             state: locationData.state || newAddress.state,
                             postalCode: locationData.postalCode || newAddress.postalCode,
@@ -601,13 +600,13 @@ export default function CheckoutPage() {
                             latitude: locationData.latitude,
                             longitude: locationData.longitude,
                           });
-                          toast.success('Location detected! Please verify and complete the remaining fields.');
+                          toast.success('Location detected!');
                         }}
                         disabled={createLoading}
                         className="w-full"
                       />
                       <p className="text-xs text-blue-700 mt-2">
-                        Click to auto-detect your location and pre-fill address fields, then complete any missing information below.
+                        Check your Location
                       </p>
                     </div>
                   </div>

@@ -7,7 +7,7 @@ export default function Loading() {
     <div className="fixed inset-0 z-[9997] flex items-center justify-center bg-background">
       <div className="flex flex-col items-center">
         <Image
-          src="/logo.png"
+          src="/Hoe logo original.png"
           alt="House Of Evolve"
           width={128}
           height={128}

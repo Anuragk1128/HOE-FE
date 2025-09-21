@@ -10,12 +10,14 @@ import { Label } from '@/components/ui/label'
 import { useEffect, useState } from 'react'
 import { AuthModal } from '@/components/auth/auth-modal'
 import { User, Package, MapPin, Heart, LogOut } from 'lucide-react'
-import { API_BASE_URL, type Address } from '@/lib/api'
+import { API_BASE_URL, type Address, fetchOrders, type Order } from '@/lib/api'
 import { toast } from 'sonner'
 import { LocationButton } from '@/components/checkout/LocationButton'
+import { useWishlist } from '@/contexts/wishlist-context'
 
 export default function AccountPage() {
   const { user, logout } = useAuth()
+  const { wishlist, loading: wishlistLoading, fetchWishlist, removeFromWishlist } = useWishlist()
   const router = useRouter()
   const [authOpen,setAuthOpen]=useState(false);
   const [activeTab, setActiveTab] = useState('profile')
@@ -36,17 +38,17 @@ export default function AccountPage() {
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
-    addressBuilding: '',
-    addressStreet: '',
-    addressDistrict: '',
-    addressPincode: '',
-    addressState: '',
   })
 
   // Addresses state (reusing API used in checkout)
   const [addresses, setAddresses] = useState<Address[]>([])
   const [addressesLoading, setAddressesLoading] = useState(false)
   const [addressesError, setAddressesError] = useState<string | null>(null)
+  
+  // Orders state
+  const [orders, setOrders] = useState<Order[]>([])
+  const [ordersLoading, setOrdersLoading] = useState(false)
+  const [ordersError, setOrdersError] = useState<string | null>(null)
   const [showAddAddress, setShowAddAddress] = useState(false)
   const [createLoading, setCreateLoading] = useState(false)
   const [newAddress, setNewAddress] = useState<Address>({
@@ -79,12 +81,41 @@ export default function AccountPage() {
         const data = await res.json()
         if (data?.user) {
           setServerProfile(data.user)
+          // Update form data with server profile data if not editing
+          if (!isEditing) {
+            setFormData({
+              name: data.user.name || '',
+              email: data.user.email || '',
+              phone: data.user.phone || '',
+            })
+          }
         }
       } finally {
         setLoadingProfile(false)
       }
     }
     fetchMe()
+  }, [user?.token])
+
+  // Fetch orders from backend
+  useEffect(() => {
+    const fetchOrdersData = async () => {
+      if (!user?.token) return
+      setOrdersLoading(true)
+      setOrdersError(null)
+      try {
+        const ordersData = await fetchOrders()
+        // Only show paid orders
+        const paidOrders = ordersData.filter(order => order.status === 'paid')
+        setOrders(paidOrders)
+      } catch (error: any) {
+        console.error('Failed to fetch orders:', error)
+        setOrdersError(error.message || 'Failed to fetch orders')
+      } finally {
+        setOrdersLoading(false)
+      }
+    }
+    fetchOrdersData()
   }, [user?.token])
 
   // Fetch saved addresses from backend
@@ -110,6 +141,24 @@ export default function AccountPage() {
     }
     fetchAddresses()
   }, [user?.token])
+
+  // Fetch wishlist when user changes
+  useEffect(() => {
+    if (user?.token) {
+      fetchWishlist()
+    }
+    // Note: fetchWishlist is intentionally excluded from dependencies to prevent infinite loop
+    // since it's a function from the wishlist context that gets recreated on every render
+  }, [user?.token])
+
+  const handleStartEdit = () => {
+    setFormData({
+      name: serverProfile?.name || user?.name || '',
+      email: serverProfile?.email || user?.email || '',
+      phone: serverProfile?.phone || user?.phone || '',
+    })
+    setIsEditing(true)
+  }
 
   const handleCreateAddress = async (e?: React.FormEvent) => {
     if (e && 'preventDefault' in e) e.preventDefault()
@@ -170,20 +219,9 @@ export default function AccountPage() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user?.token) return
-    const composedAddress = [
-      formData.addressBuilding,
-      formData.addressStreet,
-      formData.addressDistrict,
-      formData.addressState,
-      formData.addressPincode,
-    ]
-      .map((p) => (p || '').trim())
-      .filter(Boolean)
-      .join(', ')
     const payload: Record<string, any> = {
       name: formData.name,
       phone: formData.phone,
-      address: composedAddress,
     }
     try {
       const res = await fetch(`${API_BASE_URL}/users/me`, {
@@ -310,7 +348,7 @@ export default function AccountPage() {
                   <div className="flex justify-between items-center">
                     <CardTitle>Profile Information</CardTitle>
                     {!isEditing ? (
-                      <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                      <Button variant="outline" size="sm" onClick={handleStartEdit}>
                         Edit Profile
                       </Button>
                     ) : (
@@ -320,15 +358,11 @@ export default function AccountPage() {
                           size="sm" 
                           onClick={() => {
                             setIsEditing(false)
+                            // Reset form data to original values
                             setFormData({
-                              name: serverProfile?.name || user.name || '',
-                              email: serverProfile?.email || user.email || '',
-                              phone: serverProfile?.phone || user.phone || '',
-                              addressBuilding: '',
-                              addressStreet: '',
-                              addressDistrict: '',
-                              addressPincode: '',
-                              addressState: '',
+                              name: serverProfile?.name || user?.name || '',
+                              email: serverProfile?.email || user?.email || '',
+                              phone: serverProfile?.phone || user?.phone || '',
                             })
                           }}
                         >
@@ -378,58 +412,6 @@ export default function AccountPage() {
                           className="mt-1"
                         />
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="addressBuilding">Building / House</Label>
-                          <Input
-                            id="addressBuilding"
-                            name="addressBuilding"
-                            value={formData.addressBuilding}
-                            onChange={handleInputChange}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="addressStreet">Street / Road</Label>
-                          <Input
-                            id="addressStreet"
-                            name="addressStreet"
-                            value={formData.addressStreet}
-                            onChange={handleInputChange}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="addressDistrict">District</Label>
-                          <Input
-                            id="addressDistrict"
-                            name="addressDistrict"
-                            value={formData.addressDistrict}
-                            onChange={handleInputChange}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="addressState">State</Label>
-                          <Input
-                            id="addressState"
-                            name="addressState"
-                            value={formData.addressState}
-                            onChange={handleInputChange}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="addressPincode">Pincode</Label>
-                          <Input
-                            id="addressPincode"
-                            name="addressPincode"
-                            value={formData.addressPincode}
-                            onChange={handleInputChange}
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
                     </form>
                   ) : (
                     <div className="space-y-4">
@@ -462,29 +444,8 @@ export default function AccountPage() {
                               <p className="text-gray-900">{serverProfile?.address || 'Not provided (please add your address)'}</p>
                             )}
                           </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <p className="text-gray-500">Role</p>
-                              <p className="text-gray-900">{serverProfile?.role || 'customer'}</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Status</p>
-                              <p className="text-gray-900">{serverProfile?.isActive ? 'Active' : 'Inactive'}</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Joined</p>
-                              <p className="text-gray-900">{serverProfile?.createdAt ? new Date(serverProfile.createdAt).toLocaleDateString() : '—'}</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500">Updated</p>
-                              <p className="text-gray-900">{serverProfile?.updatedAt ? new Date(serverProfile.updatedAt).toLocaleDateString() : '—'}</p>
-                            </div>
-                          </div>
-                          {!serverProfile?.phone || !serverProfile?.address ? (
-                            <div className="pt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
-                              Some details are missing. Please click "Edit Profile" to update your information.
-                            </div>
-                          ) : null}
+                          
+                        
                         </>
                       )}
                     </div>
@@ -499,16 +460,72 @@ export default function AccountPage() {
                   <CardTitle>My Orders</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8">
-                    <PackageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-lg font-medium text-gray-900">No orders yet</h3>
-                    <p className="mt-1 text-gray-500">You haven't placed any orders yet.</p>
-                    <div className="mt-6">
-                      <Button onClick={() => router.push('/products')}>
-                        Start Shopping
-                      </Button>
+                  {ordersLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                      <p className="mt-2 text-gray-500">Loading orders...</p>
                     </div>
-                  </div>
+                  ) : ordersError ? (
+                    <div className="text-center py-8">
+                      <PackageIcon className="mx-auto h-12 w-12 text-red-400" />
+                      <h3 className="mt-2 text-lg font-medium text-red-900">Error loading orders</h3>
+                      <p className="mt-1 text-red-500">{ordersError}</p>
+                    </div>
+                  ) : orders.length === 0 ? (
+                    <div className="text-center py-8">
+                      <PackageIcon className="mx-auto h-12 w-12 text-gray-400" />
+                      <h3 className="mt-2 text-lg font-medium text-gray-900">No completed orders yet</h3>
+                      <p className="mt-1 text-gray-500">You haven't completed any paid orders yet.</p>
+                      <div className="mt-6">
+                        <Button onClick={() => router.push('/products')}>
+                          Start Shopping
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {orders.map((order) => (
+                        <div key={order._id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="font-medium text-gray-900">Order #{order.orderNumber}</h4>
+                              <p className="text-sm text-gray-500">
+                                Placed on {new Date(order.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium text-gray-900">₹{order.totalPrice}</p>
+                              <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                order.status === 'paid' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {order.status}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            {order.items.map((item, index) => (
+                              <div key={index} className="flex items-center space-x-3">
+                                {item.image && (
+                                  <img 
+                                    src={item.image} 
+                                    alt={item.title}
+                                    className="w-12 h-12 object-cover rounded"
+                                  />
+                                )}
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium text-gray-900">{item.title}</p>
+                                  <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                                </div>
+                                <p className="text-sm font-medium text-gray-900">₹{item.price}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -571,8 +588,7 @@ export default function AccountPage() {
                                 onLocationDetected={(locationData: any) => {
                                   setNewAddress({
                                     ...newAddress,
-                                    addressLine1: locationData.addressLine1 || newAddress.addressLine1,
-                                    addressLine2: locationData.addressLine2 || newAddress.addressLine2,
+                                    // Don't auto-fill address fields - keep existing values
                                     city: locationData.city || newAddress.city,
                                     state: locationData.state || newAddress.state,
                                     postalCode: locationData.postalCode || newAddress.postalCode,
@@ -580,12 +596,12 @@ export default function AccountPage() {
                                     latitude: locationData.latitude,
                                     longitude: locationData.longitude,
                                   })
-                                  toast.success('Location detected! Please verify and complete the remaining fields.')
+                                  toast.success('Location detected!')
                                 }}
                                 className="w-full"
                               />
                               <p className="text-xs text-blue-700 mt-2">
-                                Click to auto-detect your location and pre-fill address fields, then complete any missing information below.
+                                Check your location
                               </p>
                             </div>
                           </div>
@@ -636,19 +652,72 @@ export default function AccountPage() {
             <TabsContent value="wishlist" className="mt-0">
               <Card>
                 <CardHeader>
-                  <CardTitle>Wishlist</CardTitle>
+                  <CardTitle>Wishlist ({wishlist.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8">
-                    <HeartIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-lg font-medium text-gray-900">Your wishlist is empty</h3>
-                    <p className="mt-1 text-gray-500">Save items you love for easy access later.</p>
-                    <div className="mt-6">
-                      <Button onClick={() => router.push('/products')}>
-                        Browse Products
-                      </Button>
+                  {wishlistLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                      <p className="mt-2 text-gray-500">Loading wishlist...</p>
                     </div>
-                  </div>
+                  ) : wishlist.length === 0 ? (
+                    <div className="text-center py-8">
+                      <HeartIcon className="mx-auto h-12 w-12 text-gray-400" />
+                      <h3 className="mt-2 text-lg font-medium text-gray-900">Your wishlist is empty</h3>
+                      <p className="mt-1 text-gray-500">Save items you love for easy access later.</p>
+                      <div className="mt-6">
+                        <Button onClick={() => router.push('/products')}>
+                          Browse Products
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {wishlist.map((item) => (
+                        <div key={item._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                          <div className="flex items-start space-x-3">
+                            {item.product.images?.[0] && (
+                              <img 
+                                src={item.product.images[0]} 
+                                alt={item.product.title}
+                                className="w-16 h-16 object-cover rounded"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-medium text-gray-900 truncate">
+                                {item.product.title}
+                              </h4>
+                              <p className="text-sm text-gray-500">₹{item.product.price}</p>
+                              <div className="mt-2 flex space-x-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => router.push(`/products/${item.product._id}`)}
+                                >
+                                  View
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  className="text-red-600 hover:text-red-700"
+                                  onClick={async () => {
+                                    try {
+                                      await removeFromWishlist(item.product._id)
+                                      toast.success('Removed from wishlist')
+                                    } catch (error) {
+                                      toast.error('Failed to remove from wishlist')
+                                    }
+                                  }}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

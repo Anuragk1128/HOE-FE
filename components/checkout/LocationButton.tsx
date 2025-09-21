@@ -28,9 +28,10 @@ export const LocationButton: React.FC<LocationButtonProps> = ({
       const addressParts = fullAddress.split(',').map(part => part.trim());
       
       // Extract city, state, postal code from the address
+      // Only fill city, state, postal code, and country - NOT address fields
       const addressData = {
-        addressLine1: addressParts[0] || '',
-        addressLine2: '',
+        addressLine1: '', // Don't auto-fill address fields
+        addressLine2: '', // Don't auto-fill address fields
         city: extractCity(addressParts),
         state: extractState(addressParts),
         postalCode: extractPostalCode(fullAddress),

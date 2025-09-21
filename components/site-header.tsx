@@ -265,7 +265,7 @@ export function SiteHeader({
                       {user ? (
                         <div className="space-y-2">
                           <SheetClose asChild>
-                            <Link href="/profile" className="block py-1">Profile</Link>
+                            <Link href="/account" className="block py-1">Profile</Link>
                           </SheetClose>
                           <SheetClose asChild>
                             <button

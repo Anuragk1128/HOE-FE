@@ -823,7 +823,7 @@ export async function fetchOrders(): Promise<Order[]> {
   const token = localStorage.getItem('authToken');
   if (!token) throw new Error('Not authenticated');
   
-  const response = await fetch(`${API_BASE_URL}/orders`, {
+  const response = await fetch(`${API_BASE_URL}/orders/mine`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

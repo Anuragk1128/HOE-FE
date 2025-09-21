@@ -20,10 +20,17 @@ export default function OrdersPage() {
       try {
         if (user) {
           const ordersData = await fetchOrders()
-          setOrders(ordersData)
+          console.log('All orders fetched:', ordersData)
+          console.log('Order statuses:', ordersData.map(order => ({ id: order._id, status: order.status, totalPrice: order.totalPrice })))
+          
+          // Only show orders with paid status
+          const paidOrders = ordersData.filter(order => order.status === 'paid')
+          console.log('Filtered paid orders:', paidOrders)
+          setOrders(paidOrders)
         }
       } catch (error) {
         console.error('Failed to fetch orders:', error)
+        console.error('Error details:', error)
         // Fallback to empty array on error
         setOrders([])
       } finally {
@@ -98,8 +105,8 @@ export default function OrdersPage() {
             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
           />
         </svg>
-        <h2 className="mt-2 text-2xl font-semibold text-gray-800">No orders yet</h2>
-        <p className="mt-1 text-gray-600">You haven't placed any orders yet.</p>
+        <h2 className="mt-2 text-2xl font-semibold text-gray-800">No completed orders yet</h2>
+        <p className="mt-1 text-gray-600">You haven't completed any paid orders yet.</p>
         <div className="mt-6">
           <Button onClick={() => router.push('/products')} className="px-6">
             Start Shopping

@@ -178,7 +178,7 @@ export const openRazorpay = async (options: {
       billingAddress: options.billingAddress,
       paymentMethod: 'online',
       includeTaxInItemPrice: true,
-      shippingFee: 0, // No shipping charges
+      shippingFee: 0, // NO SHIPPING CHARGES
     });
     console.debug('[Razorpay] Payment initiated:', paymentData);
 

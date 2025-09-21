@@ -3,6 +3,7 @@ import { Heart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet"
@@ -21,6 +22,7 @@ export function SiteHeader({
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
   const { user, logout } = useAuth()
+  const router = useRouter()
 
   // Collection-based categories
   const categories = [
@@ -90,7 +92,12 @@ export function SiteHeader({
                 className="hidden md:flex items-stretch flex-1 basis-0 min-w-0 max-w-2xl mx-2 md:mx-3 h-9 w-full"
                 onSubmit={(e) => {
                   e.preventDefault()
-                  onSearch?.(query)
+                  const q = query.trim()
+                  onSearch?.(q)
+                  const params = new URLSearchParams()
+                  if (q) params.set('q', q)
+                  if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory)
+                  router.push(`/products${params.toString() ? `?${params.toString()}` : ''}`)
                 }}
                 role="search"
                 aria-label="Site search"
@@ -309,7 +316,12 @@ export function SiteHeader({
             className="md:hidden flex items-center gap-2 py-1.5 relative"
             onSubmit={(e) => {
               e.preventDefault()
-              onSearch?.(query)
+              const q = query.trim()
+              onSearch?.(q)
+              const params = new URLSearchParams()
+              if (q) params.set('q', q)
+              if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory)
+              router.push(`/products${params.toString() ? `?${params.toString()}` : ''}`)
             }}
             role="search"
             aria-label="Site search"

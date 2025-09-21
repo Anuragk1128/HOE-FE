@@ -588,7 +588,7 @@ export async function adminAuthedFetch(input: RequestInfo | URL, init: RequestIn
 
 // Order Types
 export type OrderItem = {
-  product: {
+  product: string | {
     _id: string;
     title: string;
     price: number;
@@ -889,24 +889,53 @@ export async function fetchAdminOrders(params?: {
   if (params?.page) query.set('page', params.page.toString());
   if (params?.limit) query.set('limit', params.limit.toString());
   
-  const response = await fetch(`${API_BASE_URL}/admin/orders?${query.toString()}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-  });
+  // Prefer the non-admin route that your backend exposes (GET /api/orders)
+  const primaryUrl = `${API_BASE_URL}/orders${query.toString() ? `?${query.toString()}` : ''}`;
+  const commonHeaders = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  } as const;
 
-  if (!response.ok) {
-    let message = 'Failed to fetch admin orders';
-    try {
-      const err = (await response.json()) as { message?: string; error?: string };
-      message = err.message || err.error || message;
-    } catch {}
-    throw new Error(message);
+  async function parseOrdersResponse(res: Response) {
+    const data = await res.json();
+    // Normalize various possible shapes to { orders, total, page, limit }
+    if (Array.isArray(data)) {
+      const orders = data as Order[];
+      return { orders, total: orders.length, page: 1, limit: orders.length };
+    }
+    if (data?.orders && Array.isArray(data.orders)) {
+      return {
+        orders: data.orders as Order[],
+        total: Number(data.total ?? data.orders.length ?? 0),
+        page: Number(data.page ?? 1),
+        limit: Number(data.limit ?? (data.orders?.length ?? 0)),
+      };
+    }
+    if (data?.data && Array.isArray(data.data)) {
+      const orders = data.data as Order[];
+      return { orders, total: orders.length, page: 1, limit: orders.length };
+    }
+    // Fallback: try to coerce
+    const orders = (data as Order[]) ?? [];
+    return { orders, total: orders.length, page: 1, limit: orders.length };
   }
 
-  return response.json();
+  // Try primary route first
+  let response = await fetch(primaryUrl, { method: 'GET', headers: commonHeaders });
+  if (response.ok) return parseOrdersResponse(response);
+
+  // Fallback to admin route if primary not found
+  const fallbackUrl = `${API_BASE_URL}/admin/orders${query.toString() ? `?${query.toString()}` : ''}`;
+  response = await fetch(fallbackUrl, { method: 'GET', headers: commonHeaders });
+  if (response.ok) return parseOrdersResponse(response);
+
+  // Build informative error
+  let message = 'Failed to fetch admin orders';
+  try {
+    const err = (await response.json()) as { message?: string; error?: string };
+    message = err.message || err.error || message;
+  } catch {}
+  throw new Error(message);
 }
 
 export async function updateOrderStatus(orderId: string, status: string, trackingInfo?: {

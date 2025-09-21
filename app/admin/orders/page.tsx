@@ -15,7 +15,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [statusFilter, setStatusFilter] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useState<string>('paid')
   const [searchTerm, setSearchTerm] = useState('')
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null)
 
@@ -25,7 +25,7 @@ export default function AdminOrdersPage() {
       setError(null)
       
       const params: any = {}
-      if (statusFilter) params.status = statusFilter
+      if (statusFilter && statusFilter !== 'all') params.status = statusFilter
       
       const response = await fetchAdminOrders(params)
       setOrders(response.orders)
@@ -73,6 +73,7 @@ export default function AdminOrdersPage() {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800'
       case 'confirmed': return 'bg-blue-100 text-blue-800'
+      case 'paid': return 'bg-green-100 text-green-800'
       case 'processing': return 'bg-purple-100 text-purple-800'
       case 'shipped': return 'bg-indigo-100 text-indigo-800'
       case 'delivered': return 'bg-green-100 text-green-800'
@@ -82,13 +83,28 @@ export default function AdminOrdersPage() {
     }
   }
 
+  const getPaymentStatusColor = (paymentStatus?: string) => {
+    switch (paymentStatus) {
+      case 'captured': return 'bg-green-100 text-green-800'
+      case 'authorized': return 'bg-blue-100 text-blue-800'
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'failed': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch = searchTerm === '' || 
       order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.shippingAddress.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customerDetails.email.toLowerCase().includes(searchTerm.toLowerCase())
+
+    // If filtering for 'paid', ensure truly paid orders are shown
+    const matchesPaidFilter = statusFilter !== 'paid' || (
+      order.status === 'paid' || order.razorpayDetails?.paymentStatus === 'captured'
+    )
     
-    return matchesSearch
+    return matchesSearch && matchesPaidFilter
   })
 
   if (loading) {
@@ -148,9 +164,10 @@ export default function AdminOrdersPage() {
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="confirmed">Confirmed</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
               <SelectItem value="processing">Processing</SelectItem>
               <SelectItem value="shipped">Shipped</SelectItem>
               <SelectItem value="delivered">Delivered</SelectItem>
@@ -207,19 +224,24 @@ export default function AdminOrdersPage() {
                     <h4 className="font-medium mb-3">Order Items</h4>
                     <div className="space-y-3">
                       {order.items.map((item, index) => (
-                        <div key={`${item.product._id}-${index}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div
+                          key={`${typeof item.product === 'string' ? item.product : (item.product?._id || item.sku) || index}`}
+                          className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                        >
                           <div className="w-12 h-12 bg-white rounded-md overflow-hidden">
                             <img 
-                              src={item.product.images?.[0] || '/placeholder-product.jpg'} 
-                              alt={item.product.title}
+                              src={
+                                item.image || (typeof item.product !== 'string' ? (item.product.images?.[0]) : undefined) || '/placeholder-product.jpg'
+                              } 
+                              alt={item.title || (typeof item.product !== 'string' ? item.product.title : 'Product')}
                               className="w-full h-full object-cover"
                             />
                           </div>
                           <div className="flex-1">
-                            <h5 className="font-medium text-sm">{item.title || item.product.title}</h5>
+                            <h5 className="font-medium text-sm">{item.title || (typeof item.product !== 'string' ? item.product.title : 'Product')}</h5>
                             <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                            {(item.sku || item.product.sku) && (
-                              <p className="text-xs text-gray-400">SKU: {item.sku || item.product.sku}</p>
+                            {(item.sku || (typeof item.product !== 'string' ? item.product.sku : undefined)) && (
+                              <p className="text-xs text-gray-400">SKU: {item.sku || (typeof item.product !== 'string' ? item.product.sku : '')}</p>
                             )}
                             {item.category && (
                               <p className="text-xs text-gray-400">Category: {item.category}</p>
@@ -282,7 +304,13 @@ export default function AdminOrdersPage() {
                         <h5 className="font-medium text-sm mb-2">Payment Details</h5>
                         <p className="text-sm text-gray-600">
                           Method: {order.paymentMethod}<br />
-                          Amount: {formatINR(order.totalPrice)}<br />
+                          Price Paid: {formatINR(order.totalPrice)}<br />
+                          {(() => {
+                            const paidDate = order.paidAt || (order.razorpayDetails?.paymentStatus === 'captured' ? order.updatedAt : undefined)
+                            return paidDate ? (
+                              <>Date Paid: {new Date(paidDate).toLocaleString('en-IN')}<br /></>
+                            ) : null
+                          })()}
                           {order.razorpayDetails && (
                             <>
                               {order.razorpayDetails.razorpayOrderId && (
@@ -291,7 +319,7 @@ export default function AdminOrdersPage() {
                               {order.razorpayDetails.razorpayPaymentId && (
                                 <>Payment ID: {order.razorpayDetails.razorpayPaymentId}<br /></>
                               )}
-                              Status: <Badge className={getStatusColor(order.razorpayDetails.paymentStatus)}>
+                              Payment Status: <Badge className={getPaymentStatusColor(order.razorpayDetails.paymentStatus)}>
                                 {order.razorpayDetails.paymentStatus}
                               </Badge>
                             </>

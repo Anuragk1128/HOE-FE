@@ -305,7 +305,9 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                         alt={product.title}
                         width={600}
                         height={600}
-                        className="w-full h-full object-contain"
+                        className={`w-full h-full object-contain ${
+                          product.stock && product.stock > 0 ? '' : 'blur-sm'
+                        }`}
                         priority
                       />
                     </div>
@@ -315,6 +317,15 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                       <div className="absolute top-4 left-4">
                         <Badge className="bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1">
                           -{discountPercentage}%
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {/* Out of Stock Overlay */}
+                    {product.stock && product.stock <= 0 && (
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <Badge variant="destructive" className="bg-red-600 text-white font-semibold px-4 py-2 text-lg">
+                          Out of Stock
                         </Badge>
                       </div>
                     )}

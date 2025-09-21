@@ -25,6 +25,8 @@ export function ProductCard({ product }: { product: Product }) {
   const discountPercentage = hasDiscount 
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
     : 0
+  
+  const isOutOfStock = product.stock <= 0
 
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -44,6 +46,16 @@ export function ProductCard({ product }: { product: Product }) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    
+    if (isOutOfStock) {
+      toast.error('This product is out of stock', {
+        position: 'top-center',
+        duration: 2000,
+        className: 'bg-red-500 text-white'
+      })
+      return
+    }
+    
     addToCart(product._id, 1)
     toast.success('Added to cart!', {
       position: 'top-center',
@@ -66,7 +78,7 @@ export function ProductCard({ product }: { product: Product }) {
                 fill
                 className={`object-cover transition-all duration-700 group-hover:scale-105 ${
                   imageLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
+                } ${isOutOfStock ? 'blur-sm' : ''}`}
                 onLoad={() => setImageLoaded(true)}
               />
             ) : (
@@ -79,7 +91,14 @@ export function ProductCard({ product }: { product: Product }) {
               <div className="absolute inset-0 bg-gray-200 animate-pulse" />
             )}
 
-         
+            {/* Out of Stock Overlay */}
+            {isOutOfStock && (
+              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                <Badge variant="destructive" className="bg-red-600 text-white font-semibold px-3 py-1">
+                  Out of Stock
+                </Badge>
+              </div>
+            )}
 
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300">
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
@@ -95,8 +114,13 @@ export function ProductCard({ product }: { product: Product }) {
 
               <div className="absolute inset-x-2 bottom-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                 <Button
-                  className="w-full bg-white/95 hover:bg-white text-gray-900 font-medium py-1.5 text-xs shadow-md"
+                  className={`w-full font-medium py-1.5 text-xs shadow-md ${
+                    isOutOfStock 
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                      : 'bg-white/95 hover:bg-white text-gray-900'
+                  }`}
                   onClick={handleAddToCart}
+                  disabled={isOutOfStock}
                 >
                   <ShoppingCart className="w-3 h-3 mr-1.5" />
                   Quick Add

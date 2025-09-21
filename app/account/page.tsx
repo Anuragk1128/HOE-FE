@@ -10,7 +10,9 @@ import { Label } from '@/components/ui/label'
 import { useEffect, useState } from 'react'
 import { AuthModal } from '@/components/auth/auth-modal'
 import { User, Package, MapPin, Heart, LogOut } from 'lucide-react'
-import { API_BASE_URL } from '@/lib/api'
+import { API_BASE_URL, type Address } from '@/lib/api'
+import { toast } from 'sonner'
+import { LocationButton } from '@/components/checkout/LocationButton'
 
 export default function AccountPage() {
   const { user, logout } = useAuth()
@@ -41,6 +43,27 @@ export default function AccountPage() {
     addressState: '',
   })
 
+  // Addresses state (reusing API used in checkout)
+  const [addresses, setAddresses] = useState<Address[]>([])
+  const [addressesLoading, setAddressesLoading] = useState(false)
+  const [addressesError, setAddressesError] = useState<string | null>(null)
+  const [showAddAddress, setShowAddAddress] = useState(false)
+  const [createLoading, setCreateLoading] = useState(false)
+  const [newAddress, setNewAddress] = useState<Address>({
+    fullName: '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    district: '',
+    postalCode: '',
+    country: 'India',
+    phone: '',
+    latitude: '',
+    longitude: '',
+    landmark: '',
+  })
+
   useEffect(() => {
     const fetchMe = async () => {
       if (!user?.token) return
@@ -63,6 +86,78 @@ export default function AccountPage() {
     }
     fetchMe()
   }, [user?.token])
+
+  // Fetch saved addresses from backend
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      if (!user?.token) return
+      setAddressesLoading(true)
+      setAddressesError(null)
+      try {
+        const res = await fetch(`${API_BASE_URL}/addresses`, {
+          method: 'GET',
+          headers: { Accept: 'application/json', Authorization: `Bearer ${user.token}` },
+        })
+        const data = await res.json().catch(() => ({} as any))
+        if (!res.ok) throw new Error(data?.message || 'Failed to fetch addresses')
+        const list: Address[] = (Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : data?.addresses) || []
+        setAddresses(list)
+      } catch (e: any) {
+        setAddressesError(e?.message || 'Unable to load addresses')
+      } finally {
+        setAddressesLoading(false)
+      }
+    }
+    fetchAddresses()
+  }, [user?.token])
+
+  const handleCreateAddress = async (e?: React.FormEvent) => {
+    if (e && 'preventDefault' in e) e.preventDefault()
+    if (!user?.token) return
+    // Basic required fields
+    if (!newAddress.fullName || !newAddress.addressLine1 || !newAddress.city || !newAddress.state || !newAddress.postalCode || !newAddress.phone) {
+      toast.error('Please fill all required fields')
+      return
+    }
+    setCreateLoading(true)
+    try {
+      const res = await fetch(`${API_BASE_URL}/addresses`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({
+          ...newAddress,
+          latitude: (newAddress.latitude || '').toString(),
+          longitude: (newAddress.longitude || '').toString(),
+        }),
+      })
+      const data = await res.json().catch(() => ({} as any))
+      if (!res.ok) throw new Error(data?.message || 'Failed to create address')
+      // Refresh list
+      setShowAddAddress(false)
+      setNewAddress({ fullName: '', addressLine1: '', addressLine2: '', city: '', state: '', district: '', postalCode: '', country: 'India', phone: '', latitude: '', longitude: '', landmark: '' })
+      // Re-fetch
+      try {
+        const res2 = await fetch(`${API_BASE_URL}/addresses`, {
+          method: 'GET',
+          headers: { Accept: 'application/json', Authorization: `Bearer ${user.token}` },
+        })
+        const data2 = await res2.json().catch(() => ({} as any))
+        if (res2.ok) {
+          const list: Address[] = (Array.isArray(data2?.data) ? data2.data : Array.isArray(data2) ? data2 : data2?.addresses) || []
+          setAddresses(list)
+        }
+      } catch {}
+      toast.success('Address added successfully')
+    } catch (e: any) {
+      toast.error(e?.message || 'Error adding address')
+    } finally {
+      setCreateLoading(false)
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -356,7 +451,16 @@ export default function AccountPage() {
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">Address</p>
-                            <p className="text-gray-900">{serverProfile?.address || 'Not provided (please add your address)'}</p>
+                            {addresses.length > 0 ? (
+                              <div className="text-gray-900">
+                                <p>{addresses[0].addressLine1}{addresses[0].addressLine2 ? `, ${addresses[0].addressLine2}` : ''}</p>
+                                <p>{addresses[0].city}, {addresses[0].state} {addresses[0].postalCode}</p>
+                                <p>{addresses[0].country}</p>
+                                {addresses[0].landmark ? <p className="text-gray-700 text-sm">Landmark: {addresses[0].landmark}</p> : null}
+                              </div>
+                            ) : (
+                              <p className="text-gray-900">{serverProfile?.address || 'Not provided (please add your address)'}</p>
+                            )}
                           </div>
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
@@ -414,17 +518,117 @@ export default function AccountPage() {
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle>Saved Addresses</CardTitle>
-                    <Button size="sm">
-                      Add New Address
+                    <Button size="sm" onClick={() => setShowAddAddress(s => !s)}>
+                      {showAddAddress ? 'Close' : 'Add New Address'}
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8">
-                    <MapPinIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-lg font-medium text-gray-900">No saved addresses</h3>
-                    <p className="mt-1 text-gray-500">You haven't saved any addresses yet.</p>
-                  </div>
+                  {addressesLoading && (
+                    <p className="text-sm text-gray-600">Loading addresses…</p>
+                  )}
+                  {addressesError && (
+                    <p className="text-sm text-red-600">{addressesError}</p>
+                  )}
+                  {!addressesLoading && !addressesError && (
+                    <>
+                      {addresses.length === 0 ? (
+                        <div className="text-center py-8">
+                          <MapPinIcon className="mx-auto h-12 w-12 text-gray-400" />
+                          <h3 className="mt-2 text-lg font-medium text-gray-900">No saved addresses</h3>
+                          <p className="mt-1 text-gray-500">You haven't saved any addresses yet.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {addresses.map(addr => (
+                            <div key={(addr._id || addr.addressLine1) + addr.postalCode} className="p-4 border rounded-md">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium text-gray-900">{addr.fullName} <span className="text-gray-500 font-normal">• {addr.phone}</span></p>
+                                  <p className="text-sm text-gray-700">{addr.addressLine1}{addr.addressLine2 ? `, ${addr.addressLine2}` : ''}</p>
+                                  <p className="text-sm text-gray-700">{addr.city}, {addr.state} {addr.postalCode}, {addr.country}</p>
+                                  {addr.landmark ? <p className="text-xs text-gray-500">Landmark: {addr.landmark}</p> : null}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {showAddAddress && (
+                        <form onSubmit={handleCreateAddress} className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Quick Location Detection for New Address */}
+                          <div className="md:col-span-2">
+                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                              <div className="flex items-center gap-3 mb-3">
+                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <h4 className="text-sm font-medium text-blue-900">Quick Location Detection</h4>
+                              </div>
+                              <LocationButton
+                                onLocationDetected={(locationData: any) => {
+                                  setNewAddress({
+                                    ...newAddress,
+                                    addressLine1: locationData.addressLine1 || newAddress.addressLine1,
+                                    addressLine2: locationData.addressLine2 || newAddress.addressLine2,
+                                    city: locationData.city || newAddress.city,
+                                    state: locationData.state || newAddress.state,
+                                    postalCode: locationData.postalCode || newAddress.postalCode,
+                                    country: locationData.country || 'India',
+                                    latitude: locationData.latitude,
+                                    longitude: locationData.longitude,
+                                  })
+                                  toast.success('Location detected! Please verify and complete the remaining fields.')
+                                }}
+                                className="w-full"
+                              />
+                              <p className="text-xs text-blue-700 mt-2">
+                                Click to auto-detect your location and pre-fill address fields, then complete any missing information below.
+                              </p>
+                            </div>
+                          </div>
+                          <div className="md:col-span-2">
+                            <Label htmlFor="fullName">Full Name *</Label>
+                            <Input id="fullName" required value={newAddress.fullName} onChange={(e)=>setNewAddress({...newAddress, fullName: e.target.value})} className="mt-1" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <Label htmlFor="line1">Address Line 1 *</Label>
+                            <Input id="line1" required value={newAddress.addressLine1} onChange={(e)=>setNewAddress({...newAddress, addressLine1: e.target.value})} className="mt-1" />
+                          </div>
+                          <div className="md:col-span-2">
+                            <Label htmlFor="line2">Address Line 2</Label>
+                            <Input id="line2" value={newAddress.addressLine2 || ''} onChange={(e)=>setNewAddress({...newAddress, addressLine2: e.target.value})} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor="city">City *</Label>
+                            <Input id="city" required value={newAddress.city} onChange={(e)=>setNewAddress({...newAddress, city: e.target.value})} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor="state">State *</Label>
+                            <Input id="state" required value={newAddress.state} onChange={(e)=>setNewAddress({...newAddress, state: e.target.value})} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor="postal">Postal Code *</Label>
+                            <Input id="postal" required value={newAddress.postalCode} onChange={(e)=>setNewAddress({...newAddress, postalCode: e.target.value})} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor="country">Country *</Label>
+                            <Input id="country" required value={newAddress.country} onChange={(e)=>setNewAddress({...newAddress, country: e.target.value})} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor="phone">Phone *</Label>
+                            <Input id="phone" required value={newAddress.phone} onChange={(e)=>setNewAddress({...newAddress, phone: e.target.value})} className="mt-1" />
+                          </div>
+                          <div className="md:col-span-2 flex items-center gap-3 pt-2">
+                            <Button type="submit" disabled={createLoading}>{createLoading ? 'Adding…' : 'Add Address'}</Button>
+                            <Button type="button" variant="outline" onClick={()=>setShowAddAddress(false)}>Cancel</Button>
+                          </div>
+                        </form>
+                      )}
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

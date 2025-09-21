@@ -3,21 +3,21 @@ import { Star } from "lucide-react"
 const testimonials = [
   {
     id: 1,
-    name: "Sarah Johnson",
+    name: "Akash Rana",
     role: "Fashion Enthusiast",
     content: "The quality of the products is outstanding! I've received so many compliments on my new wardrobe.",
     rating: 5
   },
   {
     id: 2,
-    name: "Michael Chen",
+    name: "Nidhi Singh",
     role: "Loyal Customer",
     content: "Exceptional customer service and fast shipping. Will definitely be shopping here again!",
     rating: 5
   },
   {
     id: 3,
-    name: "Emily Rodriguez",
+    name: "Rahul Kumar",
     role: "Style Blogger",
     content: "I love how versatile and comfortable their clothing is. Perfect for both casual and formal occasions.",
     rating: 4

@@ -46,13 +46,20 @@ export function RazorpayButton({
         name,
         email,
         contact,
-        items: cart.map((item) => ({
-          product: item.product._id,
-          title: item.product.title,
-          image: item.product.images?.[0],
-          price: item.product.price,
-          quantity: item.quantity,
-        })),
+        items: cart.map((item) => {
+          const basePrice = item.product.price || 0
+          const gstRate = typeof item.product.gstRate === 'number' ? item.product.gstRate : 0
+          // Send base price to backend, let backend calculate GST properly
+          return {
+            product: item.product._id,
+            title: item.product.title,
+            image: item.product.images?.[0],
+            price: basePrice,
+            quantity: item.quantity,
+            gstRate,
+            priceIncludesGst: false,
+          }
+        }),
         shippingAddress: {
           fullName: shippingInfo.firstName ? `${shippingInfo.firstName} ${shippingInfo.lastName || ''}`.trim() : name,
           addressLine1: shippingInfo.addressLine1,
@@ -121,7 +128,7 @@ export function RazorpayButton({
           className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           disabled={disabled || isProcessing}
         >
-          {isProcessing ? 'Processing...' : `Pay Securely - ${formatINR(amount)}`}
+          {isProcessing ? 'Processing...' : `Pay Securely `}
         </Button>
         
         <div className="mt-4 flex items-center justify-center">

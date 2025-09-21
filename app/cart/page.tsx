@@ -71,7 +71,7 @@ export default function CartPage() {
   }
 
   // Calculate totals
-  const shippingFee = cartTotal > 500 ? 0 : 50 // Free shipping above ₹500
+  const shippingFee = 0 // No shipping charges
   const tax = cartTotal * 0.1 // 10% tax
   const orderTotal = cartTotal + shippingFee + tax
 
@@ -250,11 +250,9 @@ export default function CartPage() {
                 <span className="font-medium">{formatINR(tax)}</span>
               </div>
               
-              {shippingFee > 0 && (
-                <div className="text-sm text-gray-500 bg-blue-50 p-2 rounded">
-                  💡 Add {formatINR(500 - cartTotal)} more for free shipping!
-                </div>
-              )}
+              <div className="text-sm text-gray-500 bg-green-50 p-2 rounded">
+                🎉 Free shipping on all orders!
+              </div>
             </div>
             
             <div className="border-t border-gray-200 pt-4 mb-6">

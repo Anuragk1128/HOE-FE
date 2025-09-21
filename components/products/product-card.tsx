@@ -10,10 +10,11 @@ import { toast } from "sonner"
 import { Heart, ShoppingCart, Eye } from "lucide-react"
 import { useState } from "react"
 import Image from "next/image"
+import { useWishlist } from "@/contexts/wishlist-context"
 
 export function ProductCard({ product }: { product: Product }) {
   const { addToCart } = useCart()
-  const [isWishlisted, setIsWishlisted] = useState(false)
+  const { addToWishlist, isInWishlist } = useWishlist()
   const [imageLoaded, setImageLoaded] = useState(false)
   
   const brand = typeof product.brandId === 'object' && product.brandId !== null
@@ -25,11 +26,19 @@ export function ProductCard({ product }: { product: Product }) {
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
     : 0
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsWishlisted(!isWishlisted)
-    toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist')
+    try {
+      if (isInWishlist(product._id)) {
+        toast.info('Already in wishlist')
+        return
+      }
+      await addToWishlist(product._id)
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to update wishlist')
+    }
   }
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -80,7 +89,7 @@ export function ProductCard({ product }: { product: Product }) {
                   className="h-7 w-7 bg-white/90 hover:bg-white shadow-md"
                   onClick={handleWishlistToggle}
                 >
-                  <Heart className={`w-3 h-3 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-700'}`} />
+                  <Heart className={`w-3 h-3 ${isInWishlist(product._id) ? 'fill-red-500 text-red-500' : 'text-gray-700'}`} />
                 </Button>
               </div>
 

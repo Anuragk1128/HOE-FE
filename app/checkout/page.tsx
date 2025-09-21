@@ -373,9 +373,16 @@ export default function CheckoutPage() {
     }
   }
 
-  const shippingFee = 0; // Free shipping
-  const tax = cartTotal * 0.1; // 10% tax
-  const orderTotal = cartTotal + shippingFee + tax;
+  // Pricing: Subtotal + GST (per item). No shipping fee and no generic tax.
+  const shippingFee = 0; // No shipping charges
+  const cartSubtotal = cartTotal; // base sum of product price * qty
+  const gstTotal = cart.reduce((sum, item) => {
+    const price = item?.product?.price || 0
+    const rate = typeof item?.product?.gstRate === 'number' ? item.product.gstRate! : 0
+    const qty = item.quantity || 1
+    return sum + price * (rate / 100) * qty
+  }, 0)
+  const orderTotal = cartSubtotal + gstTotal
  
   const handleShippingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -405,7 +412,7 @@ export default function CheckoutPage() {
       
       <div className="mt-8">
         <RazorpayButton
-          amount={cartTotal}
+          amount={orderTotal}
           orderId={`order_${Date.now()}`}
           name={`${shippingInfo.firstName} ${shippingInfo.lastName}`.trim()}
           email={shippingInfo.email}
@@ -538,7 +545,7 @@ export default function CheckoutPage() {
                           <p className="text-sm text-gray-700">{addr.addressLine1}{addr.addressLine2 ? `, ${addr.addressLine2}` : ''}</p>
                           <p className="text-sm text-gray-700">{addr.city}, {addr.state} {addr.postalCode}, {addr.country}</p>
                           {addr.landmark ? <p className="text-xs text-gray-500">Landmark: {addr.landmark}</p> : null}
-                          {(addr.latitude || addr.longitude) ? <p className="text-xs text-gray-500">Lat/Lng: {addr.latitude || '-'}, {addr.longitude || '-'}</p> : null}
+                      
                         </div>
                       </label>
                     ))
@@ -988,11 +995,15 @@ export default function CheckoutPage() {
                       <span>{shippingFee === 0 ? 'Free' : formatINR(shippingFee)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Tax (10%)</span>
-                      <span>{formatINR(tax)}</span>
+                      <span>Price (Subtotal)</span>
+                      <span>{formatINR(cartSubtotal)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>GST (per item)</span>
+                      <span>{formatINR(gstTotal)}</span>
                     </div>
                     <div className="flex justify-between pt-2 border-t border-gray-200 font-bold text-lg">
-                      <span>Total</span>
+                      <span>Price + GST = Total</span>
                       <span>{formatINR(orderTotal)}</span>
                     </div>
                   </div>

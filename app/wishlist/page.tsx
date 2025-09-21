@@ -98,7 +98,7 @@ export default function WishlistPage() {
                 variant="outline" 
                 size="sm" 
                 className="w-full"
-                onClick={() => removeFromWishlist(item._id)}
+                onClick={() => removeFromWishlist(item.product._id)}
               >
                 <HeartOff className="h-4 w-4 mr-2" />
                 Remove

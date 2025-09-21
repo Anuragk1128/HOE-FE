@@ -17,7 +17,15 @@ export interface InitiatePaymentResponse {
 }
 
 type InitiatePayload = {
-  items: Array<{ product: string; title: string; image?: string; price: number; quantity: number }>;
+  items: Array<{ 
+    product: string; 
+    title: string; 
+    image?: string; 
+    price: number; 
+    quantity: number;
+    gstRate?: number;
+    priceIncludesGst?: boolean;
+  }>;
   customerDetails: { name: string; email: string; mobile: string };
   shippingAddress: {
     fullName: string;
@@ -46,6 +54,9 @@ type InitiatePayload = {
     landmark?: string;
   };
   paymentMethod: 'online';
+  // Hints for backend pricing calculation
+  includeTaxInItemPrice?: boolean; // per-item price already includes GST
+  shippingFee?: number; // force shipping fee (0 to disable shipping charge)
 };
 
 export const initiatePayment = async (payloadIn: InitiatePayload): Promise<InitiatePaymentResponse> => {
@@ -166,6 +177,8 @@ export const openRazorpay = async (options: {
       shippingAddress: options.shippingAddress,
       billingAddress: options.billingAddress,
       paymentMethod: 'online',
+      includeTaxInItemPrice: true,
+      shippingFee: 0, // No shipping charges
     });
     console.debug('[Razorpay] Payment initiated:', paymentData);
 

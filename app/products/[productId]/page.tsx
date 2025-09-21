@@ -33,6 +33,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
+import { useWishlist } from '@/contexts/wishlist-context'
 
 interface ProductDetails extends Product {
   brand?: {
@@ -52,7 +53,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [isWishlisted, setIsWishlisted] = useState(false)
+  // Wishlist
+  const { addToWishlist, isInWishlist } = useWishlist()
   const [activeTab, setActiveTab] = useState('description')
   
   // Image zoom states
@@ -177,9 +179,18 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
     router.push('/cart')
   }
 
-  const toggleWishlist = () => {
-    setIsWishlisted(!isWishlisted)
-    toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist')
+  const handleWishlistClick = async () => {
+    if (!product) return
+    try {
+      if (isInWishlist(product._id)) {
+        toast.info('Already in wishlist')
+        return
+      }
+      await addToWishlist(product._id)
+    } catch (e) {
+      console.error('Wishlist error:', e)
+      toast.error('Failed to update wishlist')
+    }
   }
 
   const handleShare = async () => {
@@ -249,6 +260,11 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
   const discountPercentage = product.compareAtPrice && product.compareAtPrice > product.price
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
     : 0
+
+  // GST calculations
+  const gstRate = typeof product.gstRate === 'number' ? product.gstRate : 0
+  const gstAmount = Math.max(0, (product.price || 0) * (gstRate / 100))
+  const totalWithGst = (product.price || 0) + gstAmount
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -398,10 +414,10 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                   <Button
                     size="icon"
                     variant="outline"
-                    onClick={toggleWishlist}
+                    onClick={handleWishlistClick}
                     className="h-10 w-10"
                   >
-                    <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
+                    <Heart className={`w-5 h-5 ${product && isInWishlist(product._id) ? 'fill-red-500 text-red-500' : ''}`} />
                   </Button>
                   <Button
                     size="icon"
@@ -438,26 +454,32 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
               </div>
             </div>
 
-            {/* Price */}
+            {/* Price + GST */}
             <Card className="p-6 bg-gradient-to-r from-gray-50 to-white border border-gray-200">
-              <div className="flex items-baseline space-x-3">
-                <span className="text-3xl sm:text-4xl font-bold text-gray-900">
-                  ₹{product.price.toLocaleString('en-IN')}
-                </span>
-                {product.compareAtPrice && product.compareAtPrice > product.price && (
-                  <>
-                    <span className="text-xl text-gray-500 line-through">
-                      ₹{product.compareAtPrice.toLocaleString('en-IN')}
-                    </span>
-                    <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                      Save ₹{(product.compareAtPrice - product.price).toLocaleString('en-IN')}
-                    </Badge>
-                  </>
-                )}
+              <div className="space-y-1">
+                <div className="flex items-baseline space-x-3">
+                  <span className="text-3xl sm:text-4xl font-bold text-gray-900">
+                    ₹{(product.price || 0).toLocaleString('en-IN')}
+                  </span>
+                  {product.compareAtPrice && product.compareAtPrice > product.price && (
+                    <>
+                      <span className="text-xl text-gray-500 line-through">
+                        ₹{product.compareAtPrice.toLocaleString('en-IN')}
+                      </span>
+                      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                        Save ₹{(product.compareAtPrice - product.price).toLocaleString('en-IN')}
+                      </Badge>
+                    </>
+                  )}
+                </div>
+                <div className="text-sm text-gray-700">
+                  <span className="font-medium">GST ({gstRate}%)</span>: ₹{gstAmount.toLocaleString('en-IN')}
+                </div>
+                <div className="text-base font-semibold text-gray-900">
+                  Price + GST = ₹{totalWithGst.toLocaleString('en-IN')}
+                </div>
+                <p className="text-xs text-gray-500">Free shipping on all orders!</p>
               </div>
-              <p className="text-sm text-gray-600 mt-2">
-                Inclusive of all taxes • Free shipping on orders above ₹499
-              </p>
             </Card>
 
             {/* Stock Status */}

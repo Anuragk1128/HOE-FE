@@ -27,7 +27,7 @@ interface WishlistContextType {
   loading: boolean;
   error: Error | null;
   addToWishlist: (productId: string) => Promise<void>;
-  removeFromWishlist: (wishlistItemId: string) => Promise<void>;
+  removeFromWishlist: (productId: string) => Promise<void>;
   isInWishlist: (productId: string) => boolean;
   fetchWishlist: () => Promise<void>;
 }
@@ -81,13 +81,12 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const response = await fetch('https://hoe-be.onrender.com/api/wishlist', {
+      const response = await fetch(`https://hoe-be.onrender.com/api/wishlist/${productId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user.token}`,
-          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        body: JSON.stringify({ productId }),
       });
 
       if (!response.ok) {
@@ -102,17 +101,18 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const removeFromWishlist = async (wishlistItemId: string) => {
+  const removeFromWishlist = async (productId: string) => {
     try {
       if (!user?.token) {
         toast.error('Please login to modify wishlist');
         return;
       }
 
-      const response = await fetch(`https://hoe-be.onrender.com/api/wishlist/${wishlistItemId}`, {
+      const response = await fetch(`https://hoe-be.onrender.com/api/wishlist/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${user.token}`,
+          'Accept': 'application/json',
         },
       });
 
@@ -120,7 +120,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         throw new Error('Failed to remove from wishlist');
       }
 
-      setWishlist(prev => prev.filter(item => item._id !== wishlistItemId));
+      setWishlist(prev => prev.filter(item => item.product._id !== productId));
       toast.success('Removed from wishlist');
     } catch (error) {
       console.error('Error removing from wishlist:', error);

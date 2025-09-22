@@ -67,10 +67,10 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group h-full w-full">
       <Link href={`/products/${product._id}`} className="block h-full w-full">
-        <div className="h-full w-full flex flex-col bg-white shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
+        <div className="h-full w-full flex flex-col bg-white shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden rounded-lg">
           
-          {/* Image Section - ZERO padding */}
-          <div className="relative w-full aspect-square">
+          {/* Image Section - Responsive aspect ratio */}
+          <div className="relative w-full aspect-square overflow-hidden">
             {product.images?.[0] ? (
               <Image
                 src={product.images[0]}
@@ -80,6 +80,7 @@ export function ProductCard({ product }: { product: Product }) {
                   imageLoaded ? 'opacity-100' : 'opacity-0'
                 } ${isOutOfStock ? 'blur-sm' : ''}`}
                 onLoad={() => setImageLoaded(true)}
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -129,51 +130,51 @@ export function ProductCard({ product }: { product: Product }) {
             </div>
           </div>
 
-          {/* Content Section - ZERO spacing between elements */}
-          <div className="flex-1 bg-white">
+          {/* Content Section - Proper spacing and responsive layout */}
+          <div className="flex-1 bg-white p-3 flex flex-col">
             
-            {/* Brand - NO margin/padding */}
+            {/* Brand */}
             {brand?.name && (
-              <div className="px-2 pt-2 pb-0">
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">
+              <div className="mb-2">
+                <Badge variant="outline" className="text-xs px-2 py-1">
                   {brand.name}
                 </Badge>
               </div>
             )}
 
-            {/* Title - NO spacing */}
-            <div className="px-2 pb-0">
-              <h3 className="font-medium text-gray-900 text-sm leading-tight line-clamp-2 group-hover:text-gray-700 transition-colors">
+            {/* Title - Fixed height for consistency */}
+            <div className="mb-2 flex-shrink-0">
+              <h3 className="font-medium text-gray-900 text-sm leading-tight line-clamp-2 group-hover:text-gray-700 transition-colors min-h-[2.5rem] flex items-start">
                 {product.title}
               </h3>
             </div>
 
-            {/* Description - NO spacing */}
-            <div className="px-2 pb-0">
-              <p className="text-xs text-gray-500 leading-tight line-clamp-1">
+            {/* Description - Flexible space */}
+            <div className="mb-3 flex-grow">
+              <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
                 {product.description}
               </p>
             </div>
 
-            {/* Price - NO spacing */}
-            <div className="px-2 pb-0">
-              <div className="flex items-baseline space-x-1">
-                <span className="font-bold text-sm text-gray-900">
+            {/* Price */}
+            <div className="mb-3 flex-shrink-0">
+              <div className="flex items-baseline space-x-2">
+                <span className="font-bold text-base text-gray-900">
                   {formatINR(product.price || 0)}
                 </span>
                 {hasDiscount && (
-                  <span className="text-xs text-gray-400 line-through">
+                  <span className="text-sm text-gray-400 line-through">
                     {formatINR(product.compareAtPrice)}
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Stock Status - NO spacing */}
-            <div className="px-2 py-2">
+            {/* Stock Status and Mobile Add Button */}
+            <div className="flex-shrink-0">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-1">
-                  <div className={`w-1.5 h-1.5 rounded-full ${
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${
                     product.stock && product.stock > 0 ? 'bg-green-500' : 'bg-red-500'
                   }`} />
                   <span className={`text-xs font-medium ${
@@ -185,8 +186,9 @@ export function ProductCard({ product }: { product: Product }) {
 
                 <Button
                   size="sm"
-                  className="bg-gray-900 hover:bg-gray-800 text-white px-2 py-1 text-xs font-medium sm:hidden h-6"
+                  className="bg-gray-900 hover:bg-gray-800 text-white px-3 py-1 text-xs font-medium sm:hidden"
                   onClick={handleAddToCart}
+                  disabled={isOutOfStock}
                 >
                   Add
                 </Button>

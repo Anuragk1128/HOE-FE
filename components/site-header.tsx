@@ -11,6 +11,8 @@ import { ChevronDown, ChevronUp, LogIn, LogOut, MapPin, Menu, Search, User as Us
 import { AuthModal } from "@/components/auth/auth-modal"
 import { useAuth } from "@/components/auth/auth-provider"
 import { CartIcon } from "@/components/cart-icon"
+import { useLocationServices } from "@/hooks/useLocationServices"
+import { toast } from "sonner"
 
 export function SiteHeader({
   onSearch,
@@ -21,8 +23,44 @@ export function SiteHeader({
   const [authOpen, setAuthOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
+  const [userLocation, setUserLocation] = useState<{ city: string; postalCode: string } | null>(null)
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false)
   const { user, logout } = useAuth()
+  const { getCurrentLocationAddress } = useLocationServices()
   const router = useRouter()
+
+  // Handle location detection
+  const handleDetectLocation = async () => {
+    setIsDetectingLocation(true)
+    try {
+      const locationData = await getCurrentLocationAddress()
+      if (locationData && locationData.address) {
+        // Parse the full address to extract city and postal code
+        const fullAddress = locationData.address.full_address || locationData.address.place_formatted || ''
+        const addressParts = fullAddress.split(',').map(part => part.trim())
+        
+        // Try to extract postal code (usually 6 digits)
+        const postalCodeMatch = fullAddress.match(/\b\d{6}\b/)
+        const postalCode = postalCodeMatch ? postalCodeMatch[0] : ''
+        
+        // Extract city (usually the second or third part)
+        const city = addressParts[1] || addressParts[0] || 'Unknown'
+        
+        setUserLocation({
+          city: city,
+          postalCode: postalCode
+        })
+        
+      } else {
+        toast.error('Failed to detect location. Please try again.')
+      }
+    } catch (error) {
+      console.error('Location detection error:', error)
+      toast.error('Failed to detect location. Please try again.')
+    } finally {
+      setIsDetectingLocation(false)
+    }
+  }
 
   // Collection-based categories
   const categories = [
@@ -77,13 +115,22 @@ export function SiteHeader({
 
               {/* Location & Delivery */}
               {/* Show location block from lg and up to free space for search on iPad widths */}
-              <div className="hidden lg:flex flex-col ml-4 px-3 py-1.5 rounded cursor-pointer group">
+              <div 
+                className="hidden lg:flex flex-col ml-4 px-3 py-1.5 rounded cursor-pointer group hover:bg-white/10 transition-colors"
+                onClick={handleDetectLocation}
+              >
                 <div className="flex items-center">
-                  <MapPin className="h-4 w-4 text-white " />
-                  <span className="ml-1 text-xs text-white ">Deliver to</span>
+                  <MapPin className="h-4 w-4 text-white" />
+                  <span className="ml-1 text-xs text-white">Deliver to</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-sm font-medium text-white">Noida 201301</span>
+                  {isDetectingLocation ? (
+                    <span className="text-sm font-medium text-white">Detecting...</span>
+                  ) : userLocation ? (
+                    <span className="text-sm font-medium text-white">{userLocation.city} {userLocation.postalCode}</span>
+                  ) : (
+                    <span className="text-sm font-medium text-white">Check Your Pincode</span>
+                  )}
                   <ChevronDown className="h-4 w-4 text-white" />
                 </div>
               </div>

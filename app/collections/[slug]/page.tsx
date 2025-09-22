@@ -3,18 +3,18 @@
 import { useEffect, useMemo, useState, use } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { fetchProductsBySlugs, type SlugProduct, API_BASE_URL } from "@/lib/api"
+import { fetchProductsBySlugs, fetchProductsByCategory, type SlugProduct, API_BASE_URL } from "@/lib/api"
 
 type CollectionKey = "under-999" | "under-2000" | "under-3000" | "gymwear" | "necklaces" | "earrings" |"sportswear"| "bangles"
 
 // Map collection slug -> brand/category/subcategory slugs
-const COLLECTION_MAP: Record<CollectionKey, { brandSlug: string; categorySlug: string; subcategorySlug: string; title: string }> = {
+const COLLECTION_MAP: Record<CollectionKey, { brandSlug: string; categorySlug: string; subcategorySlug: string; title: string; useCategory?: boolean }> = {
   "under-999": { brandSlug: "", categorySlug: "", subcategorySlug: "", title: "Under ₹999" },
   "under-2000": { brandSlug: "", categorySlug: "", subcategorySlug: "", title: "Under ₹2000" },
   "under-3000": { brandSlug: "", categorySlug: "", subcategorySlug: "", title: "Under ₹3000" },
   "gymwear": { brandSlug: "sportswear", categorySlug: "men", subcategorySlug: "gym", title: "gym" },
-  "necklaces": { brandSlug: "ira", categorySlug: "necklace", subcategorySlug: "round-necklace", title: "Necklaces" },
-  "earrings": { brandSlug: "ira", categorySlug: "earrings", subcategorySlug: "drop-earring", title: "Earrings" },
+  "necklaces": { brandSlug: "ira", categorySlug: "necklace", subcategorySlug: "", title: "Necklaces", useCategory: true },
+  "earrings": { brandSlug: "ira", categorySlug: "earrings", subcategorySlug: "", title: "Earrings", useCategory: true },
   "sportswear": {brandSlug: "sportswear", categorySlug:"women",subcategorySlug:"sports", title:"Sports-wear"},
   "bangles":{brandSlug:"ira",categorySlug:"bangles",subcategorySlug:"round-bangles",title:"Bangles"}
 }
@@ -46,6 +46,13 @@ export default function CollectionsPage({ params }: { params: Promise<{ slug: st
           const list: SlugProduct[] = Array.isArray(raw) ? raw : (raw?.data ?? [])
           const threshold = key === 'under-999' ? 999 : key === 'under-2000' ? 2000 : 3000
           setProducts(list.filter((p) => Number(p?.price ?? 0) < threshold))
+        } else if (config.useCategory) {
+          // Use category-level fetching for necklaces and earrings
+          const data = await fetchProductsByCategory({
+            brandSlug: config.brandSlug,
+            categorySlug: config.categorySlug
+          })
+          setProducts(data)
         } else {
           const data = await fetchProductsBySlugs(config)
           setProducts(data)
@@ -71,9 +78,18 @@ export default function CollectionsPage({ params }: { params: Promise<{ slug: st
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-6">{title}</h1>
+      <h1 className="text-3xl font-bold mb-6 "> {title}</h1>
       {products.length === 0 ? (
-        <div>No products found.</div>
+        <div className="text-2xl font-bold text-center flex flex-col items-center justify-center">
+          <h2>Coming Soon...</h2>
+          <Image 
+            src="https://res.cloudinary.com/deamrxfwp/image/upload/v1757165705/hero-bg_yscglj.png"
+            alt="Coming Soon"
+            width={400}
+            height={400}
+            className="mt-4"
+            />
+          </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((p) => (

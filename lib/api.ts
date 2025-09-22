@@ -465,6 +465,21 @@ export async function fetchProductsBySlugs(params: {
   return Array.isArray(data) ? (data as SlugProduct[]) : (data.data ?? []);
 }
 
+export async function fetchProductsByCategory(params: {
+  brandSlug: string;
+  categorySlug: string;
+}): Promise<SlugProduct[]> {
+  const { brandSlug, categorySlug } = params;
+  const url = `${API_BASE_URL}/brands/${encodeURIComponent(brandSlug)}/categories/${encodeURIComponent(categorySlug)}/products`;
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) throw new Error('Failed to fetch products by category');
+  const data = (await res.json()) as { data?: SlugProduct[] } | SlugProduct[];
+  return Array.isArray(data) ? (data as SlugProduct[]) : (data.data ?? []);
+}
+
 export type UpdateProductPayload = {
   title?: string;
   slug?: string;

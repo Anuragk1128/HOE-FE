@@ -561,7 +561,7 @@ export default function AccountPage() {
                             <div key={(addr._id || addr.addressLine1) + addr.postalCode} className="p-4 border rounded-md">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="font-medium text-gray-900">{addr.fullName} <span className="text-gray-500 font-normal">• {addr.phone}</span></p>
+                                 
                                   <p className="text-sm text-gray-700">{addr.addressLine1}{addr.addressLine2 ? `, ${addr.addressLine2}` : ''}</p>
                                   <p className="text-sm text-gray-700">{addr.city}, {addr.state} {addr.postalCode}, {addr.country}</p>
                                   {addr.landmark ? <p className="text-xs text-gray-500">Landmark: {addr.landmark}</p> : null}
@@ -605,10 +605,7 @@ export default function AccountPage() {
                               </p>
                             </div>
                           </div>
-                          <div className="md:col-span-2">
-                            <Label htmlFor="fullName">Full Name *</Label>
-                            <Input id="fullName" required value={newAddress.fullName} onChange={(e)=>setNewAddress({...newAddress, fullName: e.target.value})} className="mt-1" />
-                          </div>
+                         
                           <div className="md:col-span-2">
                             <Label htmlFor="line1">Address Line 1 *</Label>
                             <Input id="line1" required value={newAddress.addressLine1} onChange={(e)=>setNewAddress({...newAddress, addressLine1: e.target.value})} className="mt-1" />
@@ -633,10 +630,7 @@ export default function AccountPage() {
                             <Label htmlFor="country">Country *</Label>
                             <Input id="country" required value={newAddress.country} onChange={(e)=>setNewAddress({...newAddress, country: e.target.value})} className="mt-1" />
                           </div>
-                          <div>
-                            <Label htmlFor="phone">Phone *</Label>
-                            <Input id="phone" required value={newAddress.phone} onChange={(e)=>setNewAddress({...newAddress, phone: e.target.value})} className="mt-1" />
-                          </div>
+                        
                           <div className="md:col-span-2 flex items-center gap-3 pt-2">
                             <Button type="submit" disabled={createLoading}>{createLoading ? 'Adding…' : 'Add Address'}</Button>
                             <Button type="button" variant="outline" onClick={()=>setShowAddAddress(false)}>Cancel</Button>

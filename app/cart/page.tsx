@@ -16,6 +16,7 @@ export default function CartPage() {
     cart, 
     updateQuantity, 
     removeFromCart, 
+    removeFromCartByQuantity,
     removeProductFromCart,
     cartTotal, 
     itemCount, 
@@ -65,6 +66,22 @@ export default function CartPage() {
       setUpdatingItems(prev => {
         const newSet = new Set(prev)
         newSet.delete(cartItemId)
+        return newSet
+      })
+    }
+  }
+
+  const handleRemoveQuantity = async (productId: string, quantity: number) => {
+    setUpdatingItems(prev => new Set(prev).add(productId))
+    
+    try {
+      await removeFromCartByQuantity(productId, quantity)
+    } catch (error) {
+      console.error('Failed to remove quantity:', error)
+    } finally {
+      setUpdatingItems(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(productId)
         return newSet
       })
     }
@@ -199,19 +216,35 @@ export default function CartPage() {
                     <div className="flex items-center justify-between sm:justify-end mt-4 sm:mt-0 w-full sm:w-auto">
                       {/* Quantity Controls */}
                       <div className="flex items-center border rounded-lg">
-                      
+                        <button
+                          onClick={() => handleRemoveQuantity(item.product?._id || '', 1)}
+                          disabled={isUpdating || item.quantity <= 1}
+                          className="p-2 hover:bg-gray-100 rounded-l-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Remove 1 item"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        
                         <span className="px-4 py-2 font-medium min-w-[3rem] text-center">
                           {item.quantity}
                         </span>
-                       
+                        
+                        <button
+                          onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
+                          disabled={isUpdating}
+                          className="p-2 hover:bg-gray-100 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Add 1 item"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
                       </div>
                       
-                      {/* Remove Button */}
+                      {/* Remove All Button */}
                       <button
                         onClick={() => handleRemoveItem(item._id, item.product?._id)}
                         disabled={isUpdating}
                         className="ml-4 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Remove item"
+                        title="Remove all items"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

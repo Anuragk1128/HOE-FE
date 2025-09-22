@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   title: 'House Of Evolve',
   description: 'Our brands offer variety of products',
   generator: 'v0.app',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 }
 
 export default function RootLayout({

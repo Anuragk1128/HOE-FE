@@ -34,7 +34,7 @@ const heroSlides = [
   },
   {
     id: 4,
-    image: "/backpack-on-white.png",
+    image: "https://res.cloudinary.com/deamrxfwp/image/upload/v1758466860/design_12_usezb9.jpg",
     alt: "Trending Now",
     title: "Trending Now",
     description: "Shop what's trending this season",

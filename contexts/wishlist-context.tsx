@@ -134,7 +134,6 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchWishlist();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.token]);
 
   return (

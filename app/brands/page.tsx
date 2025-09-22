@@ -7,13 +7,25 @@ import { Brand, fetchBrands } from "@/lib/api"
 import { Skeleton } from "@/components/ui/skeleton"
 
 function BrandCard({ brand }: { brand: Brand }) {
+  // Map brand slugs to their respective images
+  const getBrandImage = (brandSlug: string) => {
+    // Use brand slug directly for mapping
+    switch (brandSlug) {
+      case 'ira':
+        return '/logo.png' // IRA brand logo
+      case 'sportswear':
+        return '/JERSEYMISE_LOGO_WHITE_BG.svg' // JerseyMise brand logo
+    // Default fallback
+    }
+  }
+
   return (
     <article id={`brand-${brand.slug}`} className="group rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md">
       <Link href={`/brands/${brand.slug}`} className="block">
         <div className="flex h-48 items-center justify-center overflow-hidden rounded-md bg-slate-50 p-4">
           <div className="relative h-full w-full">
             <Image
-              src={"/logo.png"} // Replace with brand.logo when available
+              src={getBrandImage(brand.slug)}
               alt={`${brand.name} logo`}
               fill
               className="object-contain transition group-hover:scale-[1.02]"

@@ -68,6 +68,7 @@ interface CartContextType {
   addToCart: (productId: string, quantity?: number) => Promise<void>
   removeFromCart: (cartItemId: string) => Promise<void>
   removeProductFromCart: (productId: string) => Promise<void>
+  removeFromCartByQuantity: (productId: string, quantity: number) => Promise<void>
   updateQuantity: (cartItemId: string, quantity: number) => Promise<void>
   clearCart: () => Promise<void>
   itemCount: number
@@ -304,6 +305,56 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const removeFromCartByQuantity = async (productId: string, quantity: number) => {
+    const token = getAuthToken()
+    if (!token) return
+
+    try {
+      setLoading(true)
+
+      const response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ quantity })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to remove items from cart')
+      }
+
+      const result = await response.json()
+      
+      // Update local state based on remaining quantity
+      if (result.remainingQuantity === 0) {
+        // Item completely removed
+        setCart(prev => prev.filter(item => item.product._id !== productId))
+        toast.success(`Removed ${quantity} item(s) from cart`)
+      } else {
+        // Update quantity
+        setCart(prev => prev.map(item => 
+          item.product._id === productId 
+            ? { ...item, quantity: result.remainingQuantity }
+            : item
+        ))
+        toast.success(`Removed ${quantity} item(s) from cart`)
+      }
+
+      // Refresh cart to sync with server
+      await fetchCart()
+
+    } catch (err) {
+      console.error('Error removing items from cart:', err)
+      toast.error('Failed to remove items from cart')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const updateQuantity = async (cartItemId: string, quantity: number) => {
     if (quantity < 1) {
       await removeFromCart(cartItemId)
@@ -413,6 +464,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         error,
         addToCart,
         removeFromCart,
+        removeFromCartByQuantity,
         removeProductFromCart,
         updateQuantity,
         clearCart,

@@ -147,7 +147,7 @@ export default function AccountPage() {
     if (user?.token) {
       fetchWishlist()
     }
-    // Note: fetchWishlist is intentionally excluded from dependencies to prevent infinite loop
+    // Note: fetchWishlist iintentionally excluded from dependencies to prevent infinite loop
     // since it's a function from the wishlist context that gets recreated on every render
   }, [user?.token])
 
@@ -652,7 +652,7 @@ export default function AccountPage() {
                   {wishlistLoading ? (
                     <div className="text-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                      <p className="mt-2 text-gray-500">Loading wishlist...</p>
+                      <p className="mt-2 text-gray-500">Loading wishlist....</p>
                     </div>
                   ) : wishlist.length === 0 ? (
                     <div className="text-center py-8">

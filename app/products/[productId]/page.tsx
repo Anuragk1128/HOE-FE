@@ -57,6 +57,23 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
   const { addToWishlist, isInWishlist } = useWishlist()
   const [activeTab, setActiveTab] = useState('description')
   
+  // Styling details from backend (supports multiple shapes)
+  const stylingTips: string[] = (() => {
+    if (!product) return []
+    const raw = (product as any).stylingTips 
+      ?? (product as any)?.attributes?.stylingTips 
+      ?? (product as any)?.attributes?.styling
+    if (!raw) return []
+    if (Array.isArray(raw)) return raw.filter(Boolean)
+    if (typeof raw === 'string') {
+      return raw
+        .split(/\r?\n|\u2022|\u2023|\u25E6|\u2043|\u2219|\.|\;/)
+        .map(s => s.trim())
+        .filter(Boolean)
+    }
+    return []
+  })()
+  
   // Image zoom states
   const [zoomLevel, setZoomLevel] = useState(1)
   const [position, setPosition] = useState({ x: 0, y: 0 })
@@ -368,6 +385,38 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                         </Button>
                       )}
                     </div>
+
+                    {/* Image Navigation - Left/Right chevrons */}
+                    {product.images.length > 1 && (
+                      <>
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          aria-label="Previous image"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedImage((prev) => (prev - 1 + (product.images?.length || 0)) % (product.images?.length || 1))
+                            resetZoom()
+                          }}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 bg-white/90 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          aria-label="Next image"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedImage((prev) => (prev + 1) % (product.images?.length || 1))
+                            resetZoom()
+                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 bg-white/90 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </>
+                    )}
                   </>
                 ) : (
                   <div className="flex h-full items-center justify-center text-gray-400 bg-gray-100">
@@ -470,7 +519,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
               <div className="space-y-1">
                 <div className="flex items-baseline space-x-3">
                   <span className="text-3xl sm:text-4xl font-bold text-gray-900">
-                    ₹{(product.price || 0).toLocaleString('en-IN')}
+                    ₹{totalWithGst.toLocaleString('en-IN')}
                   </span>
                   {product.compareAtPrice && product.compareAtPrice > product.price && (
                     <>
@@ -478,18 +527,13 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                         ₹{product.compareAtPrice.toLocaleString('en-IN')}
                       </span>
                       <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                        Save ₹{(product.compareAtPrice - product.price).toLocaleString('en-IN')}
+                        Save ₹{(totalWithGst- product.compareAtPrice).toLocaleString('en-IN')}
                       </Badge>
                     </>
                   )}
                 </div>
-                <div className="text-sm text-gray-700">
-                  <span className="font-medium">GST ({gstRate}%)</span>: ₹{gstAmount.toLocaleString('en-IN')}
-                </div>
-                <div className="text-base font-semibold text-gray-900">
-                  Price + GST = ₹{totalWithGst.toLocaleString('en-IN')}
-                </div>
-                <p className="text-xs text-gray-500">Free shipping on all orders!</p>
+                
+                <p className="text-xs text-gray-500"> (MRP inclusive all taxes)</p>
               </div>
             </Card>
 
@@ -617,8 +661,9 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                   <RefreshCw className="w-4 h-4 text-green-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">Easy Returns/Replacements</p>
-                  <p className="text-gray-600">7 days return policy</p>
+                  <p className="font-medium text-gray-900">Replacements/Warranty</p>
+                  <p className="text-gray-600">7 days replacement policy</p>
+                  <p className="text-gray-600">3 months warranty</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3 text-sm">
@@ -650,6 +695,16 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                   <p className="text-gray-700 leading-relaxed">
                     {product.description || 'No description available for this product.'}
                   </p>
+                  {stylingTips.length > 0 && (
+                    <div className="mt-6 pt-6 border-t">
+                      <h4 className="text-base font-semibold mb-3">Styling Tips</h4>
+                      <ul className="list-disc pl-5 space-y-2 text-gray-700">
+                        {stylingTips.map((tip, i) => (
+                          <li key={i}>{tip}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -657,7 +712,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
             <TabsContent value="specifications" className="mt-6">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Specifications</h3>
+                  <h3 className="text-lg font-semibold mb-4">Specifications:</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {product.brand?.name && (
                       <div className="flex justify-between py-2 border-b border-gray-100">
@@ -699,8 +754,20 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                         </div>
                       )
                     }
-                    
-                 
+                      
+                            
+                    <div className="col-span-1 md:col-span-2 justify-self-start text-left">
+                    <h1 className="text-lg font-semibold mb-4">Care Instructions:</h1>
+                    <ul className="list-disc pl-5 space-y-2 text-gray-700 text-left">
+                    <li>Remove jewellery before washing hands, swimming, or showering.</li>
+                    <li>Due to its delicate nature, avoid wearing it during strenuous activities or while sleeping.</li>
+                    <li>Use a soft, dry microfibre cloth to gently remove dirt, sweat, and oils after each wear.</li>
+                    <li>Avoid using abrasive materials, ultrasonic cleaners, alcohol, or strong detergents.</li>
+                    <li>Do not soak jewellery in water or cleaning solutions.</li>
+                    <li>Store each piece separately to prevent tangling and scratches.</li>
+                    </ul>
+                    </div>
+
                  
                   </div>
                 </CardContent>

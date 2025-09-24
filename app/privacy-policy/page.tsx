@@ -14,7 +14,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">1. Information We Collect</h2>
+          <h2 className="text-2xl font-semibold mb-4">1. Information We Collect.</h2>
           <p className="mb-4">We collect several types of information from and about users of our website, including:</p>
           <ul className="list-disc pl-6 mb-4 space-y-2">
             <li><strong>Personal Information:</strong> Name, email address, phone number, shipping/billing address, and payment information.</li>

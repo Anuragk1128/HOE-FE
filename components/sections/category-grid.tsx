@@ -159,7 +159,7 @@ export function CategoryGrid() {
           <h3 className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-xl font-bold text-center mb-2 sm:mb-3 md:mb-4 lg:mb-5 xl:mb-6 text-gray-900">
             Shop by Category
           </h3>
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-5">
             {categories.map((category, index) => (
               <Link 
                 key={category.id} 
@@ -183,7 +183,7 @@ export function CategoryGrid() {
                       alt={category.title}
                       fill
                       className="object-cover rounded-md"
-                      sizes="(max-width: 768px) 50vw, 25vw"
+                      sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 180px"
                     />
                   </div>
                   

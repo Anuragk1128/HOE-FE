@@ -120,14 +120,14 @@ export function HeroSection() {
                 <div className={`absolute inset-0 ${slide.bgColor ? 'bg-gradient-to-r from-black/30 to-black/20' : 'bg-gradient-to-r from-slate-900/60 to-slate-900/30'}`} />
               </div>
               <div className="container h-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className={`h-full flex flex-col ${slide.id === 1 ? 'justify-start pt-8 sm:pt-12 md:pt-16 lg:pt-20' : 'justify-center'} ${slide.id === 1 ? 'max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12' : 'max-w-2xl py-16 sm:py-20 lg:py-24'}`}>
+                <div className={`h-full flex flex-col items-center text-center sm:items-start sm:text-left ${slide.id === 1 ? 'justify-start pt-8 sm:pt-12 md:pt-16 lg:pt-20' : 'justify-center'} ${slide.id === 1 ? 'max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 mx-auto sm:mx-0' : 'max-w-2xl py-16 sm:py-20 lg:py-24 mx-auto sm:mx-0'}`}>
                   <h1 className={`font-bold tracking-tight leading-tight text-white drop-shadow-lg ${slide.id === 1 ? 'text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl' : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl'}`}>
                     {slide.title}
                   </h1>
-                  <p className={`text-white/90 font-medium ${slide.id === 1 ? 'mt-1 sm:mt-2 md:mt-3 text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl' : 'mt-3 sm:mt-4 text-base sm:text-lg md:text-xl max-w-xl'}`}>
+                  <p className={`text-white/90 font-medium ${slide.id === 1 ? 'mt-1 sm:mt-2 md:mt-3 text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto sm:mx-0' : 'mt-3 sm:mt-4 text-base sm:text-lg md:text-xl max-w-xl mx-auto sm:mx-0'}`}>
                     {slide.description}
                   </p>
-                  <div className={`flex flex-col sm:flex-row items-start sm:items-center ${slide.id === 1 ? 'mt-2 sm:mt-3 md:mt-4 gap-1 sm:gap-2' : 'mt-6 sm:mt-8 gap-3'}`}>
+                  <div className={`flex flex-col sm:flex-row items-center sm:items-start ${slide.id === 1 ? 'mt-2 sm:mt-3 md:mt-4 gap-1 sm:gap-2' : 'mt-6 sm:mt-8 gap-3'}`}>
                     <Button 
                       asChild 
                       className={`bg-orange-500 text-slate-900 hover:bg-gray-300 w-full sm:w-auto ${slide.id === 1 ? 'text-xs sm:text-sm md:text-base px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2' : 'text-sm sm:text-base px-6 py-3 sm:px-8 sm:py-4'}`}

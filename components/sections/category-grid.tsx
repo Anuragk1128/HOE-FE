@@ -152,7 +152,7 @@ export function CategoryGrid() {
   }, [])
 
   return (
-    <div className="absolute bottom-8 right-4 sm:bottom-12 sm:right-6 md:bottom-16 md:right-8 lg:bottom-20 lg:right-24 z-20" ref={containerRef}>
+    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 sm:bottom-12 sm:left-1/2 sm:-translate-x-1/2 md:bottom-16 md:right-8 md:left-auto md:translate-x-0 lg:bottom-20 lg:right-24 z-20" ref={containerRef}>
       {/* Single Large Card */}
       <div className="w-44 sm:w-52 md:w-60 lg:w-72 xl:w-[680px]">
         <div className="bg-white/95 backdrop-blur-sm rounded-lg p-2 sm:p-3 md:p-4 lg:p-5 xl:p-6 shadow-lg">

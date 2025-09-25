@@ -4,7 +4,7 @@ const features = [
   {
     icon: <Truck className="w-8 h-8 text-blue-600" />,
     title: "Free Shipping",
-    description: "Free shipping on all orders over $50"
+    description: "Free shipping on all orders"
   },
   {
     icon: <ShieldCheck className="w-8 h-8 text-green-600" />,

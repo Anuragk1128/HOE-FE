@@ -52,11 +52,11 @@ export function FeaturedGrid() {
 
         {/* Loading State */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-5 md:gap-6 lg:gap-6 xl:gap-6">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 sm:gap-3 md:gap-4 lg:gap-4 xl:gap-4">
             {[...Array(10)].map((_, idx) => (
-              <div key={idx} className="group">
-                <div className="bg-gray-200 animate-pulse rounded-2xl h-60 sm:h-76 "></div>
-                <div className="space-y-3">
+              <div key={idx} className="group h-full w-full">
+                <div className="bg-gray-200 animate-pulse rounded-2xl h-48 sm:h-56 md:h-60 lg:h-64 xl:h-68 w-full"></div>
+                <div className="space-y-3 mt-3">
                   <div className="h-4 bg-gray-200 animate-pulse rounded w-3/4"></div>
                   <div className="h-4 bg-gray-200 animate-pulse rounded w-1/2"></div>
                   <div className="h-6 bg-gray-200 animate-pulse rounded w-1/3"></div>
@@ -66,12 +66,12 @@ export function FeaturedGrid() {
           </div>
         ) : (
           <>
-            {/* Products Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-1 sm:gap-2 md:gap-2 lg:gap-2 xl:gap-2">
+            {/* Products Grid - CSS Grid with auto-fit to eliminate empty spaces */}
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 sm:gap-3 md:gap-4 lg:gap-4 xl:gap-4">
               {featured.map((product, idx) => (
-                <div key={product._id} className="w-full h-full">
+                <div key={product._id} className="w-full">
                   <AnimateOnScroll y={30} delay={idx * 0.08}>
-                    <div className="h-full flex flex-col">
+                    <div className="h-full w-full">
                       <ProductCard product={product} />
                     </div>
                   </AnimateOnScroll>

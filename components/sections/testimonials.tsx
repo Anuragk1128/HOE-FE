@@ -1,26 +1,25 @@
-import { Star } from "lucide-react"
+import { CheckCircle } from "lucide-react"
 
-const testimonials = [
+const features = [
   {
     id: 1,
-    name: "Akash Rana",
-    role: "Fashion Enthusiast",
-    content: "The quality of the products is outstanding! I've received so many compliments on my new wardrobe.",
-    rating: 5
+    title: "Made for comfort & style",
+    description: "Our products are designed with both comfort and style in mind, ensuring you look and feel great."
   },
   {
     id: 2,
-    name: "Nidhi Singh",
-    role: "Loyal Customer",
-    content: "Exceptional customer service and fast shipping. Will definitely be shopping here again!",
-    rating: 5
+    title: "Ethically sourced materials",
+    description: "We are committed to using only ethically sourced materials in all our products."
   },
   {
     id: 3,
-    name: "Rahul Kumar",
-    role: "Style Blogger",
-    content: "I love how versatile and comfortable their clothing is. Perfect for both casual and formal occasions.",
-    rating: 4
+    title: "Loved by our customers",
+    description: "Join thousands of satisfied customers who trust us for their fashion needs."
+  },
+  {
+    id: 4,
+    title: "Free shipping on all orders",
+    description: "Enjoy free shipping on all orders with no minimum purchase required."
   }
 ]
 
@@ -29,25 +28,19 @@ export function Testimonials() {
     <section className="py-16 px-4 bg-gray-50">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">What Our Customers Say</h2>
-          <p className="text-gray-600">Don't just take our word for it - hear from our satisfied customers</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">What Makes Us Different</h2>
+          <p className="text-gray-600">Discover the unique qualities that set us apart from the rest</p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial) => (
-            <div key={testimonial.id} className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
-                  />
-                ))}
+        <div className="space-y-6">
+          {features.map((feature) => (
+            <div key={feature.id} className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <CheckCircle className="w-6 h-6 text-green-500" />
               </div>
-              <p className="text-gray-600 mb-4 italic">"{testimonial.content}"</p>
-              <div className="font-medium">
-                <p className="text-gray-900">{testimonial.name}</p>
-                <p className="text-sm text-gray-500">{testimonial.role}</p>
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
               </div>
             </div>
           ))}

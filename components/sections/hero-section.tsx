@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { CategoryGrid } from "./category-grid"
 
 const heroSlides = [
   {
@@ -72,16 +73,17 @@ export function HeroSection() {
     if (!emblaApi) return
     
     emblaApi.on('select', onSelect)
-    const startAutoplay = () => {
+    
+    // Start autoplay after 4 seconds on initial load
+    const initialDelay = setTimeout(() => {
       autoplayInterval.current = setInterval(() => {
         emblaApi.scrollNext()
-      }, 5000)
-    }
-    
-    startAutoplay()
+      }, 4000)
+    }, 4000)
     
     return () => {
       emblaApi.off('select', onSelect)
+      clearTimeout(initialDelay)
       if (autoplayInterval.current) {
         clearInterval(autoplayInterval.current)
       }
@@ -95,7 +97,7 @@ export function HeroSection() {
     }
     autoplayInterval.current = setInterval(() => {
       emblaApi?.scrollNext()
-    }, 5000)
+    }, 4000)
   }, [emblaApi])
 
   return (
@@ -118,23 +120,26 @@ export function HeroSection() {
                 <div className={`absolute inset-0 ${slide.bgColor ? 'bg-gradient-to-r from-black/30 to-black/20' : 'bg-gradient-to-r from-slate-900/60 to-slate-900/30'}`} />
               </div>
               <div className="container h-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="h-full flex flex-col justify-center max-w-2xl py-16 sm:py-20 lg:py-24">
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight text-white drop-shadow-lg">
+                <div className={`h-full flex flex-col ${slide.id === 1 ? 'justify-start pt-8 sm:pt-12 md:pt-16 lg:pt-20' : 'justify-center'} ${slide.id === 1 ? 'max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12' : 'max-w-2xl py-16 sm:py-20 lg:py-24'}`}>
+                  <h1 className={`font-bold tracking-tight leading-tight text-white drop-shadow-lg ${slide.id === 1 ? 'text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl' : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl'}`}>
                     {slide.title}
                   </h1>
-                  <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-white/90 font-medium max-w-xl">
+                  <p className={`text-white/90 font-medium ${slide.id === 1 ? 'mt-1 sm:mt-2 md:mt-3 text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl' : 'mt-3 sm:mt-4 text-base sm:text-lg md:text-xl max-w-xl'}`}>
                     {slide.description}
                   </p>
-                  <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className={`flex flex-col sm:flex-row items-start sm:items-center ${slide.id === 1 ? 'mt-2 sm:mt-3 md:mt-4 gap-1 sm:gap-2' : 'mt-6 sm:mt-8 gap-3'}`}>
                     <Button 
                       asChild 
-                      className="bg-orange-500 text-slate-900 hover:bg-gray-300 text-sm sm:text-base px-6 py-3 sm:px-8 sm:py-4 w-full sm:w-auto"
+                      className={`bg-orange-500 text-slate-900 hover:bg-gray-300 w-full sm:w-auto ${slide.id === 1 ? 'text-xs sm:text-sm md:text-base px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2' : 'text-sm sm:text-base px-6 py-3 sm:px-8 sm:py-4'}`}
                     >
                       <a href={slide.ctaLink}>{slide.ctaText}</a>
                     </Button>
                   
                   </div>
                 </div>
+                
+                {/* Category Grid - Only show on first slide (blue slide) */}
+                {slide.id === 1 && <CategoryGrid />}
               </div>
             </div>
           ))}

@@ -12,10 +12,10 @@ const COLLECTION_MAP: Record<CollectionKey, { brandSlug: string; categorySlug: s
   "under-999": { brandSlug: "", categorySlug: "", subcategorySlug: "", title: "Under ₹999" },
   "under-2000": { brandSlug: "", categorySlug: "", subcategorySlug: "", title: "Under ₹2000" },
   "under-3000": { brandSlug: "", categorySlug: "", subcategorySlug: "", title: "Under ₹3000" },
-  "gymwear": { brandSlug: "sportswear", categorySlug: "men", subcategorySlug: "gym", title: "gym" },
+  "gymwear": { brandSlug: "sportswear", categorySlug: "men", subcategorySlug: "gym", title: "Gymwear" },
   "necklaces": { brandSlug: "ira", categorySlug: "necklace", subcategorySlug: "", title: "Necklaces", useCategory: true },
   "earrings": { brandSlug: "ira", categorySlug: "earrings", subcategorySlug: "", title: "Earrings", useCategory: true },
-  "sportswear": {brandSlug: "sportswear", categorySlug:"women",subcategorySlug:"sports", title:"Sports-wear"},
+  "sportswear": {brandSlug: "sportswear", categorySlug:"women",subcategorySlug:"sports", title:"Sportswear"},
   "bangles":{brandSlug:"ira",categorySlug:"bangles",subcategorySlug:"round-bangles",title:"Bangles"}
 }
 

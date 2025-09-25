@@ -344,7 +344,7 @@ export function SiteHeader({
               <Link href="/categories" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Categories</Link>
               <Link href="/brands" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Brands</Link>
               <Link href="/products" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Products</Link>
-              <Link href="/collections/sportswear" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Sports Wear</Link>
+              <Link href="/collections/sportswear" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Sportswear</Link>
               <Link href="/collections/gymwear" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Gymwear</Link>
               <Link href="/collections/necklaces" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Necklaces</Link>
               <Link href="/collections/earrings" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Earrings</Link>

@@ -13,8 +13,8 @@ const features = [
   },
   {
     icon: <RefreshCw className="w-8 h-8 text-purple-600" />,
-    title: "Easy Returns",
-    description: "30-day return policy"
+    title: "Easy Replacement",
+    description: "7-day replacement policy"
   },
   {
     icon: <Heart className="w-8 h-8 text-red-600" />,

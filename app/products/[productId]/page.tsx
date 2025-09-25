@@ -705,6 +705,16 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                       </ul>
                     </div>
                   )}
+                  <div className="mt-6 pt-6 border-t">
+                  <h5 className="text-base font-semibold mb-3"> Features </h5>
+                      <ul className="list-disc pl-5 space-y-2 text-gray-700">
+                          <li>Water-proof </li>
+                          <li>Premium Material </li>
+                          <li>Superior Design </li>
+                          <li>Easy Maintenance </li>
+                          <li>Travel Friendly</li>
+                      </ul>
+                    </div>
                 </CardContent>
               </Card>
             </TabsContent>

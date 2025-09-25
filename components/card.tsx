@@ -15,7 +15,7 @@ export default function Cards() {
                             Our Collections
                         </h1>
                         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                            Discover our curated selection of premium jewelry and sportswear
+                            Discover our curated selection of premium jewellery and sportswear
                         </p>
                     </AnimateOnScroll>
                 </div>

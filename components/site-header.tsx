@@ -2,8 +2,8 @@
 import { Heart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useMemo, useState, useEffect } from "react"
+import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet"
@@ -28,6 +28,12 @@ export function SiteHeader({
   const { user, logout } = useAuth()
   const { getCurrentLocationAddress } = useLocationServices()
   const router = useRouter()
+  const pathname = usePathname()
+
+  // Close dropdown when route changes
+  useEffect(() => {
+    setIsCategoryOpen(false)
+  }, [pathname])
 
   // Handle location detection
   const handleDetectLocation = async () => {

@@ -54,7 +54,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-1 lg:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <Image src="/hoeee.png" alt="HOE" width={100} height={100} />
+              <Image src="/hoeee.png" alt="HOE" width={200} height={200} />
               
             </div>
             <p className="text-sm text-slate-300 mb-6">Quality gear and apparel curated from top brands.</p>

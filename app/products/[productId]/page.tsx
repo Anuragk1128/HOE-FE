@@ -136,6 +136,13 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
     }
   }, [resolvedParams?.productId])
 
+  // Reset quantity when product changes or stock is insufficient
+  useEffect(() => {
+    if (product && quantity > product.stock) {
+      setQuantity(Math.min(quantity, product.stock))
+    }
+  }, [product, quantity])
+
   // Image zoom functions
   const handleZoomIn = () => {
     setZoomLevel(prev => Math.min(prev + 0.5, 3))
@@ -187,6 +194,18 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
 
   const handleAddToCart = async () => {
     if (!product) return
+    
+    // Check stock availability before adding to cart
+    if (quantity > product.stock) {
+      toast.error(`Only ${product.stock} items available in stock`)
+      return
+    }
+    
+    if (product.stock <= 0) {
+      toast.error('This product is out of stock')
+      return
+    }
+    
     try {
       await addToCart(product._id, quantity)
     } catch (e: any) {
@@ -617,7 +636,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                         size="icon"
                         variant="ghost"
                         onClick={() => setQuantity(Math.min(quantity + 1, product.stock || 10))}
-                        className="h-10 w-10 rounded-r-lg rounded-l-none"
+                        disabled={quantity >= (product.stock || 0)}
+                        className="h-10 w-10 rounded-r-lg rounded-l-none disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Plus className="w-4 h-4" />
                       </Button>
@@ -630,19 +650,23 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                     onClick={handleAddToCart}
                     size="lg"
                     variant="outline"
-                    className="h-12 font-semibold border-2 hover:bg-gray-900 hover:text-white transition-colors"
+                    disabled={!product || product.stock <= 0 || quantity > product.stock}
+                    className="h-12 font-semibold border-2 hover:bg-gray-900 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ShoppingCart className="w-5 h-5 mr-2" />
-                    Add to Cart
+                    {!product || product.stock <= 0 ? 'Out of Stock' : 
+                     quantity > product.stock ? 'Insufficient Stock' : 'Add to Cart'}
                   </Button>
                   
                   <Button 
                     onClick={handleBuyNow}
                     size="lg"
-                    className="h-12 bg-orange-500 hover:bg-orange-600 font-semibold"
+                    disabled={!product || product.stock <= 0 || quantity > product.stock}
+                    className="h-12 bg-orange-500 hover:bg-orange-600 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <CreditCard className="w-5 h-5 mr-2" />
-                    Buy Now
+                    {!product || product.stock <= 0 ? 'Out of Stock' : 
+                     quantity > product.stock ? 'Insufficient Stock' : 'Buy Now'}
                   </Button>
                 </div>
               </div>

@@ -172,6 +172,13 @@ export default function CartPage() {
           {cart.map((item) => {
             const isUpdating = updatingItems.has(item._id)
             
+            // Debug: Log product data to see what's available
+            console.log('Cart item product data:', {
+              _id: item.product?._id,
+              slug: item.product?.slug,
+              title: item.product?.title
+            })
+            
             return (
               <div 
                 key={item._id} 
@@ -198,7 +205,7 @@ export default function CartPage() {
                     <div className="flex-1">
                       <h3 className="text-lg font-medium text-gray-900 mb-1">
                         <Link 
-                          href={`/products/${item.product?.slug || item.product?._id}`} 
+                          href={`/products/${item.product?._id}`} 
                           className="hover:text-blue-600 transition-colors"
                         >
                           {item.product?.title?.trim() || 'Product'}
@@ -210,6 +217,17 @@ export default function CartPage() {
                       <p className="text-sm text-gray-500">
                         Subtotal: {formatINR((item.product?.price || 0) * item.quantity)}
                       </p>
+                      {item.product?.stock !== undefined && (
+                        <p className={`text-xs mt-1 ${
+                          item.product.stock <= 5 ? 'text-red-600 font-medium' : 
+                          item.product.stock <= 10 ? 'text-orange-600' : 
+                          'text-gray-500'
+                        }`}>
+                          {item.product.stock <= 0 ? 'Out of stock' : 
+                           item.product.stock <= 5 ? `Only ${item.product.stock} left in stock` :
+                           `${item.product.stock} in stock`}
+                        </p>
+                      )}
                     </div>
                     
                     {/* Quantity Controls & Remove Button */}
@@ -231,9 +249,9 @@ export default function CartPage() {
                         
                         <button
                           onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
-                          disabled={isUpdating}
+                          disabled={isUpdating || (item.product?.stock && item.quantity >= item.product.stock)}
                           className="p-2 hover:bg-gray-100 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Add 1 item"
+                          title={item.product?.stock && item.quantity >= item.product.stock ? "Out of stock" : "Add 1 item"}
                         >
                           <Plus className="h-4 w-4" />
                         </button>

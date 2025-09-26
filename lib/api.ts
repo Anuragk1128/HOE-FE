@@ -834,15 +834,15 @@ export async function createOrder(payload: CreateOrderInput): Promise<Order> {
   return (data as any).data ?? (data as Order);
 }
 
-export async function fetchOrders(): Promise<Order[]> {
-  const token = localStorage.getItem('authToken');
-  if (!token) throw new Error('Not authenticated');
+export async function fetchOrders(token?: string): Promise<Order[]> {
+  const authToken = token || localStorage.getItem('authToken');
+  if (!authToken) throw new Error('Not authenticated');
   
   const response = await fetch(`${API_BASE_URL}/orders/mine`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${authToken}`,
     },
   });
 

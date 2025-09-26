@@ -103,6 +103,11 @@ export function RazorpayButton({
           toast.error(error.message || 'Payment failed. Please try again.');
           onError?.(error);
         },
+        onCancel: () => {
+          console.log('Payment cancelled by user');
+          // Don't show error toast for user cancellation
+          // Just log it and optionally call onError with a specific cancellation message
+        },
       });
     } catch (error) {
       console.error('Payment error:', error);

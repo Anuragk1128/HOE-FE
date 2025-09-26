@@ -100,8 +100,12 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
           brandsRes.json(),
           categoriesRes.json()
         ])
+        
+        // Debug: Log API responses
+        console.log('Product API response:', productData)
+        console.log('Product ID from URL:', resolvedParams.productId)
 
-        if (productData.success) {
+        if (productData.success && productData.data) {
           const productWithDetails = { ...productData.data }
           
           if (brandsData.success) {
@@ -115,6 +119,9 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
           }
           
           setProduct(productWithDetails)
+        } else {
+          console.error('Product not found or API error:', productData)
+          toast.error('Product not found')
         }
       } catch (error) {
         console.error('Failed to fetch product:', error)

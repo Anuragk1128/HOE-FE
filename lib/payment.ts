@@ -159,6 +159,7 @@ export const openRazorpay = async (options: {
   };
   onSuccess: (paymentId: string, orderId: string) => void;
   onError: (error: Error) => void;
+  onCancel?: () => void;
 }) => {
   try {
     // Load Razorpay script first to fail fast if unavailable
@@ -222,7 +223,12 @@ export const openRazorpay = async (options: {
       modal: {
         ondismiss: () => {
           console.debug('[Razorpay] Payment cancelled by user');
-          options.onError(new Error('Payment cancelled by user'));
+          if (options.onCancel) {
+            options.onCancel();
+          } else {
+            // Fallback to onError for backward compatibility
+            options.onError(new Error('Payment cancelled by user'));
+          }
         },
       },
     } as any;

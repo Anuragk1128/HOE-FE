@@ -104,7 +104,7 @@ export default function AccountPage() {
       setOrdersLoading(true)
       setOrdersError(null)
       try {
-        const ordersData = await fetchOrders()
+        const ordersData = await fetchOrders(user.token)
         // Only show paid orders
         const paidOrders = ordersData.filter(order => order.status === 'paid')
         setOrders(paidOrders)

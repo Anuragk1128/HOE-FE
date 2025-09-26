@@ -11,6 +11,7 @@ export interface Product {
   title: string
   price: number
   images: string[]
+  stock: number
   brandId?: string
   categoryId?: string
   subcategoryId?: string
@@ -168,6 +169,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     try {
       setLoading(true)
+      
+      // Check stock availability before adding to cart
+      const existingCartItem = cart.find(item => item.product._id === productId)
+      const currentQuantityInCart = existingCartItem ? existingCartItem.quantity : 0
+      const totalRequestedQuantity = currentQuantityInCart + quantity
+      
+      // Get product details to check stock
+      const productResponse = await fetch(`${API_BASE_URL}/products/${encodeURIComponent(productId)}`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (productResponse.ok) {
+        const productData = await productResponse.json()
+        const product = productData.data || productData
+        
+        if (totalRequestedQuantity > product.stock) {
+          const availableStock = product.stock - currentQuantityInCart
+          if (availableStock <= 0) {
+            toast.error('This product is out of stock')
+            return
+          } else {
+            toast.error(`Only ${availableStock} items available in stock`)
+            return
+          }
+        }
+      }
       
       // Attempt 1: POST /cart/:productId with body { quantity } per backend contract
       const safeProductId = encodeURIComponent(String(productId))
@@ -370,34 +400,52 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true)
 
-      const response = await fetch(`${API_BASE_URL}/cart/${cartItemId}`, {
-        method: 'PATCH',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ quantity })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || 'Failed to update quantity')
+      // Find the cart item to get the product ID
+      const cartItem = cart.find(item => item._id === cartItemId)
+      if (!cartItem || !cartItem.product?._id) {
+        throw new Error('Cart item not found')
       }
 
-      // Update local state immediately
-      setCart(prev =>
-        prev.map(item =>
-          item._id === cartItemId
-            ? { ...item, quantity }
-            : item
-        )
-      )
+      // Check stock availability before updating quantity
+      if (quantity > cartItem.quantity) {
+        // User is trying to increase quantity - check stock
+        const productResponse = await fetch(`${API_BASE_URL}/products/${encodeURIComponent(cartItem.product._id)}`, {
+          headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (productResponse.ok) {
+          const productData = await productResponse.json()
+          const product = productData.data || productData
+          
+          if (quantity > product.stock) {
+            const availableStock = product.stock
+            if (availableStock <= 0) {
+              toast.error('This product is out of stock')
+              return
+            } else {
+              toast.error(`Only ${availableStock} items available in stock`)
+              return
+            }
+          }
+        }
+      }
+
+      // Calculate the difference in quantity
+      const currentQuantity = cartItem.quantity
+      const quantityDifference = quantity - currentQuantity
+
+      if (quantityDifference > 0) {
+        // Add the difference using the existing addToCart endpoint
+        await addToCart(cartItem.product._id, quantityDifference)
+      } else if (quantityDifference < 0) {
+        // Remove the difference using the existing removeFromCartByQuantity endpoint
+        await removeFromCartByQuantity(cartItem.product._id, Math.abs(quantityDifference))
+      }
 
       toast.success('Quantity updated')
-
-      // Refresh cart to sync with server
-      await fetchCart()
 
     } catch (err) {
       console.error('Error updating quantity:', err)

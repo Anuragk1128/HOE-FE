@@ -441,7 +441,7 @@ export default function AccountPage() {
                                 {addresses[0].landmark ? <p className="text-gray-700 text-sm">Landmark: {addresses[0].landmark}</p> : null}
                               </div>
                             ) : (
-                              <p className="text-gray-900">{serverProfile?.address || 'Not provided (please add your address)'}</p>
+                              <p className="text-gray-900">{serverProfile?.address || 'Not Added'}</p>
                             )}
                           </div>
                           

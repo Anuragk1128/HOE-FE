@@ -132,7 +132,7 @@ export default function CheckoutPage() {
         latitude: coordinates.latitude,
         longitude: coordinates.longitude
       }));
-      toast.success('Address validated successfully!');
+      toast.success('Success');
     } else {
       setIsAddressValidated(false);
       toast.error('Could not validate address. Please check the details.');
@@ -586,7 +586,7 @@ export default function CheckoutPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <h4 className="text-sm font-medium text-blue-900">Quick Location Detection</h4>
+                    
                       </div>
                       <LocationButton
                         onLocationDetected={(locationData: any) => {
@@ -675,7 +675,7 @@ export default function CheckoutPage() {
                     />
                     {!newAddress.latitude && (
                       <p className="text-xs text-gray-500 mt-2">
-                        Please save your address to ensure accurate delivery location.
+                        Please save your address to ensure delivery location.
                       </p>
                     )}
                   </div>
@@ -915,7 +915,7 @@ export default function CheckoutPage() {
             
             {/* Address Validation */}
             <div className="md:col-span-2 bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">Address Validation</h3>
+              
               <AddressValidator
                 address={{
                   addressLine1: shippingInfo.addressLine1,
@@ -930,7 +930,7 @@ export default function CheckoutPage() {
               />
               {!isAddressValidated && (
                 <p className="text-xs text-gray-500 mt-2">
-                  Please save your address
+                  Please confirm your address
                 </p>
               )}
             </div>

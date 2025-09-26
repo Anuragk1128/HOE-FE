@@ -131,7 +131,7 @@ export function SiteHeader({
                 </div>
                 <div className="flex items-center">
                   {isDetectingLocation ? (
-                    <span className="text-sm font-medium text-white">Detecting...</span>
+                    <span className="text-sm font-medium text-white">Detecting..</span>
                   ) : userLocation ? (
                     <span className="text-sm font-medium text-white">{userLocation.city} {userLocation.postalCode}</span>
                   ) : (

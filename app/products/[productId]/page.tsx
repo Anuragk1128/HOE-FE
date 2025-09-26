@@ -660,7 +660,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Free Delivery</p>
-                  <p className="text-gray-600">On orders above ₹499</p>
+                  <p className="text-gray-600">On All Orders</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3 text-sm">

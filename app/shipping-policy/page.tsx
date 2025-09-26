@@ -7,7 +7,7 @@ export default function ShippingPolicy() {
             </p>
             <ul className="list-disc list-inside">
                 <li>Orders are processed within 24 hours of placement</li>
-                <li>Shipping is free for orders over ₹2000</li>
+                <li>Shipping is free for all orders</li>
                 <li>Orders are shipped via USPS Priority Mail</li>
                 <li>Shipping time is 3-5 business days</li>
             </ul>

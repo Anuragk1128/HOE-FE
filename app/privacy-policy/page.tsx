@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
 
         <section className="mb-12">
           <p className="mb-4">
-            At HOE (House of E-commerce), we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.
+            At HOE (House of Evolve), we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.
           </p>
         </section>
 
@@ -62,7 +62,7 @@ export default function PrivacyPolicy() {
             <li>Object to or restrict processing of your data</li>
             <li>Withdraw consent at any time</li>
           </ul>
-          <p>To exercise these rights, please contact us at <Link href="mailto:privacy@houseofecommerce.com" className="text-primary hover:underline">privacy@houseofecommerce.com</Link>.</p>
+          <p>To exercise these rights, please contact us at <Link href="mailto:admin@houseofevolve.in" className="text-primary hover:underline"> admin@houseofevolve.in</Link>.</p>
         </section>
 
         <section className="mb-12">

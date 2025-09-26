@@ -102,9 +102,9 @@ export function SiteHeader({
     <>
       <header className="w-full relative">
         {/* Top ribbon: logo, search and auth - Sticky */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-sky-700 to-sky-950 text-black h-12 sm:h-14 md:h-14 shadow-sm">
-          <div className="mx-auto w-full h-full px-2 sm:px-3 md:px-4 lg:px-6 max-w-[1800px]">
-            <div className="relative w-full h-full flex items-center justify-between md:justify-start gap-1 sm:gap-2 md:gap-4">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-sky-700 to-sky-950 text-black h-14 md:h-14 shadow-sm">
+          <div className="mx-auto w-full h-full px-3 sm:px-4 lg:px-6 max-w-[1800px]">
+            <div className="relative w-full h-full flex items-center justify-between md:justify-start gap-2 md:gap-4">
               {/* Logo - Always centered on mobile, left on desktop */}
               <div className="flex justify-center md:justify-start">
                 <Link href="/" aria-label="Home" className="flex-shrink-0">
@@ -114,7 +114,7 @@ export function SiteHeader({
                     width={100}
                     height={100}
                     priority
-                    className="h-8 sm:h-10 md:h-12 lg:h-14 w-auto"
+                    className="h-12 sm:h-14 md:h-14 w-auto"
                   />
                 </Link>
               </div>
@@ -243,8 +243,8 @@ export function SiteHeader({
       </header>
       {/* Main bar: categories - Non-sticky */}
       {/* Lower bar offset equals fixed header height for consistent spacing */}
-      <div className="bg-background pt-12 sm:pt-12 md:pt-14 border-b">
-        <div className="mx-auto w-full px-3 sm:px-4 md:px-5 lg:px-6 max-w-[1800px]">
+      <div className="bg-background pt-12 md:pt-14 border-b">
+        <div className="mx-auto w-full px-4 sm:px-5 md:px-6 max-w-[1800px]">
           <div className="flex items-center justify-between py-1 md:py-3">
             {/* Left group: mobile trigger */}
             <div className="flex items-center gap-3 md:gap-5">
@@ -366,7 +366,7 @@ export function SiteHeader({
 
           {/* Mobile search */}
           <form
-            className="md:hidden flex items-center gap-1.5 sm:gap-2 py-1.5 relative"
+            className="md:hidden flex items-center gap-2 py-1.5 relative"
             onSubmit={(e) => {
               e.preventDefault()
               const q = query.trim()
@@ -383,7 +383,7 @@ export function SiteHeader({
               <button
                 type="button"
                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                className="h-9 sm:h-10 flex items-center px-2 sm:px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-medium rounded-md border border-slate-300"
+                className="h-10 flex items-center px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-medium rounded-md border border-slate-300"
               >
                 <span className="truncate max-w-[120px]">{selectedCategory}</span>
                 {isCategoryOpen ? (
@@ -419,11 +419,11 @@ export function SiteHeader({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search products..."
-              className="h-9 sm:h-10 flex-1 text-sm"
+              className="h-9 flex-1"
             />
             <Button
               type="submit"
-              className="bg-accent text-white hover:bg-accent/90 h-9 sm:h-10 px-2 sm:px-3"
+              className="bg-accent text-white hover:bg-accent/90 h-9"
             >
               <Search className="h-4 w-4" />
             </Button>

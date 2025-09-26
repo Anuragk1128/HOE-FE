@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from "next/link"
 import Image from "next/image"
-import { Mail, Phone, MapPin, Facebook, Instagram, Twitter } from "lucide-react"
+import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface Category {
   _id: string
@@ -60,16 +61,37 @@ export default function Footer() {
             </div>
             </Link>
             <p className="text-sm text-slate-300 mb-6">Quality gear and apparel curated from top brands.</p>
-            <div className="flex space-x-4">
-              {[Facebook, Instagram, Twitter].map((Icon, index) => (
-                <Link
-                  key={index}
-                  href="https://www.instagram.com/house_of_evolve/" target="_blank"
-                  className="text-slate-400 hover:text-white"
+            <div className="flex space-x-2">
+              <a
+                href="https://www.facebook.com/share/1Ap6LGNxbt/?mibextid=wwXIfr"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook - IRA by Evolve"
+              >
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Facebook className="h-4 w-4" />
+                </Button>
+              </a>
+              <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                <a
+                  href="https://www.instagram.com/ira_by_evolve/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram - IRA by Evolve"
                 >
-                  <Icon className="h-5 w-5" />
-                </Link>
-              ))}
+                  <Instagram className="h-4 w-4" />
+                </a>
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <a
+                  href="https://www.linkedin.com/company/house-of-evolve/"
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn - IRA by Evolve"
+                >
+                  <Linkedin className="h-4 w-4" />
+                </a>
+              </Button>
             </div>
           </div>
 

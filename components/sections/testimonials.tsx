@@ -25,22 +25,22 @@ const features = [
 
 export function Testimonials() {
   return (
-    <section className="py-16 px-4 bg-gray-50">
+    <section className="py-8 sm:py-12 md:py-16 px-4 bg-gray-50">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">What Makes Us Different</h2>
-          <p className="text-gray-600">Discover the unique qualities that set us apart from the rest</p>
+        <div className="text-center mb-8 sm:mb-10 md:mb-12">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3 md:mb-4">What Makes Us Different</h2>
+          <p className="text-sm sm:text-base text-gray-600">Discover the unique qualities that set us apart from the rest</p>
         </div>
         
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-5 md:space-y-6">
           {features.map((feature) => (
-            <div key={feature.id} className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-start space-x-4">
+            <div key={feature.id} className="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-start space-x-3 sm:space-x-4">
               <div className="flex-shrink-0">
-                <CheckCircle className="w-6 h-6 text-green-500" />
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-1 sm:mb-2">{feature.title}</h3>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{feature.description}</p>
               </div>
             </div>
           ))}

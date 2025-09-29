@@ -1,4 +1,6 @@
 import { Truck, ShieldCheck, RefreshCw, Heart } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 
 const features = [
   {
@@ -32,12 +34,18 @@ export function Features() {
             <div key={index} className="text-center">
               <div className="flex justify-center mb-3 sm:mb-4">
                 {feature.icon}
+                
               </div>
               <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">{feature.title}</h3>
               <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
+        <div className="w-auto h-auto mt-4">
+          <Link href="/products">
+                  <Image src="https://res.cloudinary.com/deamrxfwp/image/upload/v1758804058/IMG_7065_svsbi8.jpg" alt={""} width={2000} height={1200} />
+                  </Link>
+                </div>
       </div>
     </section>
   )

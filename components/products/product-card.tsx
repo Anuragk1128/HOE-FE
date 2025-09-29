@@ -21,9 +21,14 @@ export function ProductCard({ product }: { product: Product }) {
     ? product.brandId as { _id: string; name: string; slug: string }
     : null
 
-  const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price
+  // GST calculations (same as product page)
+  const gstRate = typeof product.gstRate === 'number' ? product.gstRate : 0
+  const gstAmount = Math.max(0, (product.price || 0) * (gstRate / 100))
+  const totalWithGst = (product.price || 0) + gstAmount
+
+  const hasDiscount = product.compareAtPrice && product.compareAtPrice > totalWithGst
   const discountPercentage = hasDiscount 
-    ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
+    ? Math.round(((product.compareAtPrice - totalWithGst) / product.compareAtPrice) * 100)
     : 0
   
   const isOutOfStock = product.stock <= 0
@@ -160,7 +165,7 @@ export function ProductCard({ product }: { product: Product }) {
             <div className="mb-3 flex-shrink-0">
               <div className="flex items-baseline space-x-2">
                 <span className="font-bold text-base text-gray-900">
-                  {formatINR(product.price || 0)}
+                  {formatINR(totalWithGst)}
                 </span>
                 {hasDiscount && (
                   <span className="text-sm text-gray-400 line-through">

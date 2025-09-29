@@ -72,7 +72,8 @@ export function DealsSection() {
                 subcategoryId: p.subcategoryId,
                 slug: p.slug,
                 createdAt: p.createdAt,
-                updatedAt: p.updatedAt
+                updatedAt: p.updatedAt,
+                gstRate: p.gstRate
               }} />
             </AnimateOnScroll>
           ))}

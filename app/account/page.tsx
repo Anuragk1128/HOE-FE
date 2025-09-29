@@ -421,15 +421,15 @@ export default function AccountPage() {
                         <>
                           <div>
                             <p className="text-sm text-gray-500">Full Name</p>
-                            <p className="text-gray-900">{serverProfile?.name || user.name || 'Not provided (please update your name)'}</p>
+                            <p className="text-gray-900">{serverProfile?.name || user.name || '(please update your name)'}</p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">Email</p>
-                            <p className="text-gray-900">{serverProfile?.email || user.email || 'Not provided (please update your email)'}</p>
+                            <p className="text-gray-900">{serverProfile?.email || user.email || '(please update your email)'}</p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">Phone Number</p>
-                            <p className="text-gray-900">{serverProfile?.phone || user.phone || 'Not provided (please add your phone)'}</p>
+                            <p className="text-gray-900">{serverProfile?.phone || user.phone || '(please add your phone)'}</p>
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">Address</p>

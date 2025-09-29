@@ -81,7 +81,7 @@ export default function OrdersPage() {
       <div className="container mx-auto px-4 py-12 text-center">
         <h2 className="text-2xl font-semibold text-gray-800">Sign in to view your orders</h2>
         <p className="mt-2 text-gray-600">Please sign in to view your order history.</p>
-        <Button onClick={() => router.push('/signin')} className="mt-4">
+        <Button onClick={() => router.push('/account')} className="mt-4">
           Sign In
         </Button>
       </div>
@@ -152,19 +152,19 @@ export default function OrdersPage() {
             <div className="p-6">
               <div className="space-y-4">
                 {order.items.map((item, index) => (
-                  <div key={`${item.product._id}-${index}`} className="flex items-start">
+                  <div key={`${typeof item.product === 'object' ? item.product._id : item.product}-${index}`} className="flex items-start">
                     <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
                       <img 
-                        src={item.product.images?.[0] || '/placeholder-product.jpg'} 
-                        alt={item.product.title} 
+                        src={typeof item.product === 'object' ? item.product.images?.[0] || '/placeholder-product.jpg' : '/placeholder-product.jpg'} 
+                        alt={typeof item.product === 'object' ? item.product.title : 'Product'} 
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="ml-4 flex-1">
-                      <h3 className="font-medium text-gray-900">{item.title || item.product.title}</h3>
+                      <h3 className="font-medium text-gray-900">{item.title || (typeof item.product === 'object' ? item.product.title : 'Product')}</h3>
                       <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                      {(item.sku || item.product.sku) && (
-                        <p className="text-xs text-gray-400">SKU: {item.sku || item.product.sku}</p>
+                      {(item.sku || (typeof item.product === 'object' ? item.product.sku : undefined)) && (
+                        <p className="text-xs text-gray-400">SKU: {item.sku || (typeof item.product === 'object' ? item.product.sku : '')}</p>
                       )}
                     </div>
                     <div className="ml-4 text-right">

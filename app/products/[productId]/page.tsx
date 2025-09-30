@@ -35,7 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { useWishlist } from '@/contexts/wishlist-context'
 
-interface ProductDetails extends Product {
+interface ProductDetails extends Omit<Product, 'attributes'> {
   brand?: {
     _id: string
     name: string
@@ -43,6 +43,10 @@ interface ProductDetails extends Product {
   category?: {
     _id: string
     name: string
+  }
+  attributes: Product['attributes'] & {
+    features?: string[] | string
+    care?: string[] | string
   }
 }
 
@@ -462,7 +466,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                       setSelectedImage(index)
                       resetZoom()
                     }}
-                    className={`flex-shrink-0 relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${
+                    className={`flex-shrink-F0 relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${
                       selectedImage === index 
                         ? 'border-blue-500 ring-2 ring-blue-100' 
                         : 'border-gray-200 hover:border-gray-300'
@@ -736,16 +740,23 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                       </ul>
                     </div>
                   )}
-                  <div className="mt-6 pt-6 border-t">
-                  <h5 className="text-base font-semibold mb-3"> Features </h5>
+                  {product.attributes?.features && (Array.isArray(product.attributes.features) ? 
+                    product.attributes.features.length > 0 : 
+                    Boolean(product.attributes.features)
+                  ) && (
+                    <div className="mt-6 pt-6 border-t">
+                      <h5 className="text-base font-semibold mb-3">Features</h5>
                       <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                          <li>Water-proof </li>
-                          <li>Premium Material </li>
-                          <li>Superior Design </li>
-                          <li>Easy Maintenance </li>
-                          <li>Travel Friendly</li>
+                        {Array.isArray(product.attributes.features) ? (
+                          product.attributes.features.map((feature, index) => (
+                            <li key={index}>{feature}</li>
+                          ))
+                        ) : (
+                          <li>{product.attributes.features}</li>
+                        )}
                       </ul>
                     </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -797,17 +808,23 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                     }
                       
                             
-                    <div className="col-span-1 md:col-span-2 justify-self-start text-left">
-                    <h1 className="text-lg font-semibold mb-4">Care Instructions:</h1>
-                    <ul className="list-disc pl-5 space-y-2 text-gray-700 text-left">
-                    <li>Remove jewellery before washing hands, swimming, or showering.</li>
-                    <li>Due to its delicate nature, avoid wearing it during strenuous activities or while sleeping.</li>
-                    <li>Use a soft, dry microfibre cloth to gently remove dirt, sweat, and oils after each wear.</li>
-                    <li>Avoid using abrasive materials, ultrasonic cleaners, alcohol, or strong detergents.</li>
-                    <li>Do not soak jewellery in water or cleaning solutions.</li>
-                    <li>Store each piece separately to prevent tangling and scratches.</li>
-                    </ul>
-                    </div>
+                    {product.attributes?.care && (Array.isArray(product.attributes.care) ? 
+                      product.attributes.care.length > 0 : 
+                      Boolean(product.attributes.care)
+                    ) && (
+                      <div className="col-span-1 md:col-span-2 justify-self-start text-left">
+                        <h1 className="text-lg font-semibold mb-4">Care Instructions</h1>
+                        <ul className="list-disc pl-5 space-y-2 text-gray-700 text-left">
+                          {Array.isArray(product.attributes.care) ? (
+                            product.attributes.care.map((instruction, index) => (
+                              <li key={index}>{instruction}</li>
+                            ))
+                          ) : (
+                            <li>{product.attributes.care}</li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
 
                  
                   </div>

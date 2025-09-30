@@ -34,6 +34,7 @@ export default function AccountPage() {
     createdAt?: string
     updatedAt?: string
   } | null>(null)
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -164,7 +165,7 @@ export default function AccountPage() {
     if (e && 'preventDefault' in e) e.preventDefault()
     if (!user?.token) return
     // Basic required fields
-    if (!newAddress.fullName || !newAddress.addressLine1 || !newAddress.city || !newAddress.state || !newAddress.postalCode || !newAddress.phone) {
+    if (!newAddress.addressLine1 || !newAddress.city || !newAddress.state || !newAddress.postalCode || !newAddress.country) {
       toast.error('Please fill all required fields')
       return
     }
@@ -432,16 +433,47 @@ export default function AccountPage() {
                             <p className="text-gray-900">{serverProfile?.phone || user.phone || '(please add your phone)'}</p>
                           </div>
                           <div>
-                            <p className="text-sm text-gray-500">Address</p>
-                            {addresses.length > 0 ? (
-                              <div className="text-gray-900">
-                                <p>{addresses[0].addressLine1}{addresses[0].addressLine2 ? `, ${addresses[0].addressLine2}` : ''}</p>
-                                <p>{addresses[0].city}, {addresses[0].state} {addresses[0].postalCode}</p>
-                                <p>{addresses[0].country}</p>
-                                {addresses[0].landmark ? <p className="text-gray-700 text-sm">Landmark: {addresses[0].landmark}</p> : null}
-                              </div>
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm font-medium text-gray-500">Saved Addresses</p>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => setActiveTab('addresses')}
+                                className="text-blue-600 hover:text-blue-700"
+                              >
+                                Manage Addresses
+                              </Button>
+                            </div>
+                            {addressesLoading ? (
+                              <div className="mt-2 text-sm text-gray-500">Loading addresses...</div>
+                            ) : addresses.length === 0 ? (
+                              <p className="mt-2 text-sm text-gray-500">No saved addresses. Add one in the Addresses tab.</p>
                             ) : (
-                              <p className="text-gray-900">{serverProfile?.address || 'Not Added'}</p>
+                              <div className="mt-2 space-y-3">
+                                {addresses.map((address) => (
+                                  <div 
+                                    key={address._id} 
+                                    className={`p-3 border rounded-md cursor-pointer transition-colors ${selectedAddressId === address._id ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'}`}
+                                    onClick={() => setSelectedAddressId(address._id || null)}
+                                  >
+                                    <div className="flex items-start">
+                                      <div className="flex-1">
+                                        <div className="flex items-center">
+                                          <p className="font-medium">{address.fullName}</p>
+                                          {selectedAddressId === address._id && (
+                                            <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">Default</span>
+                                          )}
+                                        </div>
+                                        <p className="text-sm">{address.addressLine1}{address.addressLine2 ? `, ${address.addressLine2}` : ''}</p>
+                                        <p className="text-sm">{address.city}, {address.state} {address.postalCode}</p>
+                                        <p className="text-sm">{address.country}</p>
+                                        {address.landmark && <p className="text-xs text-gray-500 mt-1">Landmark: {address.landmark}</p>}
+                                        <p className="text-sm mt-1">Phone: {address.phone}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             )}
                           </div>
                           
@@ -607,8 +639,35 @@ export default function AccountPage() {
                           </div>
                          
                           <div className="md:col-span-2">
+                            <Label htmlFor="fullName">Full Name *</Label>
+                            <Input 
+                              id="fullName" 
+                              required 
+                              value={newAddress.fullName} 
+                              onChange={(e) => setNewAddress({...newAddress, fullName: e.target.value})} 
+                              className="mt-1" 
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <Label htmlFor="phone">Phone Number *</Label>
+                            <Input 
+                              id="phone" 
+                              type="tel" 
+                              required 
+                              value={newAddress.phone} 
+                              onChange={(e) => setNewAddress({...newAddress, phone: e.target.value})} 
+                              className="mt-1" 
+                            />
+                          </div>
+                          <div className="md:col-span-2">
                             <Label htmlFor="line1">Address Line 1 *</Label>
-                            <Input id="line1" required value={newAddress.addressLine1} onChange={(e)=>setNewAddress({...newAddress, addressLine1: e.target.value})} className="mt-1" />
+                            <Input 
+                              id="line1" 
+                              required 
+                              value={newAddress.addressLine1} 
+                              onChange={(e) => setNewAddress({...newAddress, addressLine1: e.target.value})} 
+                              className="mt-1" 
+                            />
                           </div>
                           <div className="md:col-span-2">
                             <Label htmlFor="line2">Address Line 2</Label>
@@ -620,7 +679,23 @@ export default function AccountPage() {
                           </div>
                           <div>
                             <Label htmlFor="state">State *</Label>
-                            <Input id="state" required value={newAddress.state} onChange={(e)=>setNewAddress({...newAddress, state: e.target.value})} className="mt-1" />
+                            <Input 
+                              id="state" 
+                              required 
+                              value={newAddress.state} 
+                              onChange={(e) => setNewAddress({...newAddress, state: e.target.value})} 
+                              className="mt-1" 
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="district">District *</Label>
+                            <Input 
+                              id="district" 
+                              required 
+                              value={newAddress.district} 
+                              onChange={(e) => setNewAddress({...newAddress, district: e.target.value})} 
+                              className="mt-1" 
+                            />
                           </div>
                           <div>
                             <Label htmlFor="postal">Postal Code *</Label>

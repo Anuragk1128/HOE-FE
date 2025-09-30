@@ -249,7 +249,7 @@ export default function CartPage() {
                         
                         <button
                           onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
-                          disabled={isUpdating || (item.product?.stock && item.quantity >= item.product.stock)}
+                          disabled={isUpdating || (item.product?.stock !== undefined && item.quantity >= item.product.stock)}
                           className="p-2 hover:bg-gray-100 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title={item.product?.stock && item.quantity >= item.product.stock ? "Out of stock" : "Add 1 item"}
                         >

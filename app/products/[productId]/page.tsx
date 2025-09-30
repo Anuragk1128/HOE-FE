@@ -57,6 +57,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [selectedSize, setSelectedSize] = useState<string | null>(null)
+  const [selectedColor, setSelectedColor] = useState<string | null>(null)
   // Wishlist
   const { addToWishlist, isInWishlist } = useWishlist()
   const [activeTab, setActiveTab] = useState('description')
@@ -85,6 +87,18 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
   const [startPos, setStartPos] = useState({ x: 0, y: 0 })
   const [isZoomed, setIsZoomed] = useState(false)
   const imageRef = useRef<HTMLDivElement>(null)
+
+  // Auto-select first available size and color
+  useEffect(() => {
+    if (product?.attributes) {
+      if (product.attributes.size && product.attributes.size.length > 0 && !selectedSize) {
+        setSelectedSize(product.attributes.size[0])
+      }
+      if (product.attributes.color && product.attributes.color.length > 0 && !selectedColor) {
+        setSelectedColor(product.attributes.color[0])
+      }
+    }
+  }, [product, selectedSize, selectedColor])
   
   const router = useRouter()
   const { addToCart } = useCart()
@@ -199,6 +213,18 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
   const handleAddToCart = async () => {
     if (!product) return
     
+    // Check if size is required and selected
+    if (product.attributes?.size && product.attributes.size.length > 0 && !selectedSize) {
+      toast.error('Please select a size')
+      return
+    }
+    
+    // Check if color is required and selected
+    if (product.attributes?.color && product.attributes.color.length > 0 && !selectedColor) {
+      toast.error('Please select a color')
+      return
+    }
+    
     // Check stock availability before adding to cart
     if (quantity > product.stock) {
       toast.error(`Only ${product.stock} items available in stock`)
@@ -211,7 +237,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
     }
     
     try {
-      await addToCart(product._id, quantity)
+      await addToCart(product._id, quantity, selectedSize || undefined, selectedColor || undefined)
+      toast.success(`Added to cart: ${product.title}${selectedSize ? ` (Size: ${selectedSize})` : ''}${selectedColor ? ` (Color: ${selectedColor})` : ''}`)
     } catch (e: any) {
       console.error('Add to cart error:', e)
     }
@@ -588,9 +615,14 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                       {product.attributes.size.map((size, index) => (
                         <Button
                           key={`${size}-${index}`}
-                          variant="outline"
+                          variant={selectedSize === size ? "default" : "outline"}
                           size="sm"
-                          className="h-10 px-4 hover:bg-gray-900 hover:text-white transition-colors"
+                          onClick={() => setSelectedSize(size)}
+                          className={`h-10 px-4 transition-colors ${
+                            selectedSize === size 
+                              ? 'bg-gray-900 text-white hover:bg-gray-800' 
+                              : 'hover:bg-gray-900 hover:text-white'
+                          }`}
                         >
                           {size}
                         </Button>
@@ -607,9 +639,14 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                       {product.attributes.color.map((color, index) => (
                         <Button
                           key={`${color}-${index}`}
-                          variant="outline"
+                          variant={selectedColor === color ? "default" : "outline"}
                           size="sm"
-                          className="h-10 px-4 hover:bg-gray-900 hover:text-white transition-colors"
+                          onClick={() => setSelectedColor(color)}
+                          className={`h-10 px-4 transition-colors ${
+                            selectedColor === color 
+                              ? 'bg-gray-900 text-white hover:bg-gray-800' 
+                              : 'hover:bg-gray-900 hover:text-white'
+                          }`}
                         >
                           {color}
                         </Button>

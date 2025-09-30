@@ -87,10 +87,18 @@ export default function CartPage() {
     }
   }
 
-  // Calculate totals
+  // Calculate totals with proper GST calculation
   const shippingFee = 0 // No shipping charges
-  const tax = cartTotal * 0.1 // 10% tax
-  const orderTotal = cartTotal + shippingFee + tax
+  
+  // Calculate tax for each item based on its GST rate, then sum up
+  const totalTax = cart.reduce((sum, item) => {
+    const gstRate = typeof (item.product as any)?.gstRate === 'number' ? (item.product as any).gstRate : 0
+    const itemPrice = item.product?.price || 0
+    const itemTax = Math.max(0, itemPrice * item.quantity * (gstRate / 100))
+    return sum + itemTax
+  }, 0)
+  
+  const orderTotal = cartTotal + shippingFee + totalTax
 
   // Loading state
   if (!isClient || loading) {
@@ -211,12 +219,48 @@ export default function CartPage() {
                           {item.product?.title?.trim() || 'Product'}
                         </Link>
                       </h3>
-                      <p className="text-lg font-semibold text-gray-900">
-                        {formatINR(item.product?.price || 0)}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Subtotal: {formatINR((item.product?.price || 0) * item.quantity)}
-                      </p>
+                      {/* Calculate price with GST like product page */}
+                      {(() => {
+                        const basePrice = item.product?.price || 0
+                        const gstRate = typeof (item.product as any)?.gstRate === 'number' ? (item.product as any).gstRate : 0
+                        const gstAmount = Math.max(0, basePrice * (gstRate / 100))
+                        const totalWithGst = basePrice + gstAmount
+                        
+                        return (
+                          <p className="text-lg font-semibold text-gray-900">
+                            ₹{totalWithGst.toLocaleString('en-IN')}
+                          </p>
+                        )
+                      })()}
+                      
+                      {/* Show selected size if available */}
+                      {(() => {
+                        console.log('Cart item selectedSize debug:', {
+                          itemId: item._id,
+                          productTitle: item.product?.title,
+                          selectedSize: (item as any).selectedSize,
+                          selectedColor: (item as any).selectedColor,
+                          fullItem: item
+                        })
+                        return (item as any).selectedSize && (
+                          <p className="text-sm text-gray-600">
+                            Size: {(item as any).selectedSize}
+                          </p>
+                        )
+                      })()}
+                      
+                      {/* Show subtotal with GST */}
+                      {(() => {
+                        const basePrice = item.product?.price || 0
+                        const gstRate = typeof (item.product as any)?.gstRate === 'number' ? (item.product as any).gstRate : 0
+                        const gstAmount = Math.max(0, basePrice * (gstRate / 100))
+                        const totalWithGst = basePrice + gstAmount
+                        return (
+                          <p className="text-sm text-gray-500">
+                            Subtotal: ₹{(totalWithGst * item.quantity).toLocaleString('en-IN')}
+                          </p>
+                        )
+                      })()}
                       {item.product?.stock !== undefined && (
                         <p className={`text-xs mt-1 ${
                           item.product.stock <= 5 ? 'text-red-600 font-medium' : 
@@ -249,7 +293,7 @@ export default function CartPage() {
                         
                         <button
                           onClick={() => handleUpdateQuantity(item._id, item.quantity + 1)}
-                          disabled={isUpdating || (item.product?.stock && item.quantity >= item.product.stock)}
+                          disabled={isUpdating || (item.product?.stock ? item.quantity >= item.product.stock : false)}
                           className="p-2 hover:bg-gray-100 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title={item.product?.stock && item.quantity >= item.product.stock ? "Out of stock" : "Add 1 item"}
                         >
@@ -286,6 +330,11 @@ export default function CartPage() {
               </div>
               
               <div className="flex justify-between">
+                <span className="text-gray-600">Tax (GST)</span>
+                <span className="font-medium">{formatINR(totalTax)}</span>
+              </div>
+              
+              <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
                 <span className="font-medium">
                   {shippingFee === 0 ? (
@@ -296,10 +345,7 @@ export default function CartPage() {
                 </span>
               </div>
               
-              <div className="flex justify-between">
-                <span className="text-gray-600">Tax (10%)</span>
-                <span className="font-medium">{formatINR(tax)}</span>
-              </div>
+
               
               <div className="text-sm text-gray-500 bg-green-50 p-2 rounded">
                 🎉 Free shipping on all orders!

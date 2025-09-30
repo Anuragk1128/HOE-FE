@@ -58,6 +58,8 @@ export interface CartItem {
   product: Product
   quantity: number
   user: string
+  selectedSize?: string
+  selectedColor?: string
   createdAt?: string
   updatedAt?: string
 }
@@ -66,7 +68,7 @@ interface CartContextType {
   cart: CartItem[]
   loading: boolean
   error: string | null
-  addToCart: (productId: string, quantity?: number) => Promise<void>
+  addToCart: (productId: string, quantity?: number, selectedSize?: string, selectedColor?: string) => Promise<void>
   removeFromCart: (cartItemId: string) => Promise<void>
   removeProductFromCart: (productId: string) => Promise<void>
   removeFromCartByQuantity: (productId: string, quantity: number) => Promise<void>
@@ -122,6 +124,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json()
       console.log('Cart API Response:', data) // Debug log
+      
+      // Debug: Log cart items to see selectedSize
+      if (data.data && Array.isArray(data.data)) {
+        console.log('Cart items with selectedSize:', data.data.map((item: any) => ({
+          _id: item._id,
+          productTitle: item.product?.title,
+          selectedSize: item.selectedSize,
+          selectedColor: item.selectedColor,
+          fullItem: item
+        })))
+      }
 
       // Handle different response formats
       let cartItems: CartItem[] = []
@@ -143,6 +156,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
         cartItems = []
       }
 
+      // Ensure selectedSize and selectedColor are preserved from localStorage if not in API response
+      cartItems = cartItems.map(item => {
+        if (!item.selectedSize || !item.selectedColor) {
+          const storedData = localStorage.getItem(`cart_item_${item._id}`)
+          if (storedData) {
+            try {
+              const parsed = JSON.parse(storedData)
+              return {
+                ...item,
+                selectedSize: item.selectedSize || parsed.selectedSize,
+                selectedColor: item.selectedColor || parsed.selectedColor
+              }
+            } catch (e) {
+              console.warn('Failed to parse stored cart item data:', e)
+            }
+          }
+        }
+        return item
+      })
+
       setCart(cartItems)
 
     } catch (err) {
@@ -159,7 +192,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     fetchCart()
   }, [fetchCart])
 
-  const addToCart = async (productId: string, quantity: number = 1) => {
+  const addToCart = async (productId: string, quantity: number = 1, selectedSize?: string, selectedColor?: string) => {
     const token = getAuthToken()
     if (!token) {
       toast.error('Please login to add items to cart')
@@ -199,8 +232,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
       }
       
-      // Attempt 1: POST /cart/:productId with body { quantity } per backend contract
+      // Attempt 1: POST /cart/:productId with body { quantity, selectedSize, selectedColor } per backend contract
       const safeProductId = encodeURIComponent(String(productId))
+      const requestBody = { quantity, selectedSize, selectedColor }
+      console.log('Add to cart request body:', requestBody)
+      
       let response = await fetch(`${API_BASE_URL}/cart/${safeProductId}`, {
         method: 'POST',
         headers: {
@@ -208,11 +244,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ quantity })
+        body: JSON.stringify(requestBody)
       })
 
       // Fallback: if endpoint not found or method not allowed, try /cart/add
       if (!response.ok && (response.status === 404 || response.status === 405)) {
+        const fallbackBody = { productId, quantity, selectedSize, selectedColor }
+        console.log('Fallback add to cart request body:', fallbackBody)
+        
         response = await fetch(`${API_BASE_URL}/cart/add`, {
           method: 'POST',
           headers: {
@@ -220,7 +259,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ productId, quantity })
+          body: JSON.stringify(fallbackBody)
         })
       }
 
@@ -247,6 +286,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         const data = await response.json()
         console.log('Add to cart response:', data)
+        
+        // Store selectedSize and selectedColor in localStorage for this cart item
+        if (selectedSize || selectedColor) {
+          const cartItemId = data.data?._id || data._id
+          if (cartItemId) {
+            localStorage.setItem(`cart_item_${cartItemId}`, JSON.stringify({
+              selectedSize,
+              selectedColor
+            }))
+            console.log('Stored cart item data:', { cartItemId, selectedSize, selectedColor })
+          }
+        }
       } catch {}
       
       // Refresh cart after adding

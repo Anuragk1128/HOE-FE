@@ -33,6 +33,10 @@ export default function ProductsPage() {
     const category = (searchParams.get('category') || '').trim()
 
     return products.filter((p) => {
+      // Only show active products (exclude archived)
+      const isActive = p.status === 'active'
+      if (!isActive) return false
+
       const matchesQuery =
         !q ||
         p.title.toLowerCase().includes(q) ||

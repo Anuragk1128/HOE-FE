@@ -480,6 +480,17 @@ export async function fetchProductsByCategory(params: {
   return Array.isArray(data) ? (data as SlugProduct[]) : (data.data ?? []);
 }
 
+export async function fetchAllProductsByBrand(brandSlug: string): Promise<SlugProduct[]> {
+  const url = `${API_BASE_URL}/brands/${encodeURIComponent(brandSlug)}/products/all`;
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) throw new Error('Failed to fetch all products by brand');
+  const data = (await res.json()) as { data?: SlugProduct[] } | SlugProduct[];
+  return Array.isArray(data) ? (data as SlugProduct[]) : (data.data ?? []);
+}
+
 export type UpdateProductPayload = {
   title?: string;
   slug?: string;

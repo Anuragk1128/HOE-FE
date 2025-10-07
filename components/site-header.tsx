@@ -283,11 +283,20 @@ export function SiteHeader({
                       </Link>
                     </SheetClose>
 
-                    <SheetClose asChild>
-                      <Link href="/brands" className="block py-2 text-base font-medium">
-                        Brands
-                      </Link>
-                    </SheetClose>
+                    <div className="pt-2 border-t mt-2">
+                      <div className="text-xs uppercase text-slate-600 mb-2 text-center tracking-wide">Brands</div>
+                      <SheetClose asChild>
+                        <Link href="/brands/ira/products" className="block py-2 text-base font-medium">
+                          IRA
+                        </Link>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <Link href="/brands/sportswear/products" className="block py-2 text-base font-medium">
+                          Jerseymise
+                        </Link>
+                      </SheetClose>
+                    </div>
+                    
                     <div className="pt-2 border-t mt-2">
                       <div className="text-xs uppercase text-slate-600 mb-2 text-center tracking-wide">Collections</div>
                       <SheetClose asChild>
@@ -348,7 +357,8 @@ export function SiteHeader({
             {/* Desktop nav centered */}
             <nav className="hidden md:flex items-center gap-4 lg:gap-6 overflow-x-auto whitespace-nowrap scrollbar-hide px-2 -mx-2">
               <Link href="/categories" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Categories</Link>
-              <Link href="/brands" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Brands</Link>
+              <Link href="/brands/ira/products" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">IRA</Link>
+              <Link href="/brands/sportswear/products" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Jerseymise</Link>
               <Link href="/products" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Products</Link>
               <Link href="/collections/sportswear" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Sportswear</Link>
               <Link href="/collections/gymwear" className="px-2 py-1 text-sm lg:text-base hover:underline whitespace-nowrap">Gymwear</Link>

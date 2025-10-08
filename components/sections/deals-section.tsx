@@ -32,7 +32,7 @@ export function DealsSection() {
 
   if (loading) {
     return (
-      <section className="bg-slate-50">
+      <section className="bg-white">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <h2 className="text-xl md:text-2xl font-semibold text-slate-900 mb-6">Deals</h2>
           <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
@@ -48,7 +48,7 @@ export function DealsSection() {
   if (!deals.length) return null
 
   return (
-    <section className="bg-slate-50">
+    <section className="bg-white">
       <div className="mx-auto max-w-6xl px-4 py-10">
         <div className="flex items-end justify-between">
           <h2 className="text-xl md:text-2xl font-semibold text-slate-900">Deals</h2>

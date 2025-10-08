@@ -72,7 +72,7 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group h-full w-full">
       <Link href={`/products/${product._id}`} className="block h-full w-full">
-        <div className="h-full w-full flex flex-col bg-white shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden rounded-lg">
+        <div className="h-full w-full flex flex-col bg-white  hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden ">
           
           {/* Image Section - Responsive aspect ratio */}
           <div className="relative w-full aspect-square overflow-hidden">

@@ -590,6 +590,74 @@ export async function adminLogin(email: string, password: string): Promise<Admin
   return data;
 }
 
+// User Registration with OTP
+export type SendOtpResponse = {
+  message: string;
+};
+
+export async function sendRegistrationOtp(email: string): Promise<SendOtpResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/register/send-otp`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    let message = "Failed to send OTP";
+    try {
+      const data = (await res.json()) as { message?: string; error?: string };
+      message = data.message || data.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = (await res.json()) as SendOtpResponse;
+  return data;
+}
+
+export type RegisterWithOtpInput = {
+  name: string;
+  email: string;
+  password: string;
+  otp: string;
+};
+
+export type RegisterResponse = {
+  token: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+};
+
+export async function registerWithOtp(payload: RegisterWithOtpInput): Promise<RegisterResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    let message = "Registration failed";
+    try {
+      const data = (await res.json()) as { message?: string; error?: string };
+      message = data.message || data.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = (await res.json()) as RegisterResponse;
+  return data;
+}
+
 export function saveAdminToken(token: string) {
   if (typeof window === "undefined") return;
   localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);

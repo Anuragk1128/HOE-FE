@@ -8,6 +8,7 @@ import { Features } from "@/components/sections/features"
 import Newsletter from "@/components/newsletter"
 import Cards from "@/components/card"
 import Collections from "@/components/collections"
+import Test from "@/components/test"
 
 export default function Page() {
   return (
@@ -24,7 +25,8 @@ export default function Page() {
       
       {/* Deals Section */}
       <DealsSection />
-      <Cards/>
+     {/* <Cards/> */}
+      <Test/>
       
  
       

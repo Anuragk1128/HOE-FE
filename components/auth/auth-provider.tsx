@@ -27,6 +27,8 @@ type AuthContextType = {
   loading: boolean
   login: (email: string, password: string) => Promise<{ ok: true } | { ok: false; error: string }>
   register: (name: string, email: string, password: string) => Promise<{ ok: true } | { ok: false; error: string }>
+  sendOtp: (email: string) => Promise<{ ok: true; message: string } | { ok: false; error: string }>
+  registerWithOtp: (name: string, email: string, password: string, otp: string) => Promise<{ ok: true } | { ok: false; error: string }>
   logout: () => void
   setAuthenticatedUser: (user: Omit<User, 'token'>, token: string) => void
 }
@@ -158,6 +160,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const sendOtp = async (email: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json() as { message: string } | ErrorResponse;
+
+      if (!response.ok) {
+        const errorData = data as ErrorResponse;
+        return { 
+          ok: false as const, 
+          error: errorData.message || errorData.error || 'Failed to send OTP. Please try again.' 
+        };
+      }
+
+      return { 
+        ok: true as const, 
+        message: (data as { message: string }).message || 'OTP sent to email'
+      };
+    } catch (error) {
+      console.error('Send OTP error:', error);
+      return { 
+        ok: false as const, 
+        error: 'An error occurred while sending OTP. Please try again later.' 
+      };
+    }
+  }
+
+  const registerWithOtp = async (name: string, email: string, password: string, otp: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password, otp })
+      });
+
+      const data = await response.json() as { token: string; user: Omit<User, 'token'> } | ErrorResponse;
+
+      if (!response.ok) {
+        const errorData = data as ErrorResponse;
+        return { 
+          ok: false as const, 
+          error: errorData.message || errorData.error || 'Registration failed. Please try again.' 
+        };
+      }
+
+      const { token, user } = data as { token: string; user: Omit<User, 'token'> };
+      setAuthenticatedUser(user, token);
+      return { ok: true as const };
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { 
+        ok: false as const, 
+        error: 'An error occurred during registration. Please try again later.' 
+      };
+    }
+  }
+
   const logout = () => {
     setUser(null)
     try {
@@ -166,7 +235,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }
 
-  const value = useMemo(() => ({ user, loading, login, register, logout, setAuthenticatedUser }), [user, loading])
+  const value = useMemo(() => ({ user, loading, login, register, sendOtp, registerWithOtp, logout, setAuthenticatedUser }), [user, loading])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

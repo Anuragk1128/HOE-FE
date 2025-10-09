@@ -107,14 +107,14 @@ export function SiteHeader({
             <div className="relative w-full h-full flex items-center justify-between md:justify-start gap-2 md:gap-4">
               {/* Logo - Always centered on mobile, left on desktop */}
               <div className="flex justify-center md:justify-start">
-                <Link href="/" aria-label="Home" className="flex-shrink-0">
+                <Link href="/" aria-label="Home" className="flex-shrink-0 hover:scale-105">
                   <Image
                     src="/hoeee.png"
                     alt="Logo"
                     width={100}
                     height={100}
                     priority
-                    className="h-12 sm:h-14 md:h-14 w-auto"
+                    className="h-12 sm:h-14 md:h-16 w-auto"
                   />
                 </Link>
               </div>
@@ -210,7 +210,7 @@ export function SiteHeader({
               {/* Right side: Account, Returns & Orders */}
               <div className="hidden md:flex items-center gap-3 md:gap-4 lg:gap-5 flex-shrink-0 ml-auto">
                 {/* Returns & Orders */}
-                <Link href="/orders" className="flex flex-col px-4 py-1.5 rounded group">
+                <Link href="/orders" className="flex flex-col px-4 py-1.5 rounded group hover:bg-white/10">
                   <div className="text-xs text-white ">Returns</div>
                   <div className="flex items-center">
                     <span className="text-sm font-medium text-white">& Orders</span>
@@ -219,13 +219,13 @@ export function SiteHeader({
 
                 {/* Account & Lists */}
                 <Link href="/account">
-                  <div className="flex flex-col items-center text-center px-4 py-1.5 rounded cursor-pointer group">
+                  <div className="flex flex-col items-center text-center px-4 py-1.5 rounded cursor-pointer group hover:bg-white/10">
                     <div className="text-xs text-white">
                       {user ? `Hello, ${user.name?.split(' ')[0] || 'User'}` : 'Hello, Sign in'}
                     </div>
                     <div className="flex items-center justify-center">
                       <span className="text-sm font-medium text-white">Account & Lists</span>
-                      <ChevronDown className="h-4 w-4 text-white" />
+                  
                     </div>
                   </div>
                 </Link>
@@ -233,7 +233,7 @@ export function SiteHeader({
               </div>
 
               {/* Cart - Live count via CartIcon */}
-              <div className="relative group ml-2 md:ml-4 flex items-center   ">
+              <div className="relative group ml-2 md:ml-4 flex items-center  ">
                 <CartIcon />
                
               </div>

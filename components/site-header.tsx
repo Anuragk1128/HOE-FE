@@ -2,7 +2,7 @@
 import { Heart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,11 +29,35 @@ export function SiteHeader({
   const { getCurrentLocationAddress } = useLocationServices()
   const router = useRouter()
   const pathname = usePathname()
+  
+  // Refs for dropdown click-outside detection
+  const desktopDropdownRef = useRef<HTMLDivElement>(null)
+  const mobileDropdownRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when route changes
   useEffect(() => {
     setIsCategoryOpen(false)
   }, [pathname])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+      const clickedOutsideDesktop = desktopDropdownRef.current && !desktopDropdownRef.current.contains(target)
+      const clickedOutsideMobile = mobileDropdownRef.current && !mobileDropdownRef.current.contains(target)
+      
+      if (clickedOutsideDesktop && clickedOutsideMobile) {
+        setIsCategoryOpen(false)
+      }
+    }
+
+    if (isCategoryOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [isCategoryOpen])
 
   // Handle location detection
   const handleDetectLocation = async () => {
@@ -106,8 +130,8 @@ export function SiteHeader({
           <div className="mx-auto w-full h-full px-3 sm:px-4 lg:px-6 max-w-[1800px]">
             <div className="relative w-full h-full flex items-center justify-between md:justify-start gap-2 md:gap-4">
               {/* Logo - Always centered on mobile, left on desktop */}
-              <div className="flex justify-center md:justify-start">
-                <Link href="/" aria-label="Home" className="flex-shrink-0 hover:scale-105">
+              <div className="flex justify-center md:justify-start hover:scale-105">
+                <Link href="/" aria-label="Home" className="flex-shrink-0">
                   <Image
                     src="/hoeee.png"
                     alt="Logo"
@@ -155,7 +179,7 @@ export function SiteHeader({
                 role="search"
                 aria-label="Site search"
               >
-                <div className="relative group">
+                <div className="relative group" ref={desktopDropdownRef}>
                   <button
                     type="button"
                     onClick={() => setIsCategoryOpen(!isCategoryOpen)}
@@ -225,7 +249,7 @@ export function SiteHeader({
                     </div>
                     <div className="flex items-center justify-center">
                       <span className="text-sm font-medium text-white">Account & Lists</span>
-                  
+                      
                     </div>
                   </div>
                 </Link>
@@ -233,7 +257,7 @@ export function SiteHeader({
               </div>
 
               {/* Cart - Live count via CartIcon */}
-              <div className="relative group ml-2 md:ml-4 flex items-center  ">
+              <div className="relative group ml-2 md:ml-4 flex items-center   ">
                 <CartIcon />
                
               </div>
@@ -369,7 +393,7 @@ export function SiteHeader({
             {/* Wishlist only in lower header */}
             <div className="flex items-center">
               <Link href="/wishlist" className="text-slate-700 hover:text-slate-900 transition-colors">
-                <Heart className="h-5 w-5" />
+                <Heart className="h-5 w-5"/>
               </Link>
             </div>
           </div>
@@ -389,7 +413,7 @@ export function SiteHeader({
             role="search"
             aria-label="Site search"
           >
-            <div className="relative">
+            <div className="relative" ref={mobileDropdownRef}>
               <button
                 type="button"
                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}

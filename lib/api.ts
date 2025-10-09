@@ -680,6 +680,108 @@ export async function adminAuthedFetch(input: RequestInfo | URL, init: RequestIn
   return fetch(input, { ...init, headers });
 }
 
+// Vendor Authentication
+const VENDOR_TOKEN_STORAGE_KEY = "hoe_vendor_token_v1";
+
+export type VendorLoginResponse = {
+  token: string;
+  message?: string;
+  error?: string;
+};
+
+export async function vendorLogin(email: string, password: string): Promise<VendorLoginResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/vendor/login`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    let message = "Login failed";
+    try {
+      const data = (await res.json()) as { message?: string; error?: string };
+      message = data.message || data.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = (await res.json()) as VendorLoginResponse;
+  console.log('Vendor Login API Response:', data); // Debug log
+  return data;
+}
+
+export function saveVendorToken(token: string) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(VENDOR_TOKEN_STORAGE_KEY, token);
+}
+
+export function getVendorToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(VENDOR_TOKEN_STORAGE_KEY);
+}
+
+export function clearVendorToken() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(VENDOR_TOKEN_STORAGE_KEY);
+}
+
+export async function vendorAuthedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+  const token = getVendorToken();
+  const headers = new Headers(init.headers || {});
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  return fetch(input, { ...init, headers });
+}
+
+// Forgot Password
+export async function sendPasswordResetOTP(email: string): Promise<{ message: string }> {
+  const res = await fetch(`${API_BASE_URL}/auth/forgot-password/send-otp`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    let message = "Failed to send OTP";
+    try {
+      const data = (await res.json()) as { message?: string; error?: string };
+      message = data.message || data.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = (await res.json()) as { message: string };
+  return data;
+}
+
+export async function resetPasswordWithOTP(email: string, otp: string, newPassword: string): Promise<{ message: string }> {
+  const res = await fetch(`${API_BASE_URL}/auth/forgot-password/reset`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, otp, newPassword }),
+  });
+
+  if (!res.ok) {
+    let message = "Failed to reset password";
+    try {
+      const data = (await res.json()) as { message?: string; error?: string };
+      message = data.message || data.error || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  const data = (await res.json()) as { message: string };
+  return data;
+}
+
 // Order Types
 export type OrderItem = {
   product: string | {

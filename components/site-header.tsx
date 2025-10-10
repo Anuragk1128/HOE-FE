@@ -392,8 +392,8 @@ export function SiteHeader({
 
             {/* Wishlist only in lower header */}
             <div className="flex items-center">
-              <Link href="/wishlist" className="text-slate-700 hover:text-slate-900 transition-colors">
-                <Heart className="h-5 w-5"/>
+              <Link href="/wishlist" className="text-slate-700 hover:text-red-500 transition-colors">
+                <Heart className="h-5 w-5 hover:fill-red-500"/>
               </Link>
             </div>
           </div>

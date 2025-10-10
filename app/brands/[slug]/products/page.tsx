@@ -28,7 +28,7 @@ export default function BrandProductsPage() {
   const getBrandLogo = (brandSlug: string) => {
     switch (brandSlug) {
       case 'ira':
-        return '/logo.png'
+        return '/IRA-LOGO.png'
       case 'sportswear':
         return '/JERSEYMISE_LOGO_WHITE_BG.svg'
       default:
@@ -81,7 +81,7 @@ export default function BrandProductsPage() {
       <section className="mx-auto max-w-7xl px-4 py-8">
         {/* Header with Brand Logo and Info */}
         <div className="mb-8">
-          <Link href="/brands" className="text-amber-600 hover:underline mb-4 inline-block">
+          <Link href="/brands" className="text-orange-500 hover:underline font-medium mb-4 inline-block">
             &larr; Back to Brands
           </Link>
           
@@ -98,9 +98,6 @@ export default function BrandProductsPage() {
               </div>
             )}
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                {brandName} Products
-              </h1>
               <p className="text-slate-600">
                 Explore our complete collection of {brandName.toLowerCase()} products
               </p>

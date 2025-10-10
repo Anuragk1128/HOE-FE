@@ -41,11 +41,7 @@ export function Features() {
             </div>
           ))}
         </div>
-        <div className="w-auto h-auto mt-4">
-          <Link href="/products">
-                  <Image src="https://res.cloudinary.com/deamrxfwp/image/upload/v1758804058/IMG_7065_svsbi8.jpg" alt={""} width={2000} height={1200} />
-                  </Link>
-                </div>
+       
       </div>
     </section>
   )

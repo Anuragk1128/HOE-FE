@@ -9,6 +9,7 @@ import Newsletter from "@/components/newsletter"
 import Cards from "@/components/card"
 import Collections from "@/components/collections"
 import Test from "@/components/test"
+import Blog from "@/components/blog"
 
 export default function Page() {
   return (
@@ -35,6 +36,7 @@ export default function Page() {
       
       {/* Testimonials */}
       <Testimonials />
+      <Blog />
       
       {/* Newsletter - full width */}
       <Newsletter />

@@ -12,7 +12,7 @@ function BrandCard({ brand }: { brand: Brand }) {
     // Use brand slug directly for mapping
     switch (brandSlug) {
       case 'ira':
-        return '/logo.png' // IRA brand logo
+        return '/IRA-LOGO.png' // IRA brand logo
       case 'sportswear':
         return '/JERSEYMISE_LOGO_WHITE_BG.svg' // JerseyMise brand logo
     // Default fallback
@@ -25,7 +25,7 @@ function BrandCard({ brand }: { brand: Brand }) {
         <div className="flex h-48 items-center justify-center overflow-hidden rounded-md bg-slate-50 p-4">
           <div className="relative h-full w-full">
             <Image
-              src={getBrandImage(brand.slug)}
+              src={getBrandImage(brand.slug) || ''}
               alt={`${brand.name} logo`}
               fill
               className="object-contain transition group-hover:scale-[1.02]"

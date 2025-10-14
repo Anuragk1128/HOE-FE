@@ -135,34 +135,18 @@ export function ProductCard({ product }: { product: Product }) {
             </div>
           </div>
 
-          {/* Content Section - Proper spacing and responsive layout */}
-          <div className="flex-1 bg-white p-3 flex flex-col">
+          {/* Content Section - Simplified with only title and price */}
+          <div className="flex-1 bg-white p-3 flex flex-col justify-between">
             
-            {/* Brand */}
-            {brand?.name && (
-              <div className="mb-2">
-                <Badge variant="outline" className="text-xs px-2 py-1">
-                  {brand.name}
-                </Badge>
-              </div>
-            )}
-
             {/* Title - Fixed height for consistency */}
-            <div className="mb-2 flex-shrink-0">
-              <h3 className="font-medium text-gray-900 text-sm leading-tight line-clamp-2 group-hover:text-gray-700 transition-colors min-h-[2.5rem] flex items-start">
+            <div className="mb-3">
+              <h3 className="font-medium text-gray-900 text-sm leading-tight line-clamp-2 group-hover:text-gray-700 transition-colors min-h-[2.5rem]">
                 {product.title}
               </h3>
             </div>
 
-            {/* Description - Flexible space */}
-            <div className="mb-3 flex-grow">
-              <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
-                {product.description}
-              </p>
-            </div>
-
             {/* Price */}
-            <div className="mb-3 flex-shrink-0">
+            <div className="flex-shrink-0">
               <div className="flex items-baseline space-x-2">
                 <span className="font-bold text-base text-gray-900">
                   {formatINR(totalWithGst)}
@@ -172,31 +156,6 @@ export function ProductCard({ product }: { product: Product }) {
                     {formatINR(product.compareAtPrice)}
                   </span>
                 )}
-              </div>
-            </div>
-
-            {/* Stock Status and Mobile Add Button */}
-            <div className="flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${
-                    product.stock && product.stock > 0 ? 'bg-green-500' : 'bg-red-500'
-                  }`} />
-                  <span className={`text-xs font-medium ${
-                    product.stock && product.stock > 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {product.stock && product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                  </span>
-                </div>
-
-                <Button
-                  size="sm"
-                  className="bg-gray-900 hover:bg-gray-800 text-white px-3 py-1 text-xs font-medium sm:hidden"
-                  onClick={handleAddToCart}
-                  disabled={isOutOfStock}
-                >
-                  Add
-                </Button>
               </div>
             </div>
 

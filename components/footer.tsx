@@ -56,7 +56,7 @@ export default function Footer() {
           <div className="col-span-1 lg:col-span-2">
             <Link href="/">
               <div className="flex items-center justify-center md:justify-start space-x-2 mb-4">
-                <Image src="/hoeee.png" alt="HOE" width={200} height={200} className="md:-ml-19" />
+                <Image src="/hoeee.png" alt="HOE" width={200} height={200} className="md:-ml-19 hover:scale-105" />
               
             </div>
             </Link>
@@ -68,11 +68,11 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 aria-label="Facebook - IRA by Evolve"
               >
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-orange-500">
                   <Facebook className="h-4 w-4" />
                 </Button>
               </a>
-              <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+              <Button asChild variant="ghost" size="icon" className="h-8 w-8 hover:bg-orange-500">
                 <a
                   href="https://www.instagram.com/ira_by_evolve/"
                   target="_blank"
@@ -82,7 +82,7 @@ export default function Footer() {
                   <Instagram className="h-4 w-4" />
                 </a>
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-orange-500">
                 <a
                   href="https://www.linkedin.com/company/house-of-evolve/"
                   target="_blank" 

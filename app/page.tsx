@@ -8,6 +8,8 @@ import { Features } from "@/components/sections/features"
 import Newsletter from "@/components/newsletter"
 import Cards from "@/components/card"
 import Collections from "@/components/collections"
+import Test from "@/components/test"
+import Blog from "@/components/blog"
 
 export default function Page() {
   return (
@@ -24,7 +26,8 @@ export default function Page() {
       
       {/* Deals Section */}
       <DealsSection />
-      <Cards/>
+     {/* <Cards/> */}
+      <Test/>
       
  
       
@@ -33,6 +36,7 @@ export default function Page() {
       
       {/* Testimonials */}
       <Testimonials />
+      <Blog />
       
       {/* Newsletter - full width */}
       <Newsletter />

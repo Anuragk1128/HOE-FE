@@ -13,6 +13,7 @@ import { useAuth } from "./auth-provider"
 import { Loader2, ArrowLeft } from "lucide-react"
 import GoogleLoginButton from "./google-login-button"
 import { toast } from "sonner"
+import { ForgotPasswordModal } from "./forgot-password-modal"
 
 export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const { login, sendOtp, registerWithOtp } = useAuth()
@@ -20,6 +21,7 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
   const [tab, setTab] = useState<"login" | "register">("login")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   // Login state
   const [loginEmail, setLoginEmail] = useState("")
@@ -127,6 +129,7 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={handleModalClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -160,7 +163,19 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
                 <Input id="login-email" type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="login-password">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="login-password">Password</Label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(true)
+                      onOpenChange(false)
+                    }}
+                    className="text-xs text-amber-600 hover:text-amber-700 underline"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
                 <PasswordInput id="login-password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
               </div>
               {error && <p className="text-sm text-red-600">{error}</p>}
@@ -174,11 +189,12 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
                   "Sign in with Email"
                 )}
               </Button>
-              
+            
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
                 </div>
+                
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-background px-2 text-muted-foreground">
                     Or continue with
@@ -187,6 +203,7 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
               </div>
               
               <GoogleLoginButton />
+             
             </form>
           </TabsContent>
 
@@ -290,5 +307,16 @@ export function AuthModal({ open, onOpenChange }: { open: boolean; onOpenChange:
         </Tabs>
       </DialogContent>
     </Dialog>
+    
+    
+    <ForgotPasswordModal
+      open={showForgotPassword}
+      onOpenChange={setShowForgotPassword}
+      onBackToLogin={() => {
+        setShowForgotPassword(false)
+        onOpenChange(true)
+      }}
+    />
+    </>
   )
 }

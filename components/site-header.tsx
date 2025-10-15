@@ -2,7 +2,7 @@
 import { Heart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,11 +29,35 @@ export function SiteHeader({
   const { getCurrentLocationAddress } = useLocationServices()
   const router = useRouter()
   const pathname = usePathname()
+  
+  // Refs for dropdown click-outside detection
+  const desktopDropdownRef = useRef<HTMLDivElement>(null)
+  const mobileDropdownRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when route changes
   useEffect(() => {
     setIsCategoryOpen(false)
   }, [pathname])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+      const clickedOutsideDesktop = desktopDropdownRef.current && !desktopDropdownRef.current.contains(target)
+      const clickedOutsideMobile = mobileDropdownRef.current && !mobileDropdownRef.current.contains(target)
+      
+      if (clickedOutsideDesktop && clickedOutsideMobile) {
+        setIsCategoryOpen(false)
+      }
+    }
+
+    if (isCategoryOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [isCategoryOpen])
 
   // Handle location detection
   const handleDetectLocation = async () => {
@@ -106,7 +130,7 @@ export function SiteHeader({
           <div className="mx-auto w-full h-full px-3 sm:px-4 lg:px-6 max-w-[1800px]">
             <div className="relative w-full h-full flex items-center justify-between md:justify-start gap-2 md:gap-4">
               {/* Logo - Always centered on mobile, left on desktop */}
-              <div className="flex justify-center md:justify-start">
+              <div className="flex justify-center md:justify-start hover:scale-105">
                 <Link href="/" aria-label="Home" className="flex-shrink-0">
                   <Image
                     src="/hoeee.png"
@@ -114,7 +138,7 @@ export function SiteHeader({
                     width={100}
                     height={100}
                     priority
-                    className="h-12 sm:h-14 md:h-14 w-auto"
+                    className="h-12 sm:h-14 md:h-16 w-auto"
                   />
                 </Link>
               </div>
@@ -155,7 +179,7 @@ export function SiteHeader({
                 role="search"
                 aria-label="Site search"
               >
-                <div className="relative group">
+                <div className="relative group" ref={desktopDropdownRef}>
                   <button
                     type="button"
                     onClick={() => setIsCategoryOpen(!isCategoryOpen)}
@@ -210,7 +234,7 @@ export function SiteHeader({
               {/* Right side: Account, Returns & Orders */}
               <div className="hidden md:flex items-center gap-3 md:gap-4 lg:gap-5 flex-shrink-0 ml-auto">
                 {/* Returns & Orders */}
-                <Link href="/orders" className="flex flex-col px-4 py-1.5 rounded group">
+                <Link href="/orders" className="flex flex-col px-4 py-1.5 rounded group hover:bg-white/10">
                   <div className="text-xs text-white ">Returns</div>
                   <div className="flex items-center">
                     <span className="text-sm font-medium text-white">& Orders</span>
@@ -219,13 +243,13 @@ export function SiteHeader({
 
                 {/* Account & Lists */}
                 <Link href="/account">
-                  <div className="flex flex-col items-center text-center px-4 py-1.5 rounded cursor-pointer group">
+                  <div className="flex flex-col items-center text-center px-4 py-1.5 rounded cursor-pointer group hover:bg-white/10">
                     <div className="text-xs text-white">
                       {user ? `Hello, ${user.name?.split(' ')[0] || 'User'}` : 'Hello, Sign in'}
                     </div>
                     <div className="flex items-center justify-center">
                       <span className="text-sm font-medium text-white">Account & Lists</span>
-                      <ChevronDown className="h-4 w-4 text-white" />
+                      
                     </div>
                   </div>
                 </Link>
@@ -368,8 +392,8 @@ export function SiteHeader({
 
             {/* Wishlist only in lower header */}
             <div className="flex items-center">
-              <Link href="/wishlist" className="text-slate-700 hover:text-slate-900 transition-colors">
-                <Heart className="h-5 w-5" />
+              <Link href="/wishlist" className="text-slate-700 hover:text-red-500 transition-colors">
+                <Heart className="h-5 w-5 hover:fill-red-500"/>
               </Link>
             </div>
           </div>
@@ -389,7 +413,7 @@ export function SiteHeader({
             role="search"
             aria-label="Site search"
           >
-            <div className="relative">
+            <div className="relative" ref={mobileDropdownRef}>
               <button
                 type="button"
                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}

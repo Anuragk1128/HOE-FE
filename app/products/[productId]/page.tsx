@@ -34,6 +34,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { useWishlist } from '@/contexts/wishlist-context'
+import { SuggestedProducts } from '@/components/products/suggested-products'
 
 interface ProductDetails extends Omit<Product, 'attributes'> {
   brand?: {
@@ -882,8 +883,16 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
             </TabsContent>
           </Tabs>
         </div>
+
+        {/* Suggested Products Section */}
+        <div className="mt-12">
+          <SuggestedProducts
+            currentProduct={product}
+            currentProductId={resolvedParams.productId}
+          />
+        </div>
       </div>
-      
+
       <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </div>
   )

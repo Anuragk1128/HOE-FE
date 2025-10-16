@@ -9,6 +9,8 @@ import { CategoryGrid } from "./category-grid"
 const heroSlides = [
   {
     id: 1,
+    image: "https://res.cloudinary.com/dvbx2tqcg/image/upload/v1760606089/Diwali_Banner_HOE_-_1920_800_cejzgy.webp",
+    alt: "Diwali Collection",
     title: "New Season Collection",
     description: "Discover our latest arrivals for the season",
     ctaText: "Shop Now",
@@ -138,8 +140,7 @@ export function HeroSection() {
                   </div>
                 </div>
                 
-                {/* Category Grid - Only show on first slide (blue slide) */}
-                {slide.id === 1 && <CategoryGrid />}
+                {/* Category Grid removed from first slide */}
               </div>
             </div>
           ))}
